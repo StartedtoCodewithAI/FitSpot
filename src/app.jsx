@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Gyms from "./pages/Gyms";
-import Profile from "./pages/Profile";
+import Profile from "./pages/profile";
 
 export default function App() {
   return (
