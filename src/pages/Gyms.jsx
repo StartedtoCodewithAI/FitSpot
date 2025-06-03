@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 
-// Example gyms data with lat/lng (make sure you have this or get it dynamically)
+// Example gyms data around Athens, Greece (Agios Dimitrios area)
 const gyms = [
-  { id: 1, name: "Fit Gym", lat: 40.7128, lng: -74.006 },
-  { id: 2, name: "Power House", lat: 40.73061, lng: -73.935242 },
-  // Add more gyms here
+  { id: 1, name: "Agios Dimitrios Gym", lat: 37.9307, lng: 23.7200 },
+  { id: 2, name: "Athens Fitness Center", lat: 37.9838, lng: 23.7275 },
+  { id: 3, name: "Elliniko Gym", lat: 37.8709, lng: 23.7334 },
+  { id: 4, name: "Glyfada Workout Hub", lat: 37.8752, lng: 23.7533 },
+  { id: 5, name: "Paleo Faliro Gym", lat: 37.9433, lng: 23.6861 },
 ];
 
 // Haversine formula for distance between two lat/lng points
