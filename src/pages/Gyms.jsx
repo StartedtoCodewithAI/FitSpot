@@ -33,7 +33,7 @@ export default function Gyms() {
         const lng = pos.coords.longitude;
         setLocation({ lat, lng, error: null });
 
-        const closeGyms = gyms.filter((gym) => getDistance(lat, lng, gym.lat, gym.lng) <= 5);
+        const closeGyms = gyms.filter((gym) => getDistance(lat, lng, gym.lat, gym.lng) <= 10);
         setNearbyGyms(closeGyms);
       },
       (err) => setLocation({ lat: null, lng: null, error: err.message })
