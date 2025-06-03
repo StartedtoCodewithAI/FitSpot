@@ -1,29 +1,51 @@
 import React, { useState } from "react";
-import QRCode from "qrcode.react";
 
 export default function Profile() {
-  const [generatedCode, setGeneratedCode] = useState("");
+  const [code, setCode] = useState("");
 
-  // For demo, generate a simple code with current date and random ID
-  function generateQRCode() {
-    const code = `FitSpot-${new Date().toISOString().slice(0,10)}-${Math.random().toString(36).substring(2,10)}`;
-    setGeneratedCode(code);
+  // Dummy function to simulate generating a one-time code
+  function generateCode() {
+    const newCode = Math.random().toString(36).slice(-8).toUpperCase();
+    setCode(newCode);
   }
 
   return (
-    <div style={{ padding: "1rem", fontFamily: "sans-serif", textAlign: "center" }}>
+    <div style={{ maxWidth: "400px", margin: "2rem auto", textAlign: "center" }}>
       <h1>Your Profile</h1>
-      <button 
-        onClick={generateQRCode} 
-        style={{ padding: "1rem 2rem", fontSize: "1rem", cursor: "pointer", marginBottom: "1rem" }}
+      <p>Generate your one-time access code for today:</p>
+      <button
+        onClick={generateCode}
+        style={{
+          padding: "1rem 2rem",
+          backgroundColor: "#007bff",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          fontSize: "1.1rem",
+        }}
       >
-        Generate 1-Time QR Code for Today
+        Generate Code
       </button>
 
-      {generatedCode && (
-        <div>
-          <QRCode value={generatedCode} size={256} />
-          <p style={{ marginTop: "1rem" }}>Show this QR code at any partner gym to workout today!</p>
+      {code && (
+        <div style={{ marginTop: "2rem" }}>
+          <h3>Your One-Time Code:</h3>
+          <code
+            style={{
+              fontSize: "2rem",
+              backgroundColor: "#f0f0f0",
+              padding: "1rem 2rem",
+              borderRadius: "8px",
+              display: "inline-block",
+              letterSpacing: "0.2em",
+            }}
+          >
+            {code}
+          </code>
+          <p style={{ marginTop: "1rem", fontStyle: "italic" }}>
+            Show this code at any partner gym to get access for the day.
+          </p>
         </div>
       )}
     </div>
