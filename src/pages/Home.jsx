@@ -5,50 +5,28 @@ export default function Home() {
   return (
     <>
       <style>{`
-        /* Container with some padding and max width for larger screens */
         .container {
           max-width: 900px;
-          margin: 0 auto;
-          padding: 1rem 1.5rem 3rem;
-          display: flex;
-          flex-direction: column;
-          min-height: 100vh;
-          box-sizing: border-box;
-        }
-
-        /* Header group pushed near the top */
-        .header-group {
-          margin-top: 2rem;
-          margin-bottom: 2rem;
+          margin: 2rem auto;
+          padding: 0 1rem;
           text-align: center;
-          flex-shrink: 0;
         }
 
-        /* Logo style */
-        .logo {
-          max-width: 150px;
-          margin: 0 auto 1rem;
-          display: block;
-        }
-
-        /* Main heading */
         h1 {
-          font-weight: 700;
-          font-size: 2.5rem;
+          font-weight: 600;
+          font-size: 3rem;
+          margin-bottom: 1rem;
           color: #007bff;
-          margin-bottom: 0.5rem;
         }
 
-        /* Subtitle/description */
         p.lead {
-          font-size: 1.15rem;
+          font-size: 1.25rem;
+          max-width: 600px;
+          margin: 0 auto 2.5rem;
+          line-height: 1.6;
           color: #555;
-          line-height: 1.5;
-          max-width: 320px;
-          margin: 0 auto;
         }
 
-        /* Primary action button */
         button.cta {
           background-color: #007bff;
           border: none;
@@ -60,10 +38,7 @@ export default function Home() {
           cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease;
           box-shadow: 0 5px 10px rgba(0,123,255,0.3);
-          margin: 1.5rem auto 3rem;
-          display: block;
-          max-width: 200px;
-          width: 100%;
+          margin-bottom: 3rem;
         }
 
         button.cta:hover {
@@ -72,23 +47,22 @@ export default function Home() {
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
 
-        /* Features section */
         section.features {
           display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
+          justify-content: center;
+          gap: 2rem;
+          flex-wrap: wrap;
           margin-bottom: 3rem;
         }
 
-        /* Feature cards */
         section.features > div {
           background: white;
           padding: 1.5rem;
           border-radius: 15px;
           box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+          max-width: 250px;
+          flex: 1 1 250px;
           text-align: center;
-          max-width: 350px;
-          margin: 0 auto;
           transition: transform 0.3s ease;
         }
 
@@ -97,24 +71,10 @@ export default function Home() {
           box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
-        /* CTA section */
         section.callToAction {
-          background-color: #f5f5f5;
-          padding: 2rem 1rem;
-          border-radius: 15px;
-          text-align: center;
-          max-width: 400px;
-          margin: 0 auto 3rem;
+          margin-bottom: 3rem;
         }
 
-        section.callToAction h2 {
-          margin-bottom: 1rem;
-          font-size: 1.8rem;
-          font-weight: 600;
-          color: #222;
-        }
-
-        /* Footer */
         footer {
           text-align: center;
           padding: 2rem 1rem;
@@ -122,29 +82,36 @@ export default function Home() {
           color: #888;
           border-top: 1px solid #ddd;
           background: #fff;
-          margin-top: auto;
         }
 
-        /* Responsive adjustments */
-        @media(min-width: 600px) {
-          /* For tablets & up: features in row */
+        @media (max-width: 600px) {
+          h1 {
+            font-size: 2.2rem;
+          }
+
           section.features {
-            flex-direction: row;
-            justify-content: center;
+            flex-direction: column;
+            gap: 1.5rem;
           }
         }
       `}</style>
 
       <div className="container">
-        {/* Logo + Welcome Text + Button near top */}
-        <div className="header-group">
-          <img src={logo} alt="FitSpot Logo" className="logo" />
+        {/* Logo */}
+        <img
+          src={logo}
+          alt="FitSpot Logo"
+          style={{ maxWidth: "200px", marginBottom: "2rem" }}
+        />
+
+        {/* Hero Section */}
+        <section style={{ padding: "4rem 1rem", backgroundColor: "#f5f5f5", borderRadius: "15px" }}>
           <h1>Welcome to FitSpot</h1>
           <p className="lead">
             Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
           </p>
           <button className="cta">Get Started</button>
-        </div>
+        </section>
 
         {/* Features Section */}
         <section className="features">
@@ -162,8 +129,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Call to Action */}
-        <section className="callToAction">
+        {/* Call to Action Section */}
+        <section className="callToAction" style={{ backgroundColor: "#f5f5f5", padding: "3rem 1rem", borderRadius: "15px" }}>
           <h2>Ready to get fit?</h2>
           <button className="cta">Create Account</button>
         </section>
