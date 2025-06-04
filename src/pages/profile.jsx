@@ -1,61 +1,57 @@
-import React, { useState, useEffect } from "react";
-import QRCode from "react-qr-code";
-import axios from "axios";
+import React, { useState } from "react";
+import QRCode from "qrcode.react";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://fitspot-backend-production.up.railway.app";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState("");
-  const [used, setUsed] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Simulated user profile (replace with real auth data in production)
-  useEffect(() => {
-    const storedUser = {
-      id: "user-123",
-      name: "John Doe",
-      email: "john@example.com",
-    };
-    setUser(storedUser);
-  }, []);
+  async function generateQRCode() {
+    setLoading(true);
+    setError(null);
 
-  // Generate one-time QR token on mount
-  useEffect(() => {
-    if (user) {
-      const today = new Date().toISOString().split("T")[0]; // e.g. "2025-06-04"
-      const uniqueToken = `${user.id}-${today}`;
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/generate-code`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add authentication headers here if needed
+        },
+        body: JSON.stringify({
+          userId: "USER_ID_HERE", // Replace with actual logged-in user ID
+        }),
+      });
 
-      // Call backend to register this token
-      axios
-        .post("https://fitspot-backend-url/api/generate", {
-          token: uniqueToken,
-          userId: user.id,
-          date: today,
-        })
-        .then(() => {
-          setToken(uniqueToken);
-        })
-        .catch((err) => {
-          setError("Failed to generate token");
-          console.error(err);
-        });
+      if (!response.ok) {
+        throw new Error("Failed to generate code");
+      }
+
+      const data = await response.json();
+      setQrCodeData(data.code); // Assuming backend returns { code: "abc123" }
+    } catch (err) {
+      setError(err.message || "Error generating QR code");
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
-
-  if (!user) return <p>Loading user...</p>;
-  if (error) return <p>{error}</p>;
+  }
 
   return (
-    <div style={{ padding: "2rem", textAlign: "center" }}>
-      <h1>Welcome, {user.name}</h1>
-      <p>Your daily access code is below. Show it at the gym entrance.</p>
+    <div style={{ padding: "1rem" }}>
+      <h1>Your Profile</h1>
 
-      {token && !used ? (
-        <div style={{ margin: "2rem auto", width: "fit-content" }}>
-          <QRCode value={token} size={256} />
-          <p style={{ marginTop: "1rem" }}>Valid only for today and one-time use.</p>
+      <button onClick={generateQRCode} disabled={loading}>
+        {loading ? "Generating..." : "Generate Daily QR Code"}
+      </button>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {qrCodeData && (
+        <div style={{ marginTop: "1rem" }}>
+          <QRCode value={qrCodeData} size={256} />
+          <p>Show this QR code at partner gyms to enter for the day.</p>
         </div>
-      ) : (
-        <p>This code has been used or is no longer valid.</p>
       )}
     </div>
   );
