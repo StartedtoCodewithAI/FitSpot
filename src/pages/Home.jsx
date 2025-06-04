@@ -23,12 +23,18 @@ export default function Home() {
           max-width: 150px;
           margin-bottom: 2rem;
           filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+          animation: fadeInUp 0.6s ease forwards;
+          opacity: 0;
+          animation-delay: 0.1s;
         }
         h1 {
           font-weight: 600;
           font-size: 3rem;
           margin-bottom: 1rem;
           color: #007bff;
+          animation: fadeInUp 0.6s ease forwards;
+          opacity: 0;
+          animation-delay: 0.3s;
         }
         p.lead {
           font-size: 1.25rem;
@@ -36,6 +42,9 @@ export default function Home() {
           margin: 0 auto 2rem;
           line-height: 1.6;
           color: #555;
+          animation: fadeInUp 0.6s ease forwards;
+          opacity: 0;
+          animation-delay: 0.5s;
         }
         button.cta {
           background-color: #007bff;
@@ -48,6 +57,9 @@ export default function Home() {
           cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease;
           box-shadow: 0 5px 10px rgba(0,123,255,0.3);
+          animation: fadeInUp 0.6s ease forwards;
+          opacity: 0;
+          animation-delay: 0.7s;
         }
         button.cta:hover {
           background-color: #0056b3;
@@ -69,14 +81,30 @@ export default function Home() {
           max-width: 250px;
           flex: 1 1 200px;
           transition: transform 0.3s ease;
+          opacity: 0;
+          animation: fadeInUp 0.6s ease forwards;
         }
         section.features > div:hover {
           transform: translateY(-8px);
           box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        section.features > div:nth-child(1) {
+          animation-delay: 0.9s;
+        }
+        section.features > div:nth-child(2) {
+          animation-delay: 1.1s;
+        }
+        section.features > div:nth-child(3) {
+          animation-delay: 1.3s;
+        }
         section.features h3 {
           margin-bottom: 0.5rem;
           color: #007bff;
+        }
+        section.callToAction {
+          animation: fadeInUp 0.6s ease forwards;
+          opacity: 0;
+          animation-delay: 1.5s;
         }
         footer {
           text-align: center;
@@ -85,6 +113,20 @@ export default function Home() {
           color: #888;
           border-top: 1px solid #ddd;
           background: #fff;
+          animation: fadeInUp 0.6s ease forwards;
+          opacity: 0;
+          animation-delay: 1.7s;
+        }
+
+        @keyframes fadeInUp {
+          0% {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         /* Responsive */
@@ -123,7 +165,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section>
+        <section className="callToAction">
           <h2>Ready to get fit?</h2>
           <button className="cta">Create Account</button>
         </section>
