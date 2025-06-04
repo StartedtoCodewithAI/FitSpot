@@ -1,146 +1,135 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React from "react";
 import logo from "../assets/FitSpot.png";
 
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-
+export default function Home() {
   return (
     <>
       <style>{`
-        nav {
-          background-color: #007bff;
-          padding: 0.5rem 1rem;
-          position: sticky;
-          top: 0;
-          z-index: 999;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        body {
+          font-family: 'Poppins', sans-serif;
+          margin: 0;
+          background: #f9fbfd;
+          color: #333;
         }
         .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+          max-width: 900px;
+          margin: 2rem auto;
+          padding: 0 1rem;
+          text-align: center;
         }
-        .logo {
-          height: 40px;
-          cursor: pointer;
+        img.logo {
+          max-width: 150px;
+          margin-bottom: 2rem;
+          filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
         }
-        .hamburger {
-          display: none;
-          flex-direction: column;
-          justify-content: space-between;
-          width: 24px;
-          height: 18px;
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          padding: 0;
-        }
-        .bar {
-          height: 3px;
-          width: 100%;
-          background-color: #fff;
-          border-radius: 2px;
-          transition: all 0.3s ease;
-        }
-        ul {
-          list-style: none;
-          display: flex;
-          gap: 1.5rem;
-          margin: 0;
-          padding: 0;
-        }
-        li a {
-          color: #fff;
-          text-decoration: none;
+        h1 {
           font-weight: 600;
-          font-size: 1rem;
-          transition: color 0.3s ease;
+          font-size: 3rem;
+          margin-bottom: 1rem;
+          color: #007bff;
         }
-        li a:hover {
-          color: #cce4ff;
+        p.lead {
+          font-size: 1.25rem;
+          max-width: 600px;
+          margin: 0 auto 2rem;
+          line-height: 1.6;
+          color: #555;
+        }
+        button.cta {
+          background-color: #007bff;
+          border: none;
+          color: white;
+          padding: 1rem 2.5rem;
+          border-radius: 30px;
+          font-size: 1.1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background-color 0.3s ease, transform 0.2s ease;
+          box-shadow: 0 5px 10px rgba(0,123,255,0.3);
+        }
+        button.cta:hover {
+          background-color: #0056b3;
+          transform: scale(1.05);
+        }
+        section.features {
+          display: flex;
+          justify-content: center;
+          gap: 2rem;
+          flex-wrap: wrap;
+          margin-top: 3rem;
+          margin-bottom: 3rem;
+        }
+        section.features > div {
+          background: white;
+          padding: 1.5rem;
+          border-radius: 15px;
+          box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+          max-width: 250px;
+          flex: 1 1 200px;
+          transition: transform 0.3s ease;
+        }
+        section.features > div:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        section.features h3 {
+          margin-bottom: 0.5rem;
+          color: #007bff;
+        }
+        footer {
+          text-align: center;
+          padding: 2rem 1rem;
+          font-size: 0.9rem;
+          color: #888;
+          border-top: 1px solid #ddd;
+          background: #fff;
         }
 
-        /* Mobile Styles */
-        @media (max-width: 768px) {
-          .hamburger {
-            display: flex;
+        /* Responsive */
+        @media (max-width: 600px) {
+          h1 {
+            font-size: 2.2rem;
           }
-          ul {
-            position: absolute;
-            top: 60px;
-            left: 0;
-            right: 0;
-            background-color: #007bff;
+          section.features {
             flex-direction: column;
-            padding: 1rem 0;
-            display: none;
-          }
-          ul.open {
-            display: flex;
-          }
-          ul li {
-            padding: 0.75rem 1rem;
-          }
-          ul li a {
-            font-size: 1.25rem;
+            gap: 1.5rem;
           }
         }
       `}</style>
 
-      <nav>
-        <div className="container">
-          <Link to="/">
-            <img src={logo} alt="FitSpot Logo" className="logo" />
-          </Link>
+      <div className="container">
+        <img src={logo} alt="FitSpot Logo" className="logo" />
 
-          <button
-            className="hamburger"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle navigation menu"
-            aria-expanded={isOpen}
-          >
-            <span
-              className="bar"
-              style={{
-                transform: isOpen ? "rotate(45deg) translate(5px, 5px)" : "none",
-              }}
-            />
-            <span className="bar" style={{ opacity: isOpen ? 0 : 1 }} />
-            <span
-              className="bar"
-              style={{
-                transform: isOpen ? "rotate(-45deg) translate(6px, -6px)" : "none",
-              }}
-            />
-          </button>
+        <h1>Welcome to FitSpot</h1>
+        <p className="lead">
+          Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
+        </p>
+        <button className="cta">Get Started</button>
 
-          <ul className={isOpen ? "open" : ""}>
-            <li>
-              <Link to="/" onClick={() => setIsOpen(false)}>
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/gyms" onClick={() => setIsOpen(false)}>
-                Gyms
-              </Link>
-            </li>
-            <li>
-              <Link to="/profile" onClick={() => setIsOpen(false)}>
-                Profile
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" onClick={() => setIsOpen(false)}>
-                About
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </nav>
+        <section className="features" aria-label="Features">
+          <div>
+            <h3>No Memberships</h3>
+            <p>Pay per session. No strings attached.</p>
+          </div>
+          <div>
+            <h3>Find Nearby Gyms</h3>
+            <p>Use GPS to locate gyms around you instantly.</p>
+          </div>
+          <div>
+            <h3>Instant Booking</h3>
+            <p>Reserve your workout slot in seconds.</p>
+          </div>
+        </section>
+
+        <section>
+          <h2>Ready to get fit?</h2>
+          <button className="cta">Create Account</button>
+        </section>
+
+        <footer>&copy; {new Date().getFullYear()} FitSpot. All rights reserved.</footer>
+      </div>
     </>
   );
 }
