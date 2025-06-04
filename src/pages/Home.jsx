@@ -5,7 +5,19 @@ export default function Home() {
   return (
     <>
       <style>{`
-        /* Container with some padding and max width for larger screens */
+        /* Reset and base */
+        * {
+          box-sizing: border-box;
+        }
+        body {
+          margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+            Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+          background-color: #f0f2f5;
+          color: #333;
+        }
+
+        /* Container with padding and max width */
         .container {
           max-width: 900px;
           margin: 0 auto;
@@ -35,8 +47,13 @@ export default function Home() {
         h1 {
           font-weight: 700;
           font-size: 2.5rem;
-          color: #007bff;
           margin-bottom: 0.5rem;
+          /* No color here to avoid global blue */
+        }
+
+        /* Main title only blue */
+        h1.main-title {
+          color: #007bff;
         }
 
         /* Subtitle/description */
@@ -90,6 +107,7 @@ export default function Home() {
           max-width: 350px;
           margin: 0 auto;
           transition: transform 0.3s ease;
+          color: #333; /* Ensure text color is neutral */
         }
 
         section.features > div:hover {
@@ -105,13 +123,13 @@ export default function Home() {
           text-align: center;
           max-width: 400px;
           margin: 0 auto 3rem;
+          color: #222;
         }
 
         section.callToAction h2 {
           margin-bottom: 1rem;
           font-size: 1.8rem;
           font-weight: 600;
-          color: #222;
         }
 
         /* Footer */
@@ -139,7 +157,7 @@ export default function Home() {
         {/* Logo + Welcome Text + Button near top */}
         <div className="header-group">
           <img src={logo} alt="FitSpot Logo" className="logo" />
-          <h1>Welcome to FitSpot</h1>
+          <h1 className="main-title">Welcome to FitSpot</h1>
           <p className="lead">
             Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
           </p>
