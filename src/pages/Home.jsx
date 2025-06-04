@@ -5,47 +5,28 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
-        body {
-          font-family: 'Poppins', sans-serif;
-          margin: 0;
-          background: #f9fbfd;
-          color: #333;
-        }
         .container {
           max-width: 900px;
           margin: 2rem auto;
           padding: 0 1rem;
           text-align: center;
         }
-        img.logo {
-          max-width: 150px;
-          margin-bottom: 2rem;
-          filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
-          animation: fadeInUp 0.6s ease forwards;
-          opacity: 0;
-          animation-delay: 0.1s;
-        }
+
         h1 {
           font-weight: 600;
           font-size: 3rem;
           margin-bottom: 1rem;
           color: #007bff;
-          animation: fadeInUp 0.6s ease forwards;
-          opacity: 0;
-          animation-delay: 0.3s;
         }
+
         p.lead {
           font-size: 1.25rem;
           max-width: 600px;
-          margin: 0 auto 2rem;
+          margin: 0 auto 2.5rem;
           line-height: 1.6;
           color: #555;
-          animation: fadeInUp 0.6s ease forwards;
-          opacity: 0;
-          animation-delay: 0.5s;
         }
+
         button.cta {
           background-color: #007bff;
           border: none;
@@ -57,55 +38,43 @@ export default function Home() {
           cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease;
           box-shadow: 0 5px 10px rgba(0,123,255,0.3);
-          animation: fadeInUp 0.6s ease forwards;
-          opacity: 0;
-          animation-delay: 0.7s;
+          margin-bottom: 3rem;
         }
+
         button.cta:hover {
           background-color: #0056b3;
-          transform: scale(1.05);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
+
         section.features {
           display: flex;
           justify-content: center;
           gap: 2rem;
           flex-wrap: wrap;
-          margin-top: 3rem;
           margin-bottom: 3rem;
         }
+
         section.features > div {
           background: white;
           padding: 1.5rem;
           border-radius: 15px;
           box-shadow: 0 6px 15px rgba(0,0,0,0.05);
           max-width: 250px;
-          flex: 1 1 200px;
+          flex: 1 1 250px;
+          text-align: center;
           transition: transform 0.3s ease;
-          opacity: 0;
-          animation: fadeInUp 0.6s ease forwards;
         }
+
         section.features > div:hover {
           transform: translateY(-8px);
           box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-        section.features > div:nth-child(1) {
-          animation-delay: 0.9s;
-        }
-        section.features > div:nth-child(2) {
-          animation-delay: 1.1s;
-        }
-        section.features > div:nth-child(3) {
-          animation-delay: 1.3s;
-        }
-        section.features h3 {
-          margin-bottom: 0.5rem;
-          color: #007bff;
-        }
+
         section.callToAction {
-          animation: fadeInUp 0.6s ease forwards;
-          opacity: 0;
-          animation-delay: 1.5s;
+          margin-bottom: 3rem;
         }
+
         footer {
           text-align: center;
           padding: 2rem 1rem;
@@ -113,27 +82,13 @@ export default function Home() {
           color: #888;
           border-top: 1px solid #ddd;
           background: #fff;
-          animation: fadeInUp 0.6s ease forwards;
-          opacity: 0;
-          animation-delay: 1.7s;
         }
 
-        @keyframes fadeInUp {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Responsive */
         @media (max-width: 600px) {
           h1 {
             font-size: 2.2rem;
           }
+
           section.features {
             flex-direction: column;
             gap: 1.5rem;
@@ -142,15 +97,24 @@ export default function Home() {
       `}</style>
 
       <div className="container">
-        <img src={logo} alt="FitSpot Logo" className="logo" />
+        {/* Logo */}
+        <img
+          src={logo}
+          alt="FitSpot Logo"
+          style={{ maxWidth: "200px", marginBottom: "2rem" }}
+        />
 
-        <h1>Welcome to FitSpot</h1>
-        <p className="lead">
-          Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
-        </p>
-        <button className="cta">Get Started</button>
+        {/* Hero Section */}
+        <section style={{ padding: "4rem 1rem", backgroundColor: "#f5f5f5", borderRadius: "15px" }}>
+          <h1>Welcome to FitSpot</h1>
+          <p className="lead">
+            Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
+          </p>
+          <button className="cta">Get Started</button>
+        </section>
 
-        <section className="features" aria-label="Features">
+        {/* Features Section */}
+        <section className="features">
           <div>
             <h3>No Memberships</h3>
             <p>Pay per session. No strings attached.</p>
@@ -165,11 +129,13 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="callToAction">
+        {/* Call to Action Section */}
+        <section className="callToAction" style={{ backgroundColor: "#f5f5f5", padding: "3rem 1rem", borderRadius: "15px" }}>
           <h2>Ready to get fit?</h2>
           <button className="cta">Create Account</button>
         </section>
 
+        {/* Footer */}
         <footer>&copy; {new Date().getFullYear()} FitSpot. All rights reserved.</footer>
       </div>
     </>
