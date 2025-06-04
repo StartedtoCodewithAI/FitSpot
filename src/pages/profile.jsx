@@ -17,10 +17,10 @@ export default function Profile() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add authentication headers here if needed
+          // Add auth headers if needed
         },
         body: JSON.stringify({
-          userId: "USER_ID_HERE", // Replace with actual logged-in user ID
+          userId: "USER_ID_HERE" // Replace with actual logged-in user ID from your auth context
         }),
       });
 
@@ -29,7 +29,7 @@ export default function Profile() {
       }
 
       const data = await response.json();
-      setQrCodeData(data.code); // Assuming backend returns { code: "abc123" }
+      setQrCodeData(data.code);
     } catch (err) {
       setError(err.message || "Error generating QR code");
     } finally {
