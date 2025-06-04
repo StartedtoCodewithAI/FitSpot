@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../../FitSpot.png";
+import logo from "../assets/FitSpot.png";
 
 export default function Home() {
   return (
