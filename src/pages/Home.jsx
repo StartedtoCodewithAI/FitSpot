@@ -1,72 +1,70 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/FitSpot.png";
+import logo from "../assets/logo192.png"; // Or adjust path if needed
 
 export default function Home() {
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+
+  function handleGetStarted() {
+    setShowModal(true);
+  }
+
+  function handleCloseModal(e) {
+    // Close if background or close button is clicked
+    if (e.target.className === "modal-backdrop" || e.target.className === "close-modal") {
+      setShowModal(false);
+    }
+  }
 
   return (
     <>
       <style>{`
-        html, body, #root {
-          height: 100%;
-        }
         .page-wrapper {
           min-height: 100vh;
           display: flex;
           flex-direction: column;
+          background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
         }
         .container {
-          max-width: 900px;
-          margin: 2rem auto;
-          padding: 0 1rem 0 0.5rem;
-          flex: 1 0 auto;
-          position: relative;
-          left: -20px;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 2rem 1rem 0 1rem;
+          flex: 1;
         }
         .hero {
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           gap: 2rem;
-          background-color: #f5f5f5;
-          padding: 2rem;
-          border-radius: 15px;
           margin-bottom: 3rem;
         }
         .hero img {
-          width: 100px;
-          height: auto;
-        }
-        .hero-text {
-          flex: 1;
+          width: 120px;
+          height: 120px;
         }
         .hero-text h1 {
-          font-weight: 600;
-          font-size: 3rem;
-          margin-bottom: 1rem;
-          color: #007bff;
+          font-size: 2.5rem;
+          margin-bottom: 0.5rem;
         }
         .lead {
-          font-size: 1.25rem;
-          line-height: 1.6;
-          color: #555;
-          margin-bottom: 2rem;
+          font-size: 1.3rem;
+          margin-bottom: 1.5rem;
+          color: #444;
         }
-        button.cta {
-          background-color: #007bff;
+        .cta {
+          background: #0056b3;
+          color: #fff;
           border: none;
-          color: white;
-          padding: 1rem 2.5rem;
+          padding: 0.75rem 2rem;
           border-radius: 30px;
           font-size: 1.1rem;
-          font-weight: 600;
           cursor: pointer;
-          transition: background-color 0.3s ease, transform 0.2s ease;
-          box-shadow: 0 5px 10px rgba(0,123,255,0.3);
+          font-weight: 600;
+          transition: background 0.2s, box-shadow 0.2s;
+          box-shadow: 0 4px 10px rgba(0,86,179,0.18);
         }
-        button.cta:hover {
-          background-color: #0056b3;
-          transform: translateY(-3px);
+        .cta:hover {
+          background: #003d80;
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
         section.features {
@@ -126,6 +124,46 @@ export default function Home() {
             font-size: 2.2rem;
           }
         }
+        /* Modal Styles */
+        .modal-backdrop {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.35);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .modal-content {
+          background: #fff;
+          border-radius: 18px;
+          padding: 2rem 2.2rem 1.6rem 2.2rem;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+          min-width: 300px;
+          text-align: center;
+          position: relative;
+        }
+        .modal-content h2 {
+          margin-bottom: 1.5rem;
+          font-size: 1.3rem;
+        }
+        .modal-content .cta {
+          margin: 0.7rem 0;
+          width: 90%;
+        }
+        .close-modal {
+          position: absolute;
+          top: 0.7rem;
+          right: 1.1rem;
+          background: none;
+          border: none;
+          font-size: 1.6rem;
+          color: #888;
+          cursor: pointer;
+        }
+        .close-modal:hover {
+          color: #0056b3;
+        }
       `}</style>
       <div className="page-wrapper">
         <div className="container">
@@ -137,7 +175,7 @@ export default function Home() {
               <p className="lead">
                 Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
               </p>
-              <button className="cta" onClick={() => navigate("/gyms")}>Get Started</button>
+              <button className="cta" onClick={handleGetStarted}>Get Started</button>
             </div>
           </section>
 
@@ -169,6 +207,36 @@ export default function Home() {
           &copy; 2025 FitSpot. All rights reserved.
         </footer>
       </div>
+
+      {/* Modal for Get Started */}
+      {showModal && (
+        <div className="modal-backdrop" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-modal" onClick={handleCloseModal} title="Close">&times;</button>
+            <h2>Get Started</h2>
+            <button
+              className="cta"
+              onClick={() => {
+                setShowModal(false);
+                navigate("/login");
+              }}
+            >
+              Login to your account
+            </button>
+            <br />
+            <button
+              className="cta"
+              style={{ background: "#008000" }}
+              onClick={() => {
+                setShowModal(false);
+                navigate("/signup");
+              }}
+            >
+              Sign up if there is no account
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
