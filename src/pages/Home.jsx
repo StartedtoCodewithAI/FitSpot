@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo192.png"; // Or adjust path if needed
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
@@ -38,9 +37,17 @@ export default function Home() {
           gap: 2rem;
           margin-bottom: 3rem;
         }
-        .hero img {
+        .hero-placeholder {
           width: 120px;
           height: 120px;
+          border-radius: 50%;
+          background: #e0e7ef;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2.4rem;
+          color: #336699;
+          font-weight: bold;
         }
         .hero-text h1 {
           font-size: 2.5rem;
@@ -117,7 +124,7 @@ export default function Home() {
             align-items: center;
             text-align: center;
           }
-          .hero img {
+          .hero-placeholder {
             margin-bottom: 1rem;
           }
           .hero-text h1 {
@@ -169,7 +176,8 @@ export default function Home() {
         <div className="container">
           {/* Hero Section */}
           <section className="hero">
-            <img src={logo} alt="FitSpot Logo" />
+            {/* Logo removed, replaced with placeholder */}
+            <div className="hero-placeholder">FS</div>
             <div className="hero-text">
               <h1>Welcome to FitSpot</h1>
               <p className="lead">
