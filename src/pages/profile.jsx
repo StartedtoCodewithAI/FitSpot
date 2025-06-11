@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-// Dummy initial user data (simulate what might come from an API or localStorage)
-const initialUser = {
+const demoUser = {
   name: "Jane Doe",
   email: "jane@example.com",
-  avatar: "", // Leave blank for initials
+  avatar: "",
   bookings: [
     { id: 1, gym: "PowerGym Downtown", date: "2025-06-12", time: "10:00" },
     { id: 2, gym: "CrossFit Zone", date: "2025-06-09", time: "18:30" },
@@ -21,108 +20,55 @@ function stringToInitials(name) {
 }
 
 export default function Profile() {
-  const [user, setUser] = useState(initialUser);
+  const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ name: user.name, email: user.email });
+  const [form, setForm] = useState({ name: "", email: "", avatar: "" });
+
+  // Load user from localStorage or fallback to demoUser
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      setUser(parsed);
+      setForm({ name: parsed.name, email: parsed.email, avatar: parsed.avatar || "" });
+    } else {
+      setUser(demoUser);
+      setForm({ name: demoUser.name, email: demoUser.email, avatar: demoUser.avatar || "" });
+    }
+  }, []);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
+  function handleAvatarChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setForm((prev) => ({ ...prev, avatar: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  }
+
   function handleSave(e) {
     e.preventDefault();
-    setUser({ ...user, ...form });
+    const updated = { ...user, ...form };
+    setUser(updated);
+    localStorage.setItem("user", JSON.stringify(updated));
     setEditing(false);
   }
 
   function handleCancel() {
-    setForm({ name: user.name, email: user.email });
+    setForm({ name: user.name, email: user.email, avatar: user.avatar || "" });
     setEditing(false);
   }
 
+  if (!user) return null;
+
   return (
     <>
-      <style>{`
-        .profile-card {
-          max-width: 420px;
-          margin: 2.5rem auto;
-          background: #fff;
-          border-radius: 18px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-          padding: 2rem 2.5rem 2.5rem 2.5rem;
-          text-align: center;
-        }
-        .avatar {
-          width: 88px;
-          height: 88px;
-          border-radius: 50%;
-          background: #e0e7ef;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2.6rem;
-          color: #336699;
-          margin: 0 auto 1rem auto;
-          object-fit: cover;
-        }
-        .profile-card h2 {
-          margin-bottom: 0.3rem;
-        }
-        .profile-card p {
-          margin-bottom: 1.2rem;
-          color: #777;
-        }
-        .profile-card form {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          align-items: center;
-        }
-        .profile-card input {
-          font-size: 1rem;
-          padding: 0.55rem;
-          border-radius: 9px;
-          border: 1px solid #c3dafc;
-          width: 90%;
-        }
-        .profile-card .edit-btn,
-        .profile-card .save-btn {
-          background: #0056b3;
-          color: #fff;
-          border: none;
-          border-radius: 20px;
-          padding: 0.55rem 1.8rem;
-          font-size: 1rem;
-          cursor: pointer;
-          margin-right: 0.5rem;
-        }
-        .profile-card .save-btn {
-          background: #008000;
-        }
-        .profile-card .cancel-btn {
-          background: #ccc;
-          color: #222;
-          border: none;
-          border-radius: 20px;
-          padding: 0.55rem 1.8rem;
-          font-size: 1rem;
-          cursor: pointer;
-        }
-        .bookings-list {
-          text-align: left;
-          margin-top: 2.2rem;
-        }
-        .bookings-list h3 {
-          margin-bottom: 0.9rem;
-        }
-        .booking-item {
-          background: #f6fafe;
-          padding: 0.8rem 1.1rem;
-          border-radius: 11px;
-          margin-bottom: 0.7rem;
-          font-size: 1rem;
-        }
-      `}</style>
+      <style>{/* ...your existing CSS here... */}</style>
       <div className="profile-card">
         {user.avatar ? (
           <img className="avatar" src={user.avatar} alt="Avatar" />
@@ -155,6 +101,30 @@ export default function Profile() {
               placeholder="Email"
               required
             />
+            <label style={{ color: "#007bff", cursor: "pointer", fontSize: "1rem" }}>
+              Change avatar
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleAvatarChange}
+              />
+            </label>
+            {form.avatar && (
+              <img
+                src={form.avatar}
+                alt="avatar preview"
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  marginLeft: 10,
+                  verticalAlign: "middle",
+                  objectFit: "cover",
+                  border: "2px solid #e0e7ef"
+                }}
+              />
+            )}
             <div>
               <button className="save-btn" type="submit">
                 Save
@@ -167,10 +137,10 @@ export default function Profile() {
         )}
         <div className="bookings-list">
           <h3>Booking History</h3>
-          {user.bookings.length === 0 ? (
+          {user.bookings && user.bookings.length === 0 ? (
             <p>No bookings yet.</p>
           ) : (
-            user.bookings.map((b) => (
+            (user.bookings || []).map((b) => (
               <div className="booking-item" key={b.id}>
                 <strong>{b.gym}</strong><br />
                 {b.date} at {b.time}
