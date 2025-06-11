@@ -76,7 +76,7 @@ export default function Home() {
         }
 
         footer {
-          text-align: center;
+          text-align: bottom;
           padding: 2rem 1rem;
           font-size: 0.9rem;
           color: #888;
