@@ -90,11 +90,13 @@ export default function Home() {
           width: 100%;
           margin: 0 auto 3rem auto;
           padding: 0;
-          display: block;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
         section.features > div {
-          display: block;
           width: 100%;
+          max-width: 500px;
           background: white;
           padding: 1.5rem;
           border-radius: 15px;
@@ -140,6 +142,9 @@ export default function Home() {
           .hero-text h1 {
             font-size: 2.2rem;
           }
+          section.features > div {
+            max-width: 100%;
+          }
         }
         .modal-backdrop {
           position: fixed;
@@ -183,7 +188,6 @@ export default function Home() {
       `}</style>
       <div className="page-wrapper">
         <div className="container">
-          {/* Hero Section */}
           <section className="hero">
             <img src={fitspotLogo} alt="FitSpot Logo" className="hero-logo" />
             <div className="hero-text">
@@ -194,7 +198,6 @@ export default function Home() {
               <button className="cta" onClick={handleGetStarted}>Get Started</button>
             </div>
           </section>
-          {/* Features Section */}
           <section className="features">
             <div>
               <h3>No Memberships</h3>
