@@ -21,7 +21,6 @@ export default function Home() {
 
   return (
     <>
-      {/* Montserrat Font Import */}
       <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
       <style>{`
         body {
@@ -88,17 +87,14 @@ export default function Home() {
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
         section.features {
-          margin-left: auto !important;
-          margin-right: auto !important;
-          width: 100% !important;
-          max-width: 600px;
-          box-sizing: border-box;
-          padding: 0 !important;
-          display: block !important;
+          width: 100%;
+          margin: 0 auto 3rem auto;
+          padding: 0;
+          display: block;
         }
         section.features > div {
-          display: block !important;
-          width: 100% !important;
+          display: block;
+          width: 100%;
           background: white;
           padding: 1.5rem;
           border-radius: 15px;
@@ -121,7 +117,7 @@ export default function Home() {
           border-radius: 15px;
           text-align: center;
           width: 100%;
-          display: block !important;
+          display: block;
         }
         footer {
           text-align: center;
@@ -198,7 +194,7 @@ export default function Home() {
               <button className="cta" onClick={handleGetStarted}>Get Started</button>
             </div>
           </section>
-          {/* Features Section - always below, always vertical */}
+          {/* Features Section */}
           <section className="features">
             <div>
               <h3>No Memberships</h3>
@@ -214,17 +210,14 @@ export default function Home() {
             </div>
           </section>
         </div>
-        {/* Call to Action Section */}
         <section className="callToAction">
           <h2>Ready to start your fitness journey?</h2>
           <button className="cta" onClick={() => navigate("/signup")}>Sign Up</button>
         </section>
-        {/* Footer */}
         <footer>
           &copy; 2025 FitSpot. All rights reserved.
         </footer>
       </div>
-      {/* Modal for Get Started */}
       {showModal && (
         <div className="modal-backdrop" onClick={handleCloseModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
