@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import './Gyms.css';
 
-// Sample gyms data with more details
+// Sample gyms data
 const gyms = [
   {
     id: 1,
@@ -49,11 +50,9 @@ const gyms = [
   },
 ];
 
-// Haversine formula for distance between two lat/lng points
+// Haversine formula for distance
 function getDistance(lat1, lon1, lat2, lon2) {
-  function toRad(x) {
-    return (x * Math.PI) / 180;
-  }
+  function toRad(x) { return (x * Math.PI) / 180; }
   var R = 6371; // km
   var dLat = toRad(lat2 - lat1);
   var dLon = toRad(lon2 - lon1);
@@ -68,12 +67,26 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return d;
 }
 
+// Helper for localStorage favorites
+function loadFavorites() {
+  try {
+    return JSON.parse(localStorage.getItem("favorites")) || [];
+  } catch {
+    return [];
+  }
+}
+function saveFavorites(favorites) {
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+}
+
 export default function Gyms() {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const radius = 10; // radius in km
+  const [favorites, setFavorites] = useState(loadFavorites());
+  const [showFavorites, setShowFavorites] = useState(false);
+  const radius = 10; // km
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -96,7 +109,10 @@ export default function Gyms() {
     }
   }, []);
 
-  // Filter gyms by search term, then by distance
+  useEffect(() => {
+    saveFavorites(favorites);
+  }, [favorites]);
+
   const filteredGyms = gyms.filter((gym) =>
     gym.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -107,8 +123,18 @@ export default function Gyms() {
       )
     : [];
 
+  const favoriteGyms = closeGyms.filter((gym) => favorites.includes(gym.id));
+
+  const toggleFavorite = (gymId) => {
+    setFavorites((prev) =>
+      prev.includes(gymId)
+        ? prev.filter((id) => id !== gymId)
+        : [...prev, gymId]
+    );
+  };
+
   return (
-    <div style={{ padding: "1rem", minHeight: "70vh" }}>
+    <div className="gyms-container">
       <h1>Nearby Gyms</h1>
       <input
         type="text"
@@ -117,10 +143,24 @@ export default function Gyms() {
         onChange={(e) => setSearch(e.target.value)}
         style={{ padding: "0.5rem", width: "100%", marginBottom: "1.5rem" }}
       />
+      <button
+        onClick={() => setShowFavorites((show) => !show)}
+        style={{
+          marginBottom: "1rem",
+          background: "#1976d2",
+          color: "#fff",
+          border: "none",
+          borderRadius: "6px",
+          padding: "0.5rem 1rem",
+          cursor: "pointer",
+        }}
+      >
+        {showFavorites ? "Show All Gyms" : "Show My Favorites"}
+      </button>
 
       {loading && (
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <div className="spinner" style={{
+          <div style={{
             width: "40px",
             height: "40px",
             border: "6px solid #ddd",
@@ -145,45 +185,23 @@ export default function Gyms() {
 
       {!loading && !error && (
         <>
-          {closeGyms.length === 0 ? (
+          {(showFavorites ? favoriteGyms : closeGyms).length === 0 ? (
             <p style={{ color: "#888" }}>
-              No gyms found matching your search within {radius} km.
+              No gyms found {showFavorites ? "in your favorites" : `matching your search within ${radius} km`}.
             </p>
           ) : (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "1.5rem",
-                marginTop: "1rem",
-              }}
-            >
-              {closeGyms.map((gym) => (
-                <div
-                  key={gym.id}
-                  style={{
-                    background: "#fff",
-                    borderRadius: "12px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                    padding: "0",
-                    minWidth: "260px",
-                    maxWidth: "320px",
-                    flex: "1 0 260px",
-                    display: "flex",
-                    flexDirection: "column",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src={gym.image}
-                    alt={gym.name}
-                    style={{
-                      width: "100%",
-                      height: "160px",
-                      objectFit: "cover",
-                    }}
-                  />
-                  <div style={{ padding: "1rem" }}>
+            <div className="gyms-cards">
+              {(showFavorites ? favoriteGyms : closeGyms).map((gym) => (
+                <div className="gym-card" key={gym.id}>
+                  <button
+                    aria-label="Favorite"
+                    onClick={() => toggleFavorite(gym.id)}
+                    className={`heart-btn${favorites.includes(gym.id) ? " favorited" : ""}`}
+                  >
+                    {favorites.includes(gym.id) ? "❤️" : "🤍"}
+                  </button>
+                  <img src={gym.image} alt={gym.name} />
+                  <div className="gym-card-details">
                     <h3 style={{ margin: "0 0 0.5rem 0" }}>{gym.name}</h3>
                     <p style={{ margin: "0 0 0.25rem 0", color: "#555" }}>
                       <strong>Address:</strong> {gym.address}
