@@ -155,7 +155,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Call to Action Section */}
-<section className="callToAction">
-  <h2>*</h2>
-</section>
+                {/* Call to Action Section */}
+        <section className="callToAction">
+          <h2>*</h2>
+        </section>
+      </div>
+    </>
+  );
+}
