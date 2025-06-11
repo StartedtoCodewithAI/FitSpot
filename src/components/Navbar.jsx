@@ -48,10 +48,12 @@ export default function Navbar() {
           height: 40px;
           cursor: pointer;
         }
+        .spacer {
+          flex: 1;
+        }
         .nav-actions {
           display: flex;
           align-items: center;
-          margin-left: auto;
           position: relative;
         }
         .hamburger {
@@ -117,18 +119,14 @@ export default function Navbar() {
           color: #336699;
         }
         @media (max-width: 768px) {
-          .nav-actions {
-            margin-left: auto;
-            position: relative;
-          }
-          .hamburger {
-            display: flex;
+          ul {
+            display: none;
           }
           .nav-actions ul {
             position: absolute;
             top: 52px;
             right: 0;
-            left: unset;
+            left: auto;
             background: #fff;
             color: #1976d2;
             flex-direction: column;
@@ -167,6 +165,11 @@ export default function Navbar() {
             background: #e3e6ea;
             color: #0d47a1;
           }
+          .hamburger {
+            display: flex;
+            margin-left: 0;
+            margin-right: 0;
+          }
         }
       `}</style>
 
@@ -175,6 +178,7 @@ export default function Navbar() {
           <Link to="/">
             <img src={logo} alt="FitSpot Logo" className="logo" />
           </Link>
+          <div className="spacer" />
           <div className="nav-actions">
             <button
               className="hamburger"
