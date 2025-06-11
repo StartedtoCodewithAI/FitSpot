@@ -14,9 +14,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Close mobile menu on route change
     setIsOpen(false);
-    // Get user data from localStorage
     const stored = localStorage.getItem("user");
     setUser(stored ? JSON.parse(stored) : null);
   }, [location.pathname]);
@@ -24,14 +22,14 @@ export default function Navbar() {
   function handleLogout() {
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/"); // Optionally redirect to home
+    navigate("/");
   }
 
   return (
     <>
       <style>{`
         nav {
-          background-color: #007bff;
+          background-color: #1976d2; /* Updated to modern Material blue */
           padding: 0.5rem 1rem;
           position: sticky;
           top: 0;
@@ -94,7 +92,7 @@ export default function Navbar() {
           background: none;
         }
         li a:hover, .nav-btn:hover {
-          color: #cce4ff;
+          color: #bbdefb;
         }
         .avatar-nav {
           width: 30px;
@@ -120,7 +118,7 @@ export default function Navbar() {
             top: 60px;
             left: 0;
             right: 0;
-            background-color: #007bff;
+            background-color: #1976d2; /* Updated dropdown to match navbar */
             flex-direction: column;
             padding: 1rem 0;
             display: none;
