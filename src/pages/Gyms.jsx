@@ -32,6 +32,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
 export default function Gyms() {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState(""); // <-- Add search state
   const radius = 10; // radius in km
 
   useEffect(() => {
@@ -60,13 +61,24 @@ export default function Gyms() {
     return <p>Loading location...</p>;
   }
 
-  const closeGyms = gyms.filter((gym) =>
+  // FIRST: filter by search term (case-insensitive), THEN by distance
+  const filteredGyms = gyms.filter((gym) =>
+    gym.name.toLowerCase().includes(search.toLowerCase())
+  );
+  const closeGyms = filteredGyms.filter((gym) =>
     getDistance(location.lat, location.lng, gym.lat, gym.lng) <= radius
   );
 
   return (
     <div style={{ padding: "1rem" }}>
       <h1>Nearby Gyms</h1>
+      <input
+        type="text"
+        placeholder="Search gyms by name..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ padding: "0.5rem", width: "100%", marginBottom: "1rem" }}
+      />
       {closeGyms.length === 0 ? (
         <p>No nearby gyms found within {radius} km.</p>
       ) : (
