@@ -44,13 +44,15 @@ export default function Home() {
         }
         .hero {
           display: flex;
+          flex-direction: column; /* CHANGED: Always column, never row */
           align-items: center;
           gap: 2rem;
           margin-bottom: 3rem;
+          text-align: center; /* Ensures everything is centered */
         }
         .hero-logo {
-          width: 150px;
-          height: 150px;
+          width: 180px; /* Or your preferred size */
+          height: 180px;
           border-radius: 50%;
           object-fit: cover;
           background: #e0e7ef;
@@ -85,9 +87,10 @@ export default function Home() {
         }
         section.features {
           display: grid;
-          grid-template-columns: 1fr;
+          grid-template-columns: 1fr; /* ALWAYS one column */
           gap: 2rem;
           margin-bottom: 3rem;
+          margin-top: 0; /* no extra top margin */
         }
         section.features > div {
           background: white;
@@ -117,15 +120,6 @@ export default function Home() {
           border-top: 1px solid #ddd;
           background: #fff;
           flex-shrink: 0;
-        }
-        @media (min-width: 700px) {
-          section.features {
-            grid-template-columns: repeat(3, 1fr);
-          }
-          section.features > div {
-            max-width: 250px;
-            margin: 0 auto;
-          }
         }
         @media (max-width: 600px) {
           .hero {
@@ -193,7 +187,7 @@ export default function Home() {
               <button className="cta" onClick={handleGetStarted}>Get Started</button>
             </div>
           </section>
-          {/* Features Section */}
+          {/* Features Section - now always below, always vertical */}
           <section className="features">
             <div>
               <h3>No Memberships</h3>
