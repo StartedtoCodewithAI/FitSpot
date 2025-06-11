@@ -155,10 +155,16 @@ export default function Home() {
           </div>
         </section>
 
-                {/* Call to Action Section */}
+        {/* Call to Action Section */}
         <section className="callToAction">
-          <h2>*</h2>
+          <h2>Ready to start your fitness journey?</h2>
+          <button className="cta">Sign Up</button>
         </section>
+
+        {/* Footer */}
+        <footer>
+          &copy; 2025 FitSpot. All rights reserved.
+        </footer>
       </div>
     </>
   );
