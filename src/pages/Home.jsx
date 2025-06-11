@@ -49,8 +49,8 @@ export default function Home() {
           margin-bottom: 3rem;
         }
         .hero-logo {
-          width: 120px;
-          height: 120px;
+          width: 150px;
+          height: 150px;
           border-radius: 50%;
           object-fit: cover;
           background: #e0e7ef;
