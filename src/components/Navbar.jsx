@@ -29,7 +29,7 @@ export default function Navbar() {
     <>
       <style>{`
         nav {
-          background-color: #1976d2; /* Updated to modern Material blue */
+          background-color: #1976d2;
           padding: 0.5rem 1rem;
           position: sticky;
           top: 0;
@@ -68,6 +68,7 @@ export default function Navbar() {
         .bar {
           height: 3px;
           width: 100%;
+          background-color: #1976d2;
           background-color: #fff;
           border-radius: 2px;
           transition: all 0.3s ease;
@@ -85,6 +86,7 @@ export default function Navbar() {
           align-items: center;
         }
         li a, .nav-btn {
+          color: #1976d2;
           color: #fff;
           text-decoration: none;
           font-weight: 600;
@@ -95,6 +97,7 @@ export default function Navbar() {
           cursor: pointer;
         }
         li a.active, .nav-btn.active {
+          color: #1976d2;
           color: #ffe082;
           background: none;
         }
@@ -117,6 +120,10 @@ export default function Navbar() {
         }
         /* Mobile Styles */
         @media (max-width: 768px) {
+          .nav-actions {
+            position: relative;
+            width: auto;
+          }
           .hamburger {
             display: flex;
           }
@@ -125,24 +132,43 @@ export default function Navbar() {
             top: 60px;
             right: 0;
             left: unset;
-            background-color: #1976d2;
+            background: #fff;
+            color: #1976d2;
             flex-direction: column;
-            padding: 1rem 0;
+            padding: 1rem 0.5rem;
             display: none;
-            width: 100vw;
-            max-width: 300px;
-            border-radius: 0 0 0 8px;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+            width: 90vw;
+            max-width: 320px;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            border: 1px solid #e3e6ea;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
           }
           .nav-actions ul.open {
             display: flex;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
           }
           .nav-actions ul li {
             padding: 0.75rem 1.5rem;
             justify-content: flex-start;
           }
-          .nav-actions ul li a, .nav-actions ul li .nav-btn {
-            font-size: 1.25rem;
+          .nav-actions ul li a,
+          .nav-actions ul li .nav-btn {
+            font-size: 1.15rem;
+            color: #1976d2;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            transition: background 0.2s, color 0.2s;
+          }
+          .nav-actions ul li a:hover,
+          .nav-actions ul li .nav-btn:hover {
+            background: #e3e6ea;
+            color: #0d47a1;
           }
         }
       `}</style>
@@ -152,7 +178,6 @@ export default function Navbar() {
           <Link to="/">
             <img src={logo} alt="FitSpot Logo" className="logo" />
           </Link>
-
           <div className="nav-actions">
             <button
               className="hamburger"
@@ -174,7 +199,6 @@ export default function Navbar() {
                 }}
               />
             </button>
-
             <ul className={isOpen ? "open" : ""}>
               <li>
                 <Link
