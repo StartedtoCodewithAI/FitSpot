@@ -1,70 +1,10 @@
 import React, { useState, useEffect } from "react";
+import SearchBar from "../components/SearchBar"; // Adjust as needed
 
-const demoUser = {
-  name: "Jane Doe",
-  email: "jane@example.com",
-  avatar: "",
-  bookings: [
-    { id: 1, gym: "PowerGym Downtown", date: "2025-06-12", time: "10:00" },
-    { id: 2, gym: "CrossFit Zone", date: "2025-06-09", time: "18:30" },
-  ],
-};
-
-function stringToInitials(name) {
-  if (!name) return "";
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-}
+// ...demoUser, stringToInitials, etc...
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", avatar: "" });
-
-  // Load user from localStorage or fallback to demoUser
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setUser(parsed);
-      setForm({ name: parsed.name, email: parsed.email, avatar: parsed.avatar || "" });
-    } else {
-      setUser(demoUser);
-      setForm({ name: demoUser.name, email: demoUser.email, avatar: demoUser.avatar || "" });
-    }
-  }, []);
-
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  function handleAvatarChange(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm((prev) => ({ ...prev, avatar: reader.result }));
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function handleSave(e) {
-    e.preventDefault();
-    const updated = { ...user, ...form };
-    setUser(updated);
-    localStorage.setItem("user", JSON.stringify(updated));
-    setEditing(false);
-  }
-
-  function handleCancel() {
-    setForm({ name: user.name, email: user.email, avatar: user.avatar || "" });
-    setEditing(false);
-  }
-
-  if (!user) return null;
+  // ...all your code above...
 
   return (
     <>
@@ -85,21 +25,15 @@ export default function Profile() {
           </>
         ) : (
           <form onSubmit={handleSave}>
-            <input
-              type="text"
-              name="name"
+            <SearchBar
               value={form.name}
-              onChange={handleChange}
+              onChange={e => setForm({ ...form, name: e.target.value })}
               placeholder="Full Name"
-              required
             />
-            <input
-              type="email"
-              name="email"
+            <SearchBar
               value={form.email}
-              onChange={handleChange}
+              onChange={e => setForm({ ...form, email: e.target.value })}
               placeholder="Email"
-              required
             />
             <label style={{ color: "#007bff", cursor: "pointer", fontSize: "1rem" }}>
               Change avatar
@@ -135,19 +69,7 @@ export default function Profile() {
             </div>
           </form>
         )}
-        <div className="bookings-list">
-          <h3>Booking History</h3>
-          {user.bookings && user.bookings.length === 0 ? (
-            <p>No bookings yet.</p>
-          ) : (
-            (user.bookings || []).map((b) => (
-              <div className="booking-item" key={b.id}>
-                <strong>{b.gym}</strong><br />
-                {b.date} at {b.time}
-              </div>
-            ))
-          )}
-        </div>
+        {/* ...rest of your component... */}
       </div>
     </>
   );
