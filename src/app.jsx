@@ -4,7 +4,8 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Gyms from './pages/Gyms';
 import Profile from './pages/profile';
-import Signup from './pages/Signup'; // <- Add this import
+import Signup from './pages/Signup';   // Import Signup page
+import About from './pages/About';     // Import About page
 
 export default function App() {
   return (
@@ -14,7 +15,8 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/gyms" element={<Gyms />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/signup" element={<Signup />} /> {/* Add Signup Route */}
+        <Route path="/signup" element={<Signup />} />     {/* Signup Route */}
+        <Route path="/about" element={<About />} />       {/* About Route */}
       </Routes>
     </Router>
   );
