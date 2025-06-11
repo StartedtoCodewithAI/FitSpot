@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import fitspotLogo from "../assets/FitSpot.png"; // Import your actual logo
+import fitspotLogo from "../assets/FitSpot.png"; // Your logo
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
@@ -21,7 +21,15 @@ export default function Home() {
 
   return (
     <>
+      {/* Montserrat Font Import */}
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
       <style>{`
+        body {
+          font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .page-wrapper, .container, .hero, .features, .callToAction, footer {
+          font-family: 'Montserrat', Arial, sans-serif;
+        }
         .page-wrapper {
           min-height: 100vh;
           display: flex;
@@ -50,11 +58,13 @@ export default function Home() {
         .hero-text h1 {
           font-size: 2.5rem;
           margin-bottom: 0.5rem;
+          font-weight: 700;
         }
         .lead {
           font-size: 1.3rem;
           margin-bottom: 1.5rem;
           color: #444;
+          font-weight: 400;
         }
         .cta {
           background: #0056b3;
@@ -67,6 +77,7 @@ export default function Home() {
           font-weight: 600;
           transition: background 0.2s, box-shadow 0.2s;
           box-shadow: 0 4px 10px rgba(0,86,179,0.18);
+          font-family: 'Montserrat', Arial, sans-serif;
         }
         .cta:hover {
           background: #003d80;
