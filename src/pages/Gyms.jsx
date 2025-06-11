@@ -1,12 +1,52 @@
 import React, { useState, useEffect } from "react";
 
-// Example gyms data around Athens, Greece (Agios Dimitrios area)
+// Sample gyms data with more details
 const gyms = [
-  { id: 1, name: "Agios Dimitrios Gym", lat: 37.9307, lng: 23.7200 },
-  { id: 2, name: "Athens Fitness Center", lat: 37.9838, lng: 23.7275 },
-  { id: 3, name: "Elliniko Gym", lat: 37.8709, lng: 23.7334 },
-  { id: 4, name: "Glyfada Workout Hub", lat: 37.8752, lng: 23.7533 },
-  { id: 5, name: "Paleo Faliro Gym", lat: 37.9433, lng: 23.6861 },
+  {
+    id: 1,
+    name: "Agios Dimitrios Gym",
+    lat: 37.9307,
+    lng: 23.7200,
+    address: "12 Main St, Agios Dimitrios, Athens",
+    hours: "06:00 - 22:00",
+    image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?fit=crop&w=400&q=80"
+  },
+  {
+    id: 2,
+    name: "Athens Fitness Center",
+    lat: 37.9838,
+    lng: 23.7275,
+    address: "33 Central Ave, Athens",
+    hours: "07:00 - 23:00",
+    image: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?fit=crop&w=400&q=80"
+  },
+  {
+    id: 3,
+    name: "Elliniko Gym",
+    lat: 37.8709,
+    lng: 23.7334,
+    address: "99 Beach Rd, Elliniko",
+    hours: "08:00 - 22:00",
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?fit=crop&w=400&q=80"
+  },
+  {
+    id: 4,
+    name: "Glyfada Workout Hub",
+    lat: 37.8752,
+    lng: 23.7533,
+    address: "45 Sun St, Glyfada",
+    hours: "06:30 - 22:30",
+    image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?fit=crop&w=400&q=80"
+  },
+  {
+    id: 5,
+    name: "Paleo Faliro Gym",
+    lat: 37.9433,
+    lng: 23.6861,
+    address: "77 Park Ave, Paleo Faliro",
+    hours: "07:30 - 21:30",
+    image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?fit=crop&w=400&q=80"
+  },
 ];
 
 // Haversine formula for distance between two lat/lng points
@@ -32,7 +72,7 @@ export default function Gyms() {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true); // loading state
+  const [loading, setLoading] = useState(true);
   const radius = 10; // radius in km
 
   useEffect(() => {
@@ -125,25 +165,45 @@ export default function Gyms() {
                     background: "#fff",
                     borderRadius: "12px",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                    padding: "1.2rem",
-                    minWidth: "220px",
-                    flex: "1 0 220px",
+                    padding: "0",
+                    minWidth: "260px",
+                    maxWidth: "320px",
+                    flex: "1 0 260px",
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden",
                   }}
                 >
-                  <h3 style={{ marginTop: 0 }}>{gym.name}</h3>
-                  <p style={{ margin: "0.5rem 0 0 0", fontSize: "1.1em" }}>
-                    Distance:{" "}
-                    <strong>
-                      {getDistance(
-                        location.lat,
-                        location.lng,
-                        gym.lat,
-                        gym.lng
-                      ).toFixed(2)}{" "}
-                      km
-                    </strong>
-                  </p>
-                  {/* Add more details here if you have them */}
+                  <img
+                    src={gym.image}
+                    alt={gym.name}
+                    style={{
+                      width: "100%",
+                      height: "160px",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <div style={{ padding: "1rem" }}>
+                    <h3 style={{ margin: "0 0 0.5rem 0" }}>{gym.name}</h3>
+                    <p style={{ margin: "0 0 0.25rem 0", color: "#555" }}>
+                      <strong>Address:</strong> {gym.address}
+                    </p>
+                    <p style={{ margin: "0 0 0.25rem 0", color: "#555" }}>
+                      <strong>Hours:</strong> {gym.hours}
+                    </p>
+                    <p style={{ margin: "0 0 0.25rem 0", color: "#1976d2" }}>
+                      <strong>
+                        Distance:{" "}
+                        {getDistance(
+                          location.lat,
+                          location.lng,
+                          gym.lat,
+                          gym.lng
+                        ).toFixed(2)}{" "}
+                        km
+                      </strong>
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
