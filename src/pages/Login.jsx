@@ -1,14 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import SearchBar from "../components/SearchBar"; // Adjust path if needed
 
 export default function Login() {
   const [form, setForm] = useState({ name: "", email: "", avatar: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
 
   function handleAvatarChange(e) {
     const file = e.target.files[0];
@@ -42,21 +39,15 @@ export default function Login() {
     }}>
       <h2 style={{ textAlign: "center" }}>Log in to FitSpot</h2>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem", marginTop: "1.5rem" }}>
-        <input
-          type="text"
-          name="name"
+        <SearchBar
           value={form.name}
-          onChange={handleChange}
+          onChange={e => setForm({ ...form, name: e.target.value })}
           placeholder="Full Name"
-          required
         />
-        <input
-          type="email"
-          name="email"
+        <SearchBar
           value={form.email}
-          onChange={handleChange}
+          onChange={e => setForm({ ...form, email: e.target.value })}
           placeholder="Email"
-          required
         />
         <div>
           <label style={{ fontSize: "0.97rem", color: "#007bff", cursor: "pointer" }}>
