@@ -44,15 +44,15 @@ export default function Home() {
         }
         .hero {
           display: flex;
-          flex-direction: column; /* CHANGED: Always column, never row */
+          flex-direction: column;
           align-items: center;
           gap: 2rem;
           margin-bottom: 3rem;
-          text-align: center; /* Ensures everything is centered */
+          text-align: center;
         }
         .hero-logo {
-          width: 200px; /* Or your preferred size */
-          height: 200px;
+          width: 185px;
+          height: 185px;
           border-radius: 50%;
           object-fit: cover;
           background: #e0e7ef;
@@ -86,11 +86,9 @@ export default function Home() {
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
         section.features {
-          display: grid;
-          grid-template-columns: 1fr; /* ALWAYS one column */
-          gap: 2rem;
+          display: block;
           margin-bottom: 3rem;
-          margin-top: 0; /* no extra top margin */
+          margin-top: 0;
         }
         section.features > div {
           background: white;
@@ -100,6 +98,10 @@ export default function Home() {
           max-width: 100%;
           text-align: center;
           transition: transform 0.3s ease;
+          margin-bottom: 2rem; /* Add spacing between features */
+        }
+        section.features > div:last-child {
+          margin-bottom: 0;
         }
         section.features > div:hover {
           transform: translateY(-8px);
@@ -187,7 +189,7 @@ export default function Home() {
               <button className="cta" onClick={handleGetStarted}>Get Started</button>
             </div>
           </section>
-          {/* Features Section - now always below, always vertical */}
+          {/* Features Section - always below, always vertical */}
           <section className="features">
             <div>
               <h3>No Memberships</h3>
