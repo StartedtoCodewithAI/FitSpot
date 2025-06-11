@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import fitspotLogo from "../assets/FitSpot.png"; // Import your actual logo
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
@@ -10,8 +11,10 @@ export default function Home() {
   }
 
   function handleCloseModal(e) {
-    // Close if background or close button is clicked
-    if (e.target.className === "modal-backdrop" || e.target.className === "close-modal") {
+    if (
+      e.target.className === "modal-backdrop" ||
+      e.target.className === "close-modal"
+    ) {
       setShowModal(false);
     }
   }
@@ -37,17 +40,12 @@ export default function Home() {
           gap: 2rem;
           margin-bottom: 3rem;
         }
-        .hero-placeholder {
+        .hero-logo {
           width: 120px;
           height: 120px;
           border-radius: 50%;
+          object-fit: cover;
           background: #e0e7ef;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2.4rem;
-          color: #336699;
-          font-weight: bold;
         }
         .hero-text h1 {
           font-size: 2.5rem;
@@ -124,14 +122,13 @@ export default function Home() {
             align-items: center;
             text-align: center;
           }
-          .hero-placeholder {
+          .hero-logo {
             margin-bottom: 1rem;
           }
           .hero-text h1 {
             font-size: 2.2rem;
           }
         }
-        /* Modal Styles */
         .modal-backdrop {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -176,8 +173,7 @@ export default function Home() {
         <div className="container">
           {/* Hero Section */}
           <section className="hero">
-            {/* Logo removed, replaced with placeholder */}
-            <div className="hero-placeholder">FS</div>
+            <img src={fitspotLogo} alt="FitSpot Logo" className="hero-logo" />
             <div className="hero-text">
               <h1>Welcome to FitSpot</h1>
               <p className="lead">
@@ -186,7 +182,6 @@ export default function Home() {
               <button className="cta" onClick={handleGetStarted}>Get Started</button>
             </div>
           </section>
-
           {/* Features Section */}
           <section className="features">
             <div>
@@ -203,19 +198,16 @@ export default function Home() {
             </div>
           </section>
         </div>
-
         {/* Call to Action Section */}
         <section className="callToAction">
           <h2>Ready to start your fitness journey?</h2>
           <button className="cta" onClick={() => navigate("/signup")}>Sign Up</button>
         </section>
-
         {/* Footer */}
         <footer>
           &copy; 2025 FitSpot. All rights reserved.
         </footer>
       </div>
-
       {/* Modal for Get Started */}
       {showModal && (
         <div className="modal-backdrop" onClick={handleCloseModal}>
