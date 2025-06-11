@@ -80,7 +80,7 @@ export default function Home() {
           padding: 2rem 1rem;
           font-size: 0.9rem;
           color: #888;
-          border-top: 4px solid #ddd;
+          border-top: 1px solid #ddd;
           background: #fff;
         }
 
