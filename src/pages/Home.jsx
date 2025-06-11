@@ -157,5 +157,5 @@ export default function Home() {
 
         {/* Call to Action Section */}
         <section className="callToAction">
-          <h2>*`
-
+          <h2>*
+            
