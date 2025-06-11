@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import fitspotLogo from "../assets/FitSpot.png"; // Your logo
+import fitspotLogo from "../assets/FitSpot.png";
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
@@ -41,7 +41,7 @@ export default function Home() {
           margin: 0 auto;
           padding: 2rem 1rem 0 1rem;
           flex: 1;
-          display: block !important; /* Prevent any global flex/grid */
+          display: block !important;
         }
         .hero {
           display: flex;
@@ -88,10 +88,13 @@ export default function Home() {
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
         section.features {
-          display: block !important;
-          margin-bottom: 3rem;
-          margin-top: 0;
+          margin-left: auto !important;
+          margin-right: auto !important;
           width: 100% !important;
+          max-width: 600px;
+          box-sizing: border-box;
+          padding: 0 !important;
+          display: block !important;
         }
         section.features > div {
           display: block !important;
@@ -102,7 +105,7 @@ export default function Home() {
           box-shadow: 0 6px 15px rgba(0,0,0,0.05);
           text-align: center;
           transition: transform 0.3s ease;
-          margin-bottom: 2rem; /* Add spacing between features */
+          margin-bottom: 2rem;
         }
         section.features > div:last-child {
           margin-bottom: 0;
