@@ -41,6 +41,7 @@ export default function Home() {
           margin: 0 auto;
           padding: 2rem 1rem 0 1rem;
           flex: 1;
+          display: block !important; /* Prevent any global flex/grid */
         }
         .hero {
           display: flex;
@@ -49,6 +50,7 @@ export default function Home() {
           gap: 2rem;
           margin-bottom: 3rem;
           text-align: center;
+          width: 100%;
         }
         .hero-logo {
           width: 185px;
@@ -86,16 +88,18 @@ export default function Home() {
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
         section.features {
-          display: block;
+          display: block !important;
           margin-bottom: 3rem;
           margin-top: 0;
+          width: 100% !important;
         }
         section.features > div {
+          display: block !important;
+          width: 100% !important;
           background: white;
           padding: 1.5rem;
           border-radius: 15px;
           box-shadow: 0 6px 15px rgba(0,0,0,0.05);
-          max-width: 100%;
           text-align: center;
           transition: transform 0.3s ease;
           margin-bottom: 2rem; /* Add spacing between features */
@@ -113,6 +117,8 @@ export default function Home() {
           padding: 3rem 1rem;
           border-radius: 15px;
           text-align: center;
+          width: 100%;
+          display: block !important;
         }
         footer {
           text-align: center;
