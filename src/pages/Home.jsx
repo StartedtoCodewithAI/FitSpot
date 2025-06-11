@@ -63,11 +63,11 @@ export default function Home() {
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
 
+        /* Features: stacked on mobile, columns on desktop */
         section.features {
-          display: flex;
-          justify-content: center;
+          display: grid;
+          grid-template-columns: 1fr;
           gap: 2rem;
-          flex-wrap: wrap;
           margin-bottom: 3rem;
         }
 
@@ -76,8 +76,7 @@ export default function Home() {
           padding: 1.5rem;
           border-radius: 15px;
           box-shadow: 0 6px 15px rgba(0,0,0,0.05);
-          max-width: 250px;
-          flex: 1 1 250px;
+          max-width: 100%;
           text-align: center;
           transition: transform 0.3s ease;
         }
@@ -104,6 +103,16 @@ export default function Home() {
           background: #fff;
         }
 
+        @media (min-width: 700px) {
+          section.features {
+            grid-template-columns: repeat(3, 1fr);
+          }
+          section.features > div {
+            max-width: 250px;
+            margin: 0 auto;
+          }
+        }
+
         @media (max-width: 600px) {
           .hero {
             flex-direction: column;
@@ -117,11 +126,6 @@ export default function Home() {
 
           .hero-text h1 {
             font-size: 2.2rem;
-          }
-
-          section.features {
-            flex-direction: column;
-            gap: 1.5rem;
           }
         }
       `}</style>
