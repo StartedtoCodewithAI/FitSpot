@@ -51,8 +51,8 @@ export default function Home() {
           text-align: center; /* Ensures everything is centered */
         }
         .hero-logo {
-          width: 180px; /* Or your preferred size */
-          height: 180px;
+          width: 200px; /* Or your preferred size */
+          height: 200px;
           border-radius: 50%;
           object-fit: cover;
           background: #e0e7ef;
