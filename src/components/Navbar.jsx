@@ -1,9 +1,31 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/FitSpot.png";
+
+function stringToInitials(name) {
+  if (!name) return "";
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase();
+}
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Close mobile menu on route change
+    setIsOpen(false);
+    // Get user data from localStorage
+    const stored = localStorage.getItem("user");
+    setUser(stored ? JSON.parse(stored) : null);
+  }, [location.pathname]);
+
+  function handleLogout() {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/"); // Optionally redirect to home
+  }
 
   return (
     <>
@@ -51,18 +73,43 @@ export default function Navbar() {
           gap: 1.5rem;
           margin: 0;
           padding: 0;
+          align-items: center;
         }
-        li a {
+        li {
+          display: flex;
+          align-items: center;
+        }
+        li a, .nav-btn {
           color: #fff;
           text-decoration: none;
           font-weight: 600;
           font-size: 1rem;
-          transition: color 0.3s ease;
+          transition: color 0.3s ease, background 0.3s;
+          border: none;
+          background: none;
+          cursor: pointer;
         }
-        li a:hover {
+        li a.active, .nav-btn.active {
+          color: #ffe082;
+          background: none;
+        }
+        li a:hover, .nav-btn:hover {
           color: #cce4ff;
         }
-
+        .avatar-nav {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          object-fit: cover;
+          margin-right: 0.5rem;
+          border: 2px solid #fff;
+          background: #e0e7ef;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          color: #336699;
+        }
         /* Mobile Styles */
         @media (max-width: 768px) {
           .hamburger {
@@ -83,8 +130,9 @@ export default function Navbar() {
           }
           ul li {
             padding: 0.75rem 1rem;
+            justify-content: flex-start;
           }
-          ul li a {
+          ul li a, ul li .nav-btn {
             font-size: 1.25rem;
           }
         }
@@ -119,24 +167,69 @@ export default function Navbar() {
 
           <ul className={isOpen ? "open" : ""}>
             <li>
-              <Link to="/" onClick={() => setIsOpen(false)}>
+              <Link
+                to="/"
+                className={location.pathname === "/" ? "active" : ""}
+                onClick={() => setIsOpen(false)}
+              >
                 Home
               </Link>
             </li>
             <li>
-              <Link to="/gyms" onClick={() => setIsOpen(false)}>
+              <Link
+                to="/gyms"
+                className={location.pathname.startsWith("/gyms") ? "active" : ""}
+                onClick={() => setIsOpen(false)}
+              >
                 Gyms
               </Link>
             </li>
             <li>
-              <Link to="/profile" onClick={() => setIsOpen(false)}>
+              <Link
+                to="/about"
+                className={location.pathname === "/about" ? "active" : ""}
+                onClick={() => setIsOpen(false)}
+              >
+                About
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/profile"
+                className={location.pathname === "/profile" ? "active" : ""}
+                onClick={() => setIsOpen(false)}
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                {user ? (
+                  user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      className="avatar-nav"
+                      alt="avatar"
+                    />
+                  ) : (
+                    <div className="avatar-nav">
+                      {stringToInitials(user.name)}
+                    </div>
+                  )
+                ) : null}
                 Profile
               </Link>
             </li>
             <li>
-              <Link to="/about" onClick={() => setIsOpen(false)}>
-                About
-              </Link>
+              {user ? (
+                <button className="nav-btn" onClick={handleLogout}>
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className={location.pathname === "/login" ? "active" : ""}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Login
+                </Link>
+              )}
             </li>
           </ul>
         </div>
