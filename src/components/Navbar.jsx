@@ -52,6 +52,7 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           margin-left: auto;
+          position: relative;
         }
         .hamburger {
           display: none;
@@ -68,7 +69,6 @@ export default function Navbar() {
         .bar {
           height: 3px;
           width: 100%;
-          background-color: #1976d2;
           background-color: #fff;
           border-radius: 2px;
           transition: all 0.3s ease;
@@ -86,7 +86,6 @@ export default function Navbar() {
           align-items: center;
         }
         li a, .nav-btn {
-          color: #1976d2;
           color: #fff;
           text-decoration: none;
           font-weight: 600;
@@ -97,7 +96,6 @@ export default function Navbar() {
           cursor: pointer;
         }
         li a.active, .nav-btn.active {
-          color: #1976d2;
           color: #ffe082;
           background: none;
         }
@@ -118,18 +116,17 @@ export default function Navbar() {
           font-size: 1rem;
           color: #336699;
         }
-        /* Mobile Styles */
         @media (max-width: 768px) {
           .nav-actions {
+            margin-left: auto;
             position: relative;
-            width: auto;
           }
           .hamburger {
             display: flex;
           }
           .nav-actions ul {
             position: absolute;
-            top: 60px;
+            top: 52px;
             right: 0;
             left: unset;
             background: #fff;
