@@ -156,6 +156,6 @@ export default function Home() {
         </section>
 
         {/* Call to Action Section */}
-        <section className="callToAction">
-          <h2>*
-            
+<section className="callToAction">
+  <h2>*</h2>
+</section>
