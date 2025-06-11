@@ -1,12 +1,82 @@
 import React, { useState, useEffect } from "react";
 import SearchBar from "../components/SearchBar";
 
-// Sample gyms data...
+// Sample gyms data
 const gyms = [
-  // ... your gyms here ...
+  {
+    id: 1,
+    name: "Agios Dimitrios Gym",
+    lat: 37.9307,
+    lng: 23.7200,
+    address: "12 Main St, Agios Dimitrios, Athens",
+    hours: "06:00 - 22:00",
+    image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?fit=crop&w=400&q=80"
+  },
+  {
+    id: 2,
+    name: "Athens Fitness Center",
+    lat: 37.9838,
+    lng: 23.7275,
+    address: "33 Central Ave, Athens",
+    hours: "07:00 - 23:00",
+    image: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?fit=crop&w=400&q=80"
+  },
+  {
+    id: 3,
+    name: "Elliniko Gym",
+    lat: 37.8709,
+    lng: 23.7334,
+    address: "99 Beach Rd, Elliniko",
+    hours: "08:00 - 22:00",
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?fit=crop&w=400&q=80"
+  },
+  {
+    id: 4,
+    name: "Glyfada Workout Hub",
+    lat: 37.8752,
+    lng: 23.7533,
+    address: "45 Sun St, Glyfada",
+    hours: "06:30 - 22:30",
+    image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?fit=crop&w=400&q=80"
+  },
+  {
+    id: 5,
+    name: "Paleo Faliro Gym",
+    lat: 37.9433,
+    lng: 23.6861,
+    address: "77 Park Ave, Paleo Faliro",
+    hours: "07:30 - 21:30",
+    image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?fit=crop&w=400&q=80"
+  }
 ];
 
-// ... getDistance, loadFavorites, saveFavorites as before ...
+// Haversine formula for distance in km
+function getDistance(lat1, lon1, lat2, lon2) {
+  function toRad(x) { return (x * Math.PI) / 180; }
+  var R = 6371;
+  var dLat = toRad(lat2 - lat1);
+  var dLon = toRad(lon2 - lon1);
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c;
+  return d;
+}
+
+function loadFavorites() {
+  try {
+    return JSON.parse(localStorage.getItem("favorites")) || [];
+  } catch {
+    return [];
+  }
+}
+function saveFavorites(favorites) {
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+}
 
 export default function Gyms() {
   const [location, setLocation] = useState(null);
@@ -127,7 +197,7 @@ export default function Gyms() {
                   >
                     {favorites.includes(gym.id) ? "❤️" : "🤍"}
                   </button>
-                  <img src={gym.image} alt={gym.name} />
+                  <img src={gym.image} alt={gym.name} style={{ width: "100%", borderRadius: "12px 12px 0 0" }} />
                   <div className="gym-card-details">
                     <h3 style={{ margin: "0 0 0.5rem 0" }}>{gym.name}</h3>
                     <p style={{ margin: "0 0 0.25rem 0", color: "#555" }}>
