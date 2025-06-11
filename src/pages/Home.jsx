@@ -76,11 +76,11 @@ export default function Home() {
         }
 
         footer {
-          text-align: bottom;
+          text-align: center;
           padding: 2rem 1rem;
           font-size: 0.9rem;
           color: #888;
-          border-top: 1px solid #ddd;
+          border-top: 4px solid #ddd;
           background: #fff;
         }
 
