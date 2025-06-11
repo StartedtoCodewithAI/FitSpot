@@ -36,20 +36,20 @@ export default function Navbar() {
           z-index: 999;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .container {
+        .navbar-container {
           max-width: 1200px;
           margin: 0 auto;
           display: flex;
           align-items: center;
-          justify-content: space-between;
           position: relative;
+          width: 100%;
         }
         .logo {
           height: 40px;
           cursor: pointer;
         }
-        .spacer {
-          flex: 1;
+        .flex-spacer {
+          flex: 1 1 auto;
         }
         .nav-actions {
           display: flex;
@@ -59,13 +59,12 @@ export default function Navbar() {
         .hamburger {
           display: none;
           flex-direction: column;
-          justify-content: space-between;
-          width: 24px;
-          height: 18px;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
           background: transparent;
           border: none;
           cursor: pointer;
-          padding: 0;
           margin-left: 1rem;
         }
         .bar {
@@ -73,6 +72,7 @@ export default function Navbar() {
           width: 100%;
           background-color: #fff;
           border-radius: 2px;
+          margin: 3px 0;
           transition: all 0.3s ease;
         }
         ul {
@@ -92,14 +92,13 @@ export default function Navbar() {
           text-decoration: none;
           font-weight: 600;
           font-size: 1rem;
-          transition: color 0.3s ease, background 0.3s;
+          transition: color 0.3s, background 0.3s;
           border: none;
           background: none;
           cursor: pointer;
         }
         li a.active, .nav-btn.active {
           color: #ffe082;
-          background: none;
         }
         li a:hover, .nav-btn:hover {
           color: #bbdefb;
@@ -118,6 +117,7 @@ export default function Navbar() {
           font-size: 1rem;
           color: #336699;
         }
+        /* Mobile Styles */
         @media (max-width: 768px) {
           ul {
             display: none;
@@ -131,7 +131,6 @@ export default function Navbar() {
             color: #1976d2;
             flex-direction: column;
             padding: 1rem 0.5rem;
-            display: none;
             width: 90vw;
             max-width: 320px;
             border-radius: 10px;
@@ -168,17 +167,16 @@ export default function Navbar() {
           .hamburger {
             display: flex;
             margin-left: 0;
-            margin-right: 0;
           }
         }
       `}</style>
 
       <nav>
-        <div className="container">
+        <div className="navbar-container">
           <Link to="/">
             <img src={logo} alt="FitSpot Logo" className="logo" />
           </Link>
-          <div className="spacer" />
+          <div className="flex-spacer"></div>
           <div className="nav-actions">
             <button
               className="hamburger"
