@@ -5,12 +5,21 @@ export default function Home() {
   return (
     <>
       <style>{`
+        html, body, #root {
+          height: 100%;
+        }
+        /* Make the outermost container a flex column that fills the viewport */
+        .page-wrapper {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
         .container {
           max-width: 900px;
           margin: 2rem auto;
           padding: 0 1rem;
+          flex: 1 0 auto; /* Allows the container to grow, pushing footer down */
         }
-
         .hero {
           display: flex;
           align-items: flex-start;
@@ -20,30 +29,25 @@ export default function Home() {
           border-radius: 15px;
           margin-bottom: 3rem;
         }
-
         .hero img {
           width: 100px;
           height: auto;
         }
-
         .hero-text {
           flex: 1;
         }
-
         .hero-text h1 {
           font-weight: 600;
           font-size: 3rem;
           margin-bottom: 1rem;
           color: #007bff;
         }
-
         .lead {
           font-size: 1.25rem;
           line-height: 1.6;
           color: #555;
           margin-bottom: 2rem;
         }
-
         button.cta {
           background-color: #007bff;
           border: none;
@@ -56,13 +60,11 @@ export default function Home() {
           transition: background-color 0.3s ease, transform 0.2s ease;
           box-shadow: 0 5px 10px rgba(0,123,255,0.3);
         }
-
         button.cta:hover {
           background-color: #0056b3;
           transform: translateY(-3px);
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
-
         /* Features: stacked on mobile, columns on desktop */
         section.features {
           display: grid;
@@ -70,7 +72,6 @@ export default function Home() {
           gap: 2rem;
           margin-bottom: 3rem;
         }
-
         section.features > div {
           background: white;
           padding: 1.5rem;
@@ -80,12 +81,10 @@ export default function Home() {
           text-align: center;
           transition: transform 0.3s ease;
         }
-
         section.features > div:hover {
           transform: translateY(-8px);
           box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-
         section.callToAction {
           margin-bottom: 3rem;
           background-color: #f5f5f5;
@@ -93,7 +92,6 @@ export default function Home() {
           border-radius: 15px;
           text-align: center;
         }
-
         footer {
           text-align: center;
           padding: 2rem 1rem;
@@ -101,8 +99,8 @@ export default function Home() {
           color: #888;
           border-top: 1px solid #ddd;
           background: #fff;
+          flex-shrink: 0;
         }
-
         @media (min-width: 700px) {
           section.features {
             grid-template-columns: repeat(3, 1fr);
@@ -112,54 +110,52 @@ export default function Home() {
             margin: 0 auto;
           }
         }
-
         @media (max-width: 600px) {
           .hero {
             flex-direction: column;
             align-items: center;
             text-align: center;
           }
-
           .hero img {
             margin-bottom: 1rem;
           }
-
           .hero-text h1 {
             font-size: 2.2rem;
           }
         }
       `}</style>
+      <div className="page-wrapper">
+        <div className="container">
+          {/* Hero Section */}
+          <section className="hero">
+            <img src={logo} alt="FitSpot Logo" />
+            <div className="hero-text">
+              <h1>Welcome to FitSpot</h1>
+              <p className="lead">
+                Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
+              </p>
+              <button className="cta">Get Started</button>
+            </div>
+          </section>
 
-      <div className="container">
-        {/* Hero Section */}
-        <section className="hero">
-          <img src={logo} alt="FitSpot Logo" />
-          <div className="hero-text">
-            <h1>Welcome to FitSpot</h1>
-            <p className="lead">
-              Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
-            </p>
-            <button className="cta">Get Started</button>
-          </div>
-        </section>
+          {/* Features Section */}
+          <section className="features">
+            <div>
+              <h3>No Memberships</h3>
+              <p>Pay per session. No strings attached.</p>
+            </div>
+            <div>
+              <h3>Find Nearby Gyms</h3>
+              <p>Use GPS to locate gyms around you instantly.</p>
+            </div>
+            <div>
+              <h3>Instant Booking</h3>
+              <p>Reserve your workout slot in seconds.</p>
+            </div>
+          </section>
+        </div>
 
-        {/* Features Section */}
-        <section className="features">
-          <div>
-            <h3>No Memberships</h3>
-            <p>Pay per session. No strings attached.</p>
-          </div>
-          <div>
-            <h3>Find Nearby Gyms</h3>
-            <p>Use GPS to locate gyms around you instantly.</p>
-          </div>
-          <div>
-            <h3>Instant Booking</h3>
-            <p>Reserve your workout slot in seconds.</p>
-          </div>
-        </section>
-
-        {/* Call to Action Section */}
+        {/* Call to Action Section (outside container, before footer, so always at very bottom) */}
         <section className="callToAction">
           <h2>Ready to start your fitness journey?</h2>
           <button className="cta">Sign Up</button>
