@@ -1,7 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import logo from "../assets/FitSpot.png";
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <>
       <style>{`
@@ -19,7 +22,7 @@ export default function Home() {
           padding: 0 1rem 0 0.5rem;
           flex: 1 0 auto;
           position: relative;
-          left: -20px; /* Move everything a few pixels to the left */
+          left: -20px;
         }
         .hero {
           display: flex;
@@ -134,7 +137,7 @@ export default function Home() {
               <p className="lead">
                 Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
               </p>
-              <button className="cta">Get Started</button>
+              <button className="cta" onClick={() => navigate("/gyms")}>Get Started</button>
             </div>
           </section>
 
@@ -158,7 +161,7 @@ export default function Home() {
         {/* Call to Action Section */}
         <section className="callToAction">
           <h2>Ready to start your fitness journey?</h2>
-          <button className="cta">Sign Up</button>
+          <button className="cta" onClick={() => navigate("/signup")}>Sign Up</button>
         </section>
 
         {/* Footer */}
