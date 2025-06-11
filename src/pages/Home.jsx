@@ -8,7 +8,6 @@ export default function Home() {
         html, body, #root {
           height: 100%;
         }
-        /* Make the outermost container a flex column that fills the viewport */
         .page-wrapper {
           min-height: 100vh;
           display: flex;
@@ -17,8 +16,10 @@ export default function Home() {
         .container {
           max-width: 900px;
           margin: 2rem auto;
-          padding: 0 1rem;
-          flex: 1 0 auto; /* Allows the container to grow, pushing footer down */
+          padding: 0 1rem 0 0.5rem;
+          flex: 1 0 auto;
+          position: relative;
+          left: -20px; /* Move everything a few pixels to the left */
         }
         .hero {
           display: flex;
@@ -65,7 +66,6 @@ export default function Home() {
           transform: translateY(-3px);
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
-        /* Features: stacked on mobile, columns on desktop */
         section.features {
           display: grid;
           grid-template-columns: 1fr;
@@ -155,7 +155,7 @@ export default function Home() {
           </section>
         </div>
 
-        {/* Call to Action Section (outside container, before footer, so always at very bottom) */}
+        {/* Call to Action Section */}
         <section className="callToAction">
           <h2>Ready to start your fitness journey?</h2>
           <button className="cta">Sign Up</button>
