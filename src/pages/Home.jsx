@@ -9,22 +9,39 @@ export default function Home() {
           max-width: 900px;
           margin: 2rem auto;
           padding: 0 1rem;
-          text-align: center;
         }
 
-        h1 {
+        .hero {
+          display: flex;
+          align-items: flex-start;
+          gap: 2rem;
+          background-color: #f5f5f5;
+          padding: 2rem;
+          border-radius: 15px;
+          margin-bottom: 3rem;
+        }
+
+        .hero img {
+          width: 100px;
+          height: auto;
+        }
+
+        .hero-text {
+          flex: 1;
+        }
+
+        .hero-text h1 {
           font-weight: 600;
           font-size: 3rem;
           margin-bottom: 1rem;
           color: #007bff;
         }
 
-        p.lead {
+        .lead {
           font-size: 1.25rem;
-          max-width: 600px;
-          margin: 0 auto 2.5rem;
           line-height: 1.6;
           color: #555;
+          margin-bottom: 2rem;
         }
 
         button.cta {
@@ -38,7 +55,6 @@ export default function Home() {
           cursor: pointer;
           transition: background-color 0.3s ease, transform 0.2s ease;
           box-shadow: 0 5px 10px rgba(0,123,255,0.3);
-          margin-bottom: 3rem;
         }
 
         button.cta:hover {
@@ -73,6 +89,10 @@ export default function Home() {
 
         section.callToAction {
           margin-bottom: 3rem;
+          background-color: #f5f5f5;
+          padding: 3rem 1rem;
+          border-radius: 15px;
+          text-align: center;
         }
 
         footer {
@@ -85,7 +105,17 @@ export default function Home() {
         }
 
         @media (max-width: 600px) {
-          h1 {
+          .hero {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+          }
+
+          .hero img {
+            margin-bottom: 1rem;
+          }
+
+          .hero-text h1 {
             font-size: 2.2rem;
           }
 
@@ -97,20 +127,16 @@ export default function Home() {
       `}</style>
 
       <div className="container">
-        {/* Logo */}
-        <img
-          src={logo}
-          alt="FitSpot Logo"
-          style={{ maxWidth: "200px", marginBottom: "2rem" }}
-        />
-
         {/* Hero Section */}
-        <section style={{ padding: "4rem 1rem", backgroundColor: "#f5f5f5", borderRadius: "15px" }}>
-          <h1>Welcome to FitSpot</h1>
-          <p className="lead">
-            Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
-          </p>
-          <button className="cta">Get Started</button>
+        <section className="hero">
+          <img src={logo} alt="FitSpot Logo" />
+          <div className="hero-text">
+            <h1>Welcome to FitSpot</h1>
+            <p className="lead">
+              Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
+            </p>
+            <button className="cta">Get Started</button>
+          </div>
         </section>
 
         {/* Features Section */}
@@ -130,7 +156,7 @@ export default function Home() {
         </section>
 
         {/* Call to Action Section */}
-        <section className="callToAction" style={{ backgroundColor: "#f5f5f5", padding: "3rem 1rem", borderRadius: "15px" }}>
+        <section className="callToAction">
           <h2>Ready to get fit?</h2>
           <button className="cta">Create Account</button>
         </section>
