@@ -5,123 +5,149 @@ export default function Home() {
   return (
     <>
       <style>{`
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background-color: #f9f9f9;
+        }
+
         .container {
-          max-width: 900px;
-          margin: 2rem auto;
-          padding: 0 1rem;
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 1rem;
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
         }
 
         .hero {
           display: flex;
-          align-items: flex-start;
-          gap: 2rem;
-          background-color: #f5f5f5;
+          align-items: center;
+          justify-content: space-between;
+          background-color: #f0f4ff;
           padding: 2rem;
-          border-radius: 15px;
-          margin-bottom: 3rem;
+          border-radius: 20px;
+          margin-bottom: 2rem;
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
         }
 
         .hero img {
-          width: 100px;
+          width: 90px;
           height: auto;
         }
 
         .hero-text {
           flex: 1;
+          margin-left: 1.5rem;
         }
 
         .hero-text h1 {
-          font-weight: 600;
-          font-size: 3rem;
-          margin-bottom: 1rem;
+          font-size: 2.5rem;
           color: #007bff;
+          margin: 0 0 1rem;
         }
 
         .lead {
-          font-size: 1.25rem;
-          line-height: 1.6;
+          font-size: 1.1rem;
           color: #555;
-          margin-bottom: 2rem;
+          line-height: 1.6;
+          margin-bottom: 1.5rem;
         }
 
-        button.cta {
+        .cta {
           background-color: #007bff;
           border: none;
           color: white;
-          padding: 1rem 2.5rem;
+          padding: 0.9rem 2rem;
           border-radius: 30px;
-          font-size: 1.1rem;
+          font-size: 1rem;
           font-weight: 600;
           cursor: pointer;
-          transition: background-color 0.3s ease, transform 0.2s ease;
-          box-shadow: 0 5px 10px rgba(0,123,255,0.3);
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
         }
 
-        button.cta:hover {
+        .cta:hover {
           background-color: #0056b3;
-          transform: translateY(-3px);
-          box-shadow: 0 8px 15px rgba(0,86,179,0.4);
+          transform: translateY(-2px);
         }
 
-        section.features {
+        .features {
           display: flex;
-          justify-content: center;
-          gap: 2rem;
+          justify-content: space-between;
           flex-wrap: wrap;
-          margin-bottom: 3rem;
+          gap: 1.5rem;
+          margin-bottom: 2.5rem;
         }
 
-        section.features > div {
+        .feature-card {
           background: white;
           padding: 1.5rem;
           border-radius: 15px;
-          box-shadow: 0 6px 15px rgba(0,0,0,0.05);
-          max-width: 250px;
-          flex: 1 1 250px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+          flex: 1 1 calc(33% - 1rem);
           text-align: center;
           transition: transform 0.3s ease;
         }
 
-        section.features > div:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        .feature-card:hover {
+          transform: translateY(-5px);
         }
 
-        section.callToAction {
-          margin-bottom: 3rem;
-          background-color: #f5f5f5;
-          padding: 3rem 1rem;
-          border-radius: 15px;
+        .callToAction {
+          background-color: #f0f4ff;
+          padding: 2.5rem 1.5rem;
+          border-radius: 20px;
           text-align: center;
+          margin-top: auto;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .callToAction h2 {
+          font-size: 1.8rem;
+          margin-bottom: 1.2rem;
         }
 
         footer {
           text-align: center;
-          padding: 2rem 1rem;
-          font-size: 0.9rem;
-          color: #888;
+          font-size: 0.85rem;
+          color: #777;
+          padding: 1rem 0;
           border-top: 1px solid #ddd;
-          background: #fff;
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
           .hero {
             flex-direction: column;
             align-items: center;
             text-align: center;
+            padding: 2rem 1rem;
           }
 
           .hero img {
             margin-bottom: 1rem;
           }
 
-          .hero-text h1 {
-            font-size: 2.2rem;
+          .hero-text {
+            margin-left: 0;
           }
 
-          section.features {
+          .hero-text h1 {
+            font-size: 2rem;
+          }
+
+          .features {
             flex-direction: column;
-            gap: 1.5rem;
+          }
+
+          .feature-card {
+            flex: 1 1 100%;
+          }
+
+          .callToAction h2 {
+            font-size: 1.5rem;
           }
         }
       `}</style>
@@ -141,15 +167,15 @@ export default function Home() {
 
         {/* Features Section */}
         <section className="features">
-          <div>
+          <div className="feature-card">
             <h3>No Memberships</h3>
             <p>Pay per session. No strings attached.</p>
           </div>
-          <div>
+          <div className="feature-card">
             <h3>Find Nearby Gyms</h3>
             <p>Use GPS to locate gyms around you instantly.</p>
           </div>
-          <div>
+          <div className="feature-card">
             <h3>Instant Booking</h3>
             <p>Reserve your workout slot in seconds.</p>
           </div>
