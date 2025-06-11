@@ -1,15 +1,15 @@
 import React from "react";
-import logo from "../assets/FitSpot.png";
+import logo from "../assets/FitSpot.png"; // Make sure the path is correct
 
 export default function Home() {
   return (
     <>
       <style>{`
-        body {
+        html, body {
           margin: 0;
           padding: 0;
+          background: #f5f7fa;
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          background-color: #f9f9f9;
         }
 
         .container {
@@ -19,39 +19,38 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
+          background-color: #ffffff;
         }
 
         .hero {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: space-between;
-          background-color: #f0f4ff;
+          background-color: #e9f0ff;
           padding: 2rem;
           border-radius: 20px;
           margin-bottom: 2rem;
-          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .hero img {
-          width: 90px;
+          width: 100px;
           height: auto;
+          margin-bottom: 1rem;
         }
 
-        .hero-text {
-          flex: 1;
-          margin-left: 1.5rem;
-        }
-
-        .hero-text h1 {
+        .hero h1 {
           font-size: 2.5rem;
           color: #007bff;
-          margin: 0 0 1rem;
+          margin-bottom: 1rem;
+          text-align: center;
         }
 
         .lead {
           font-size: 1.1rem;
-          color: #555;
-          line-height: 1.6;
+          color: #444;
+          text-align: center;
+          max-width: 600px;
           margin-bottom: 1.5rem;
         }
 
@@ -59,95 +58,81 @@ export default function Home() {
           background-color: #007bff;
           border: none;
           color: white;
-          padding: 0.9rem 2rem;
-          border-radius: 30px;
+          padding: 0.8rem 2rem;
+          border-radius: 25px;
           font-size: 1rem;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+          transition: background 0.3s ease;
         }
 
         .cta:hover {
           background-color: #0056b3;
-          transform: translateY(-2px);
         }
 
         .features {
           display: flex;
-          justify-content: space-between;
-          flex-wrap: wrap;
+          flex-direction: column;
           gap: 1.5rem;
-          margin-bottom: 2.5rem;
+          margin-bottom: 2rem;
         }
 
         .feature-card {
           background: white;
           padding: 1.5rem;
           border-radius: 15px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-          flex: 1 1 calc(33% - 1rem);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
           text-align: center;
-          transition: transform 0.3s ease;
         }
 
-        .feature-card:hover {
-          transform: translateY(-5px);
+        .feature-card h3 {
+          margin-bottom: 0.5rem;
         }
 
         .callToAction {
           background-color: #f0f4ff;
-          padding: 2.5rem 1.5rem;
+          padding: 2rem;
           border-radius: 20px;
           text-align: center;
-          margin-top: auto;
-          margin-bottom: 1.5rem;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .callToAction h2 {
           font-size: 1.8rem;
-          margin-bottom: 1.2rem;
+          margin-bottom: 1rem;
         }
 
         footer {
           text-align: center;
           font-size: 0.85rem;
           color: #777;
-          padding: 1rem 0;
-          border-top: 1px solid #ddd;
+          padding: 1.5rem 0;
+          margin-top: auto;
         }
 
-        @media (max-width: 768px) {
+        @media (min-width: 768px) {
           .hero {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 2rem 1rem;
+            flex-direction: row;
+            justify-content: space-between;
+            text-align: left;
           }
 
           .hero img {
-            margin-bottom: 1rem;
+            margin-bottom: 0;
+            margin-right: 2rem;
           }
 
-          .hero-text {
-            margin-left: 0;
-          }
-
-          .hero-text h1 {
-            font-size: 2rem;
+          .lead {
+            text-align: left;
           }
 
           .features {
-            flex-direction: column;
+            flex-direction: row;
+            justify-content: space-between;
           }
 
           .feature-card {
-            flex: 1 1 100%;
-          }
-
-          .callToAction h2 {
-            font-size: 1.5rem;
+            flex: 1;
           }
         }
       `}</style>
@@ -156,7 +141,7 @@ export default function Home() {
         {/* Hero Section */}
         <section className="hero">
           <img src={logo} alt="FitSpot Logo" />
-          <div className="hero-text">
+          <div>
             <h1>Welcome to FitSpot</h1>
             <p className="lead">
               Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
@@ -181,7 +166,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Call to Action Section */}
+        {/* Call to Action */}
         <section className="callToAction">
           <h2>Ready to get fit?</h2>
           <button className="cta">Create Account</button>
