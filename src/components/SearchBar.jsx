@@ -1,4 +1,3 @@
-// src/components/SearchBar.jsx
 import React from "react";
 
 export default function SearchBar({ value, onChange, placeholder }) {
@@ -14,8 +13,10 @@ export default function SearchBar({ value, onChange, placeholder }) {
         borderRadius: 10,
         border: "1px solid #e0e7ef",
         fontSize: "1rem",
-        boxSizing: "border-box"
+        boxSizing: "border-box",
+        marginBottom: "0.5rem",
       }}
+      autoComplete="off"
     />
   );
 }
