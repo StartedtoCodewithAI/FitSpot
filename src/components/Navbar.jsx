@@ -36,61 +36,35 @@ export default function Navbar() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Menu content as a function for reuse
-  function MenuContent({ onClick, mobile = false }) {
-    // For mobile, use blue text and yellow active. For desktop, white text and yellow active.
+  function MenuContent({ onClick }) {
+    const menuItems = [
+      { to: "/", label: "Home", match: (p) => p === "/" },
+      { to: "/gyms", label: "Gyms", match: (p) => p.startsWith("/gyms") },
+      { to: "/about", label: "About", match: (p) => p === "/about" },
+      { to: "/profile", label: "Profile", match: (p) => p === "/profile" },
+    ];
+
     return (
       <>
-        <li>
-          <Link
-            to="/"
-            className={`menu-link${location.pathname === "/" ? " active" : ""}`}
-            onClick={onClick}
-          >
-            Home
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/gyms"
-            className={`menu-link${location.pathname.startsWith("/gyms") ? " active" : ""}`}
-            onClick={onClick}
-          >
-            Gyms
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/about"
-            className={`menu-link${location.pathname === "/about" ? " active" : ""}`}
-            onClick={onClick}
-          >
-            About
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/profile"
-            className={`menu-link${location.pathname === "/profile" ? " active" : ""}`}
-            onClick={onClick}
-            style={{ display: "flex", alignItems: "center" }}
-          >
-            {user ? (
-              user.avatar ? (
-                <img
-                  src={user.avatar}
-                  className="avatar-nav"
-                  alt="avatar"
-                />
-              ) : (
-                <div className="avatar-nav">
-                  {stringToInitials(user.name)}
-                </div>
-              )
-            ) : null}
-            Profile
-          </Link>
-        </li>
+        {menuItems.map(({ to, label, match }) => (
+          <li key={to}>
+            <Link
+              to={to}
+              className={`menu-link${match(location.pathname) ? " active" : ""}`}
+              onClick={onClick}
+              style={label === "Profile" ? { display: "flex", alignItems: "center" } : undefined}
+            >
+              {label === "Profile" && user ? (
+                user.avatar ? (
+                  <img src={user.avatar} className="avatar-nav" alt="avatar" />
+                ) : (
+                  <div className="avatar-nav">{stringToInitials(user.name)}</div>
+                )
+              ) : null}
+              {label}
+            </Link>
+          </li>
+        ))}
         <li>
           {user ? (
             <button className="nav-btn menu-link" onClick={handleLogout}>
@@ -114,12 +88,13 @@ export default function Navbar() {
     <>
       <style>{`
         nav {
-          background-color: #1976d2;
+          background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
           padding: 0.5rem 1rem;
           position: sticky;
           top: 0;
           z-index: 999;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+          backdrop-filter: blur(4px);
         }
         .navbar-container {
           max-width: 1200px;
@@ -130,8 +105,9 @@ export default function Navbar() {
           width: 100%;
         }
         .logo {
-          height: 40px;
+          height: 44px;
           cursor: pointer;
+          filter: drop-shadow(0 2px 8px rgba(30,60,114,0.2));
         }
         .flex-spacer {
           flex: 1 1 auto;
@@ -145,26 +121,27 @@ export default function Navbar() {
           display: none;
           flex-direction: column;
           justify-content: center;
-          width: 32px;
-          height: 32px;
+          width: 38px;
+          height: 38px;
           background: transparent;
           border: none;
           cursor: pointer;
           margin-left: 1rem;
+          z-index: 3000;
         }
         .bar {
-          height: 3px;
+          height: 4px;
           width: 100%;
-          background-color: #fff;
+          background: linear-gradient(90deg,#80d0c7 0%,#0093e9 100%);
           border-radius: 2px;
-          margin: 3px 0;
-          transition: all 0.3s ease;
+          margin: 5px 0;
+          transition: all 0.3s cubic-bezier(0.68,-0.55,0.27,1.55);
+          box-shadow: 0 2px 8px #0093e944;
         }
-        /* DESKTOP MENU */
         ul {
           list-style: none;
           display: flex;
-          gap: 1.5rem;
+          gap: 2rem;
           margin: 0;
           padding: 0;
           align-items: center;
@@ -174,27 +151,50 @@ export default function Navbar() {
           align-items: center;
         }
         .menu-link {
-          color: #fff;
+          color: #f7fafc;
           text-decoration: none;
-          font-weight: 600;
-          font-size: 1rem;
-          transition: color 0.3s, background 0.3s;
+          font-weight: 700;
+          font-size: 1.1rem;
+          letter-spacing: 0.02em;
+          transition: color 0.3s, box-shadow 0.3s, background 0.3s;
           border: none;
           background: none;
           cursor: pointer;
-          border-radius: 6px;
-          padding: 0.5rem 0.75rem;
+          border-radius: 11px;
+          padding: 0.6rem 1.1rem;
+          position: relative;
+          overflow: hidden;
+          outline: none;
         }
         .menu-link.active {
-          color: #ffe082; /* yellow highlight */
+          color: #3399ff;
+          box-shadow: 0 0 0 0px #3399ff, 0 8px 32px 0 rgba(51,153,255,0.12);
+          background: rgba(255,255,255,0.07);
+          border-bottom: 3px solid;
+          border-image: linear-gradient(90deg,#80d0c7 0%,#0093e9 100%) 1;
         }
-        .menu-link:hover, .nav-btn.menu-link:hover {
-          color: #bbdefb; /* blue highlight */
-          background: #1657b7;
+        .menu-link:hover, .menu-link:focus {
+          color: #00d2ff;
+          background: linear-gradient(90deg,#1e3c72 60%,#2a5298 100%);
+          box-shadow: 0 2px 16px 0 #0093e966;
+        }
+        .nav-btn.menu-link {
+          background: linear-gradient(90deg,#0093e9 0%,#80d0c7 100%);
+          color: #fff;
+          font-weight: 700;
+          border-radius: 11px;
+          margin-left: 0.4em;
+          padding: 0.6rem 1.1rem;
+          box-shadow: 0 2px 8px #0093e955;
+          border: none;
+          transition: filter 0.2s;
+        }
+        .nav-btn.menu-link:hover {
+          filter: brightness(1.12);
         }
         .avatar-nav {
-          width: 30px;
-          height: 30px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           object-fit: cover;
           margin-right: 0.5rem;
@@ -203,10 +203,11 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1rem;
+          font-size: 1.1rem;
           color: #336699;
+          box-shadow: 0 2px 8px #1e3c7290;
         }
-        /* MOBILE MENU */
+        /* Mesmerising glassmorphism & animation for mobile */
         @media (max-width: 768px) {
           ul {
             display: none;
@@ -216,50 +217,58 @@ export default function Navbar() {
             flex-direction: column !important;
             gap: 0;
             position: fixed;
-            top: 56px;
+            top: 58px;
             right: 0;
             left: auto;
-            background: #fff;
+            min-height: 60vh;
+            background: linear-gradient(135deg,rgba(24,46,85,0.92) 20%,rgba(0,147,233,0.83) 100%);
             color: #1976d2;
-            padding: 1rem 0.5rem;
-            width: 90vw;
-            max-width: 320px;
-            border-radius: 16px 0 0 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 1.3rem 0.5rem 1.5rem 0.5rem;
+            width: 94vw;
+            max-width: 345px;
+            border-radius: 22px 0 0 22px;
+            box-shadow: 0 12px 48px 0 #0093e9bb, 0 4px 32px 0 #1e3c7280;
             border: 1px solid #e3e6ea;
             opacity: 1;
             pointer-events: auto;
             z-index: 2000;
             margin: 0;
-            animation: slideInMenu .25s cubic-bezier(0.7,0,0.3,1);
+            animation: glassSlideIn .35s cubic-bezier(0.7,0,0.3,1);
+            backdrop-filter: blur(16px) saturate(150%);
           }
-          @keyframes slideInMenu {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(0); }
+          @keyframes glassSlideIn {
+            0% { transform: translateX(120%); opacity: 0;}
+            100% { transform: translateX(0); opacity: 1;}
           }
           .mobile-portal-menu li {
-            padding: 0.75rem 1.5rem;
+            padding: 0.95rem 1.6rem;
             justify-content: flex-start;
           }
           .mobile-portal-menu .menu-link {
-            font-size: 1.15rem;
-            color: #1976d2;
-            font-weight: 600;
-            border-radius: 8px;
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: #d6f3ff;
+            border-radius: 11px;
             background: none;
-            padding: 0.5rem 0.75rem;
+            padding: 0.7rem 1.1rem;
             transition: background 0.2s, color 0.2s;
             width: 100%;
             text-align: left;
+            box-shadow: none;
+            border-bottom: none;
           }
           .mobile-portal-menu .menu-link.active {
-            color: #ffe082;
-            background: none;
+            color: #00e1ff;
+            text-shadow: 0 0 6px #00e1ff80;
+            background: rgba(255,255,255,0.08);
+            border-left: 5px solid #00e1ff99;
+            border-image: none;
           }
           .mobile-portal-menu .menu-link:hover,
           .mobile-portal-menu .menu-link:focus {
-            background: #e3e6ea;
-            color: #0d47a1;
+            background: linear-gradient(90deg,#0093e9 0%,#80d0c7 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px #0093e9cc;
           }
           .hamburger {
             display: flex;
@@ -283,14 +292,14 @@ export default function Navbar() {
               <span
                 className="bar"
                 style={{
-                  transform: isOpen ? "rotate(45deg) translate(5px, 5px)" : "none",
+                  transform: isOpen ? "rotate(45deg) translate(7px, 7px)" : "none",
                 }}
               />
               <span className="bar" style={{ opacity: isOpen ? 0 : 1 }} />
               <span
                 className="bar"
                 style={{
-                  transform: isOpen ? "rotate(-45deg) translate(6px, -6px)" : "none",
+                  transform: isOpen ? "rotate(-45deg) translate(9px, -9px)" : "none",
                 }}
               />
             </button>
@@ -305,7 +314,7 @@ export default function Navbar() {
       {isOpen && isMobile && (
         <MobileMenuPortal>
           <ul className="mobile-portal-menu open">
-            <MenuContent onClick={() => setIsOpen(false)} mobile />
+            <MenuContent onClick={() => setIsOpen(false)} />
           </ul>
           {/* Overlay to close */}
           <div
@@ -314,7 +323,7 @@ export default function Navbar() {
               position: 'fixed',
               inset: 0,
               zIndex: 1999,
-              background: 'rgba(0,0,0,0.01)'
+              background: 'rgba(0,0,0,0.04)'
             }}
           />
         </MobileMenuPortal>
