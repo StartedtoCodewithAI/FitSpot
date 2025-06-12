@@ -26,25 +26,25 @@ export default function Navbar() {
     navigate("/");
   }
 
-  // For SSR safety, check if window is defined
-  const [isMobile, setIsMobile] = useState(false);
+  // Responsive: update on resize
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   useEffect(() => {
     function checkMobile() {
       setIsMobile(window.innerWidth <= 768);
     }
-    checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Menu content as a function for reuse
-  function MenuContent({ onClick }) {
+  function MenuContent({ onClick, mobile = false }) {
+    // For mobile, use blue text and yellow active. For desktop, white text and yellow active.
     return (
       <>
         <li>
           <Link
             to="/"
-            className={location.pathname === "/" ? "active" : ""}
+            className={`menu-link${location.pathname === "/" ? " active" : ""}`}
             onClick={onClick}
           >
             Home
@@ -53,7 +53,7 @@ export default function Navbar() {
         <li>
           <Link
             to="/gyms"
-            className={location.pathname.startsWith("/gyms") ? "active" : ""}
+            className={`menu-link${location.pathname.startsWith("/gyms") ? " active" : ""}`}
             onClick={onClick}
           >
             Gyms
@@ -62,7 +62,7 @@ export default function Navbar() {
         <li>
           <Link
             to="/about"
-            className={location.pathname === "/about" ? "active" : ""}
+            className={`menu-link${location.pathname === "/about" ? " active" : ""}`}
             onClick={onClick}
           >
             About
@@ -71,7 +71,7 @@ export default function Navbar() {
         <li>
           <Link
             to="/profile"
-            className={location.pathname === "/profile" ? "active" : ""}
+            className={`menu-link${location.pathname === "/profile" ? " active" : ""}`}
             onClick={onClick}
             style={{ display: "flex", alignItems: "center" }}
           >
@@ -93,13 +93,13 @@ export default function Navbar() {
         </li>
         <li>
           {user ? (
-            <button className="nav-btn" onClick={handleLogout}>
+            <button className="nav-btn menu-link" onClick={handleLogout}>
               Logout
             </button>
           ) : (
             <Link
               to="/login"
-              className={location.pathname === "/login" ? "active" : ""}
+              className={`menu-link${location.pathname === "/login" ? " active" : ""}`}
               onClick={onClick}
             >
               Login
@@ -160,6 +160,7 @@ export default function Navbar() {
           margin: 3px 0;
           transition: all 0.3s ease;
         }
+        /* DESKTOP MENU */
         ul {
           list-style: none;
           display: flex;
@@ -172,7 +173,7 @@ export default function Navbar() {
           display: flex;
           align-items: center;
         }
-        li a, .nav-btn {
+        .menu-link {
           color: #fff;
           text-decoration: none;
           font-weight: 600;
@@ -181,12 +182,15 @@ export default function Navbar() {
           border: none;
           background: none;
           cursor: pointer;
+          border-radius: 6px;
+          padding: 0.5rem 0.75rem;
         }
-        li a.active, .nav-btn.active {
-          color: #ffe082;
+        .menu-link.active {
+          color: #ffe082; /* yellow highlight */
         }
-        li a:hover, .nav-btn:hover {
-          color: #bbdefb;
+        .menu-link:hover, .nav-btn.menu-link:hover {
+          color: #bbdefb; /* blue highlight */
+          background: #1657b7;
         }
         .avatar-nav {
           width: 30px;
@@ -202,13 +206,60 @@ export default function Navbar() {
           font-size: 1rem;
           color: #336699;
         }
-        /* Mobile Styles */
+        /* MOBILE MENU */
         @media (max-width: 768px) {
           ul {
             display: none;
           }
           .mobile-portal-menu {
             display: flex !important;
+            flex-direction: column !important;
+            gap: 0;
+            position: fixed;
+            top: 56px;
+            right: 0;
+            left: auto;
+            background: #fff;
+            color: #1976d2;
+            padding: 1rem 0.5rem;
+            width: 90vw;
+            max-width: 320px;
+            border-radius: 16px 0 0 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            border: 1px solid #e3e6ea;
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 2000;
+            margin: 0;
+            animation: slideInMenu .25s cubic-bezier(0.7,0,0.3,1);
+          }
+          @keyframes slideInMenu {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(0); }
+          }
+          .mobile-portal-menu li {
+            padding: 0.75rem 1.5rem;
+            justify-content: flex-start;
+          }
+          .mobile-portal-menu .menu-link {
+            font-size: 1.15rem;
+            color: #1976d2;
+            font-weight: 600;
+            border-radius: 8px;
+            background: none;
+            padding: 0.5rem 0.75rem;
+            transition: background 0.2s, color 0.2s;
+            width: 100%;
+            text-align: left;
+          }
+          .mobile-portal-menu .menu-link.active {
+            color: #ffe082;
+            background: none;
+          }
+          .mobile-portal-menu .menu-link:hover,
+          .mobile-portal-menu .menu-link:focus {
+            background: #e3e6ea;
+            color: #0d47a1;
           }
           .hamburger {
             display: flex;
@@ -253,32 +304,10 @@ export default function Navbar() {
       {/* Mobile menu in Portal */}
       {isOpen && isMobile && (
         <MobileMenuPortal>
-          <ul
-            className="mobile-portal-menu open"
-            style={{
-              display: 'flex',
-              position: 'fixed',
-              top: 56, // nav height (adjust if your nav is a different height)
-              right: 0,
-              left: 'auto',
-              background: '#fff',
-              color: '#1976d2',
-              flexDirection: 'column',
-              padding: '1rem 0.5rem',
-              width: '90vw',
-              maxWidth: 320,
-              borderRadius: 10,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-              border: '1px solid #e3e6ea',
-              opacity: 1,
-              pointerEvents: 'auto',
-              zIndex: 2000,
-              margin: 0
-            }}
-          >
-            <MenuContent onClick={() => setIsOpen(false)} />
+          <ul className="mobile-portal-menu open">
+            <MenuContent onClick={() => setIsOpen(false)} mobile />
           </ul>
-          {/* Optional: click outside to close */}
+          {/* Overlay to close */}
           <div
             onClick={() => setIsOpen(false)}
             style={{
