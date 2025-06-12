@@ -81,9 +81,11 @@ export default function Gyms() {
         setFilteredGyms(gymsWithin10km);
         setLoading(false);
       },
-      () => {
+      (err) => {
         setPermissionDenied(true);
         setLoading(false);
+        setFilteredGyms([]);
+        console.error("Geolocation error:", err);
       },
       { enableHighAccuracy: true }
     );
@@ -123,6 +125,26 @@ export default function Gyms() {
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Gyms Near You</h1>
+      
+      {/* DEBUG BLOCK: Show user's coordinates and distance to each gym */}
+      {userLocation && (
+        <div style={{margin: "1rem 0", color: "#555", fontSize: "0.98rem", background: "#f0f6ff", borderRadius: 8, padding: "0.7rem 1.2rem"}}>
+          <div>
+            <b>Your location:</b> {userLocation.lat}, {userLocation.lng}
+          </div>
+          <div style={{ marginTop: 4 }}>
+            <b>Distances to gyms:</b>
+            <ul style={{margin: 0, paddingLeft: "1.2em"}}>
+              {gyms.map(gym => (
+                <li key={gym.id}>
+                  {gym.name}: {getDistanceFromLatLonInKm(userLocation.lat, userLocation.lng, gym.lat, gym.lng).toFixed(2)} km
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       {!userLocation && !permissionDenied && !loading && (
         <button
           onClick={handleAllowLocation}
