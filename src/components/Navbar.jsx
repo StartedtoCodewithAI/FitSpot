@@ -26,7 +26,6 @@ export default function Navbar() {
     navigate("/");
   }
 
-  // Responsive: update on resize
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   useEffect(() => {
     function checkMobile() {
@@ -88,8 +87,7 @@ export default function Navbar() {
     <>
       <style>{`
         nav {
-          background: linear-gradient(90deg, #3ec6e0 0%, #81e6fc 100%);
-          /* Lighter blue/cyan gradient */
+          background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
           padding: 0.5rem 1rem;
           position: sticky;
           top: 0;
@@ -222,8 +220,7 @@ export default function Navbar() {
             right: 0;
             left: auto;
             min-height: 60vh;
-            background: linear-gradient(135deg,rgba(62,198,224,0.92) 20%,rgba(129,230,252,0.83) 100%);
-            /* lighter mobile glass effect */
+            background: linear-gradient(135deg,rgba(56,189,248,0.92) 20%,rgba(37,99,235,0.95) 100%);
             color: #1976d2;
             padding: 1.3rem 0.5rem 1.5rem 0.5rem;
             width: 94vw;
