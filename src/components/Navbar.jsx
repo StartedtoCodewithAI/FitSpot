@@ -26,6 +26,17 @@ export default function Navbar() {
     navigate("/");
   }
 
+  // For SSR safety, check if window is defined
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    function checkMobile() {
+      setIsMobile(window.innerWidth <= 768);
+    }
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Menu content as a function for reuse
   function MenuContent({ onClick }) {
     return (
@@ -98,8 +109,6 @@ export default function Navbar() {
       </>
     );
   }
-
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
   return (
     <>
@@ -198,6 +207,9 @@ export default function Navbar() {
           ul {
             display: none;
           }
+          .mobile-portal-menu {
+            display: flex !important;
+          }
           .hamburger {
             display: flex;
             margin-left: 0;
@@ -242,8 +254,9 @@ export default function Navbar() {
       {isOpen && isMobile && (
         <MobileMenuPortal>
           <ul
-            className="open"
+            className="mobile-portal-menu open"
             style={{
+              display: 'flex',
               position: 'fixed',
               top: 56, // nav height (adjust if your nav is a different height)
               right: 0,
