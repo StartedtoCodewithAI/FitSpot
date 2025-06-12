@@ -7,6 +7,7 @@ import Profile from './pages/Profile';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import About from './pages/About';
+import MyCodes from './pages/MyCodes'; // <-- Add this line
 import PrivateRoute from './components/PrivateRoute';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/gyms" element={<Gyms />} />
+        <Route path="/my-codes" element={<MyCodes />} /> {/* <-- Add this line */}
         <Route
           path="/profile"
           element={
