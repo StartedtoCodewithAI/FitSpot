@@ -68,7 +68,7 @@ export default function Gyms() {
           lng: pos.coords.longitude,
         };
         setUserLocation(userLoc);
-        // Filter gyms within 10km radius
+
         const gymsWithin10km = gyms.filter((gym) => {
           const dist = getDistanceFromLatLonInKm(
             userLoc.lat,
@@ -125,22 +125,39 @@ export default function Gyms() {
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Gyms Near You</h1>
-      
-      {/* DEBUG BLOCK: Show user's coordinates and distance to each gym */}
+
+      {/* DEBUG: Show your location, gym distances, and filteredGyms array for troubleshooting */}
       {userLocation && (
         <div style={{margin: "1rem 0", color: "#555", fontSize: "0.98rem", background: "#f0f6ff", borderRadius: 8, padding: "0.7rem 1.2rem"}}>
           <div>
-            <b>Your location:</b> {userLocation.lat}, {userLocation.lng}
+            <b>Your location:</b> {String(userLocation.lat)}, {String(userLocation.lng)}
           </div>
           <div style={{ marginTop: 4 }}>
             <b>Distances to gyms:</b>
             <ul style={{margin: 0, paddingLeft: "1.2em"}}>
               {gyms.map(gym => (
                 <li key={gym.id}>
-                  {gym.name}: {getDistanceFromLatLonInKm(userLocation.lat, userLocation.lng, gym.lat, gym.lng).toFixed(2)} km
+                  {gym.name}: lat={String(gym.lat)}, lng={String(gym.lng)} | 
+                  userLat={String(userLocation.lat)}, userLng={String(userLocation.lng)} |
+                  distance={
+                    String(
+                      getDistanceFromLatLonInKm(
+                        userLocation.lat,
+                        userLocation.lng,
+                        gym.lat,
+                        gym.lng
+                      )
+                    )
+                  }
                 </li>
               ))}
             </ul>
+          </div>
+          <div style={{ marginTop: 8, color: "#0b2546" }}>
+            <b>filteredGyms:</b> {filteredGyms.length} gyms found.<br/>
+            <pre style={{whiteSpace:"pre-wrap",wordBreak:"break-all",background:"#e9e9ff",padding:"0.4em",borderRadius:6}}>
+              {JSON.stringify(filteredGyms, null, 2)}
+            </pre>
           </div>
         </div>
       )}
