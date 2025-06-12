@@ -12,6 +12,7 @@ export default function Profile() {
   const [form, setForm] = useState({ name: "", email: "", avatar: "" });
 
   useEffect(() => {
+    // Load user from localStorage
     const stored = localStorage.getItem("user");
     if (stored) {
       const parsed = JSON.parse(stored);
@@ -33,6 +34,7 @@ export default function Profile() {
 
   function handleCancel() {
     setEditing(false);
+    // Reset form to current user values
     if (user) {
       setForm({
         name: user.name || "",
@@ -63,7 +65,7 @@ export default function Profile() {
 
   return (
     <>
-      <div className="profile-card" style={{ overflow: "visible" }}>
+      <div className="profile-card" style={{ overflow: "visible", position: "relative", zIndex: 1 }}>
         {user.avatar ? (
           <img className="avatar" src={user.avatar} alt="Avatar" />
         ) : (
