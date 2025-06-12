@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import SearchBar from "../components/SearchBar"; // Adjust as needed
+import SearchBar from "../components/SearchBar";
 
 function stringToInitials(name) {
   if (!name) return "";
@@ -12,7 +12,6 @@ export default function Profile() {
   const [form, setForm] = useState({ name: "", email: "", avatar: "" });
 
   useEffect(() => {
-    // Load user from localStorage
     const stored = localStorage.getItem("user");
     if (stored) {
       const parsed = JSON.parse(stored);
@@ -34,7 +33,6 @@ export default function Profile() {
 
   function handleCancel() {
     setEditing(false);
-    // Reset form to current user values
     if (user) {
       setForm({
         name: user.name || "",
@@ -55,7 +53,6 @@ export default function Profile() {
     }
   }
 
-  // If user is not loaded yet, show a loading message or redirect to login
   if (!user) {
     return (
       <div style={{ textAlign: "center", marginTop: "2rem" }}>
@@ -66,8 +63,7 @@ export default function Profile() {
 
   return (
     <>
-      <style>{/* ...your existing CSS here... */}</style>
-      <div className="profile-card">
+      <div className="profile-card" style={{ overflow: "visible" }}>
         {user.avatar ? (
           <img className="avatar" src={user.avatar} alt="Avatar" />
         ) : (
@@ -127,7 +123,6 @@ export default function Profile() {
             </div>
           </form>
         )}
-        {/* ...rest of your component... */}
       </div>
     </>
   );
