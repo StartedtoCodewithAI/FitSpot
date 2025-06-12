@@ -81,7 +81,8 @@ export default function Gyms() {
   // Modal logic
   const handleGenerateCode = (gym) => {
     const code = generateRandomCode(8);
-    const expiresAt = Date.now() + 30 * 60 * 1000; // 30 minutes from now
+    const now = Date.now();
+    const expiresAt = now + 30 * 60 * 1000; // 30 minutes from now
     setModalGym(gym);
     setSessionCode(code);
     setExpiry(expiresAt);
@@ -89,7 +90,15 @@ export default function Gyms() {
     // Save to localStorage (demo only; backend for real app)
     localStorage.setItem(
       `fitspot-sessioncode-${code}`,
-      JSON.stringify({ gymId: gym.id, code, expiresAt, used: false })
+      JSON.stringify({
+        gymId: gym.id,
+        gymName: gym.name,
+        code,
+        generatedAt: now,
+        expiresAt,
+        used: false,
+        usedAt: null,
+      })
     );
   };
 
