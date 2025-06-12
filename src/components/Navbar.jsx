@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/FitSpot.png";
+import MobileMenuPortal from "./MobileMenuPortal";
 
 function stringToInitials(name) {
   if (!name) return "";
@@ -24,6 +25,81 @@ export default function Navbar() {
     setUser(null);
     navigate("/");
   }
+
+  // Menu content as a function for reuse
+  function MenuContent({ onClick }) {
+    return (
+      <>
+        <li>
+          <Link
+            to="/"
+            className={location.pathname === "/" ? "active" : ""}
+            onClick={onClick}
+          >
+            Home
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/gyms"
+            className={location.pathname.startsWith("/gyms") ? "active" : ""}
+            onClick={onClick}
+          >
+            Gyms
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/about"
+            className={location.pathname === "/about" ? "active" : ""}
+            onClick={onClick}
+          >
+            About
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/profile"
+            className={location.pathname === "/profile" ? "active" : ""}
+            onClick={onClick}
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            {user ? (
+              user.avatar ? (
+                <img
+                  src={user.avatar}
+                  className="avatar-nav"
+                  alt="avatar"
+                />
+              ) : (
+                <div className="avatar-nav">
+                  {stringToInitials(user.name)}
+                </div>
+              )
+            ) : null}
+            Profile
+          </Link>
+        </li>
+        <li>
+          {user ? (
+            <button className="nav-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className={location.pathname === "/login" ? "active" : ""}
+              onClick={onClick}
+            >
+              Login
+            </Link>
+          )}
+        </li>
+      </>
+    );
+  }
+
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
   return (
     <>
@@ -122,55 +198,12 @@ export default function Navbar() {
           ul {
             display: none;
           }
-          .nav-actions ul {
-            position: absolute;
-            top: 52px;
-            right: 0;
-            left: auto;
-            background: #fff;
-            color: #1976d2;
-            flex-direction: column;
-            padding: 1rem 0.5rem;
-            width: 90vw;
-            max-width: 320px;
-            border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-            border: 1px solid #e3e6ea;
-            opacity: 0;
-            transform: translateY(-10px);
-            pointer-events: none;
-            transition: opacity 0.25s, transform 0.25s;
-          }
-          .nav-actions ul.open {
-            display: flex;
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateY(0);
-          }
-          .nav-actions ul li {
-            padding: 0.75rem 1.5rem;
-            justify-content: flex-start;
-          }
-          .nav-actions ul li a,
-          .nav-actions ul li .nav-btn {
-            font-size: 1.15rem;
-            color: #1976d2;
-            border-radius: 6px;
-            padding: 0.5rem 0.75rem;
-            transition: background 0.2s, color 0.2s;
-          }
-          .nav-actions ul li a:hover,
-          .nav-actions ul li .nav-btn:hover {
-            background: #e3e6ea;
-            color: #0d47a1;
-          }
           .hamburger {
             display: flex;
             margin-left: 0;
           }
         }
       `}</style>
-
       <nav>
         <div className="navbar-container">
           <Link to="/">
@@ -198,76 +231,52 @@ export default function Navbar() {
                 }}
               />
             </button>
-            <ul className={isOpen ? "open" : ""}>
-              <li>
-                <Link
-                  to="/"
-                  className={location.pathname === "/" ? "active" : ""}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/gyms"
-                  className={location.pathname.startsWith("/gyms") ? "active" : ""}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Gyms
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/about"
-                  className={location.pathname === "/about" ? "active" : ""}
-                  onClick={() => setIsOpen(false)}
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/profile"
-                  className={location.pathname === "/profile" ? "active" : ""}
-                  onClick={() => setIsOpen(false)}
-                  style={{ display: "flex", alignItems: "center" }}
-                >
-                  {user ? (
-                    user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        className="avatar-nav"
-                        alt="avatar"
-                      />
-                    ) : (
-                      <div className="avatar-nav">
-                        {stringToInitials(user.name)}
-                      </div>
-                    )
-                  ) : null}
-                  Profile
-                </Link>
-              </li>
-              <li>
-                {user ? (
-                  <button className="nav-btn" onClick={handleLogout}>
-                    Logout
-                  </button>
-                ) : (
-                  <Link
-                    to="/login"
-                    className={location.pathname === "/login" ? "active" : ""}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Login
-                  </Link>
-                )}
-              </li>
+            {/* Desktop menu */}
+            <ul>
+              <MenuContent onClick={() => setIsOpen(false)} />
             </ul>
           </div>
         </div>
       </nav>
+      {/* Mobile menu in Portal */}
+      {isOpen && isMobile && (
+        <MobileMenuPortal>
+          <ul
+            className="open"
+            style={{
+              position: 'fixed',
+              top: 56, // nav height (adjust if your nav is a different height)
+              right: 0,
+              left: 'auto',
+              background: '#fff',
+              color: '#1976d2',
+              flexDirection: 'column',
+              padding: '1rem 0.5rem',
+              width: '90vw',
+              maxWidth: 320,
+              borderRadius: 10,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+              border: '1px solid #e3e6ea',
+              opacity: 1,
+              pointerEvents: 'auto',
+              zIndex: 2000,
+              margin: 0
+            }}
+          >
+            <MenuContent onClick={() => setIsOpen(false)} />
+          </ul>
+          {/* Optional: click outside to close */}
+          <div
+            onClick={() => setIsOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1999,
+              background: 'rgba(0,0,0,0.01)'
+            }}
+          />
+        </MobileMenuPortal>
+      )}
     </>
   );
 }
