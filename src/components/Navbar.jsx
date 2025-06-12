@@ -39,6 +39,7 @@ export default function Navbar() {
     const menuItems = [
       { to: "/", label: "Home", match: (p) => p === "/" },
       { to: "/gyms", label: "Gyms", match: (p) => p.startsWith("/gyms") },
+      { to: "/my-codes", label: "My Codes", match: (p) => p === "/my-codes" }, // <-- Added!
       { to: "/about", label: "About", match: (p) => p === "/about" },
       { to: "/profile", label: "Profile", match: (p) => p === "/profile" },
     ];
