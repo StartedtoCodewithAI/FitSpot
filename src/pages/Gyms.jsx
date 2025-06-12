@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 
-// Hardcoded gyms list (add/edit as you like!)
+// Sample gyms array (edit/add as needed)
 const gyms = [
   { id: 1, name: "Fit Gym Central", address: "123 Main St", lat: 40.7128, lng: -74.006 },
   { id: 2, name: "Muscle Factory", address: "456 Elm St", lat: 40.7228, lng: -74.016 },
   { id: 3, name: "Iron Paradise", address: "789 Oak Ave", lat: 40.755, lng: -73.98 },
   { id: 4, name: "Far Away Gym", address: "999 Distant Rd", lat: 41.2, lng: -73.8 },
-  // Add more gyms here!
 ];
 
-// Haversine formula to calculate distance between two lat/lng points in km
+// Haversine formula
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Radius of earth in km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -24,11 +23,26 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// Random code generator (8 chars)
+function generateRandomCode(length = 8) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let result = "";
+  for (let i = 0; i < length; i++)
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  return result;
+}
+
 export default function Gyms() {
   const [userLocation, setUserLocation] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [filteredGyms, setFilteredGyms] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalGym, setModalGym] = useState(null);
+  const [sessionCode, setSessionCode] = useState(null);
+  const [expiry, setExpiry] = useState(null);
 
   const handleAllowLocation = () => {
     if (!navigator.geolocation) {
@@ -62,6 +76,28 @@ export default function Gyms() {
       },
       { enableHighAccuracy: true }
     );
+  };
+
+  // Modal logic
+  const handleGenerateCode = (gym) => {
+    const code = generateRandomCode(8);
+    const expiresAt = Date.now() + 30 * 60 * 1000; // 30 minutes from now
+    setModalGym(gym);
+    setSessionCode(code);
+    setExpiry(expiresAt);
+    setModalOpen(true);
+    // Save to localStorage (demo only; backend for real app)
+    localStorage.setItem(
+      `fitspot-sessioncode-${code}`,
+      JSON.stringify({ gymId: gym.id, code, expiresAt, used: false })
+    );
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalGym(null);
+    setSessionCode(null);
+    setExpiry(null);
   };
 
   return (
@@ -116,16 +152,106 @@ export default function Gyms() {
               padding: "1.5rem",
               background: "rgba(37,99,235,0.09)",
               borderRadius: 14,
-              boxShadow: "0 2px 16px #2563eb14"
+              boxShadow: "0 2px 16px #2563eb14",
+              position: "relative"
             }}>
               <div style={{ fontWeight: 700, fontSize: "1.25rem", color: "#2563eb" }}>{gym.name}</div>
               <div style={{ color: "#0b2546", opacity: 0.8 }}>{gym.address}</div>
               <div style={{ fontSize: ".95rem", color: "#38bdf8" }}>
                 {getDistanceFromLatLonInKm(userLocation.lat, userLocation.lng, gym.lat, gym.lng).toFixed(2)} km away
               </div>
+              <button
+                onClick={() => handleGenerateCode(gym)}
+                style={{
+                  marginTop: "1rem",
+                  padding: "0.7rem 1.5rem",
+                  background: "linear-gradient(90deg,#2563eb,#38bdf8)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 9,
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px #2563eb22",
+                  transition: "background 0.2s",
+                }}
+              >
+                Generate Session Code
+              </button>
             </li>
           ))}
         </ul>
+      )}
+      {/* Modal */}
+      {modalOpen && modalGym && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(30,41,59,0.35)",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: 18,
+            boxShadow: "0 8px 32px #2563eb33",
+            padding: "2.2rem 2.5rem 2.2rem 2.5rem",
+            minWidth: 320,
+            maxWidth: "94vw",
+            textAlign: "center",
+            position: "relative"
+          }}>
+            <button
+              onClick={closeModal}
+              style={{
+                position: "absolute",
+                top: 18,
+                right: 22,
+                background: "none",
+                border: "none",
+                fontSize: "1.5rem",
+                color: "#2563eb",
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div style={{ fontSize: "1.2rem", color: "#2563eb", marginBottom: 7 }}>
+              One-Session Code for
+            </div>
+            <div style={{ fontWeight: 800, color: "#0b2546", fontSize: "1.4rem", marginBottom: 24 }}>
+              {modalGym.name}
+            </div>
+            <div style={{
+              fontSize: "2.2rem",
+              letterSpacing: "0.25em",
+              fontWeight: 900,
+              color: "#2563eb",
+              background: "#e0f2fe",
+              padding: "1.1rem",
+              borderRadius: 12,
+              margin: "0 auto 1.3rem auto",
+              textAlign: "center",
+              wordBreak: "break-all",
+              userSelect: "all"
+            }}>
+              {sessionCode}
+            </div>
+            <div style={{ fontSize: "1.1rem", color: "#0b2546", marginBottom: 8 }}>
+              Expires: <span style={{ color: "#38bdf8" }}>{new Date(expiry).toLocaleTimeString()}</span>
+            </div>
+            <div style={{ fontSize: ".93rem", color: "#64748b", marginTop: 16 }}>
+              Show this code to the gym staff for one session.<br />
+              <span style={{ fontSize: ".90rem", color: "#d97706" }}>
+                Code is valid for 30 minutes and can only be used once.
+              </span>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
