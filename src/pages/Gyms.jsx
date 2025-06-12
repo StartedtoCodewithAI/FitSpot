@@ -1,14 +1,25 @@
 import React, { useState } from "react";
 
-// Sample gyms array (edit/add as needed)
+// Add gyms in Agios Dimitrios and Metamorfosi, Athens
 const gyms = [
-  { id: 1, name: "Fit Gym Central", address: "123 Main St", lat: 40.7128, lng: -74.006 },
-  { id: 2, name: "Muscle Factory", address: "456 Elm St", lat: 40.7228, lng: -74.016 },
-  { id: 3, name: "Iron Paradise", address: "789 Oak Ave", lat: 40.755, lng: -73.98 },
-  { id: 4, name: "Far Away Gym", address: "999 Distant Rd", lat: 41.2, lng: -73.8 },
+  {
+    id: 1,
+    name: "Agios Dimitrios Fitness",
+    address: "123 Dim Street, Agios Dimitrios, Athens",
+    lat: 37.9397,
+    lng: 23.7283
+  },
+  {
+    id: 2,
+    name: "Metamorfosi Power Gym",
+    address: "456 Meta Ave, Metamorfosi, Athens",
+    lat: 38.0656,
+    lng: 23.7536
+  },
+  // You can add more gyms here!
 ];
 
-// Haversine formula
+// Haversine formula for distance in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -57,7 +68,7 @@ export default function Gyms() {
           lng: pos.coords.longitude,
         };
         setUserLocation(userLoc);
-        // Filter gyms within 10km
+        // Filter gyms within 10km radius
         const gymsWithin10km = gyms.filter((gym) => {
           const dist = getDistanceFromLatLonInKm(
             userLoc.lat,
