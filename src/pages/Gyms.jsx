@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 // Hardcoded gyms list (add/edit as you like!)
 const gyms = [
@@ -28,42 +28,65 @@ export default function Gyms() {
   const [userLocation, setUserLocation] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [filteredGyms, setFilteredGyms] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const handleAllowLocation = () => {
     if (!navigator.geolocation) {
       setPermissionDenied(true);
       return;
     }
+    setLoading(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLocation({
+        const userLoc = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
+        };
+        setUserLocation(userLoc);
+        // Filter gyms within 10km
+        const gymsWithin10km = gyms.filter((gym) => {
+          const dist = getDistanceFromLatLonInKm(
+            userLoc.lat,
+            userLoc.lng,
+            gym.lat,
+            gym.lng
+          );
+          return dist <= 10;
         });
+        setFilteredGyms(gymsWithin10km);
+        setLoading(false);
       },
-      () => setPermissionDenied(true),
+      () => {
+        setPermissionDenied(true);
+        setLoading(false);
+      },
       { enableHighAccuracy: true }
     );
-  }, []);
-
-  useEffect(() => {
-    if (!userLocation) return;
-    const gymsWithin10km = gyms.filter((gym) => {
-      const dist = getDistanceFromLatLonInKm(
-        userLocation.lat,
-        userLocation.lng,
-        gym.lat,
-        gym.lng
-      );
-      return dist <= 10;
-    });
-    setFilteredGyms(gymsWithin10km);
-  }, [userLocation]);
+  };
 
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Gyms Near You</h1>
-      {!userLocation && !permissionDenied && (
+      {!userLocation && !permissionDenied && !loading && (
+        <button
+          onClick={handleAllowLocation}
+          style={{
+            padding: "0.9rem 2.2rem",
+            fontSize: "1.13rem",
+            fontWeight: 700,
+            color: "#fff",
+            background: "linear-gradient(90deg,#2563eb,#38bdf8)",
+            border: "none",
+            borderRadius: 10,
+            boxShadow: "0 2px 8px #2563eb22",
+            cursor: "pointer",
+            transition: "background 0.2s, box-shadow 0.2s",
+          }}
+        >
+          Allow Location
+        </button>
+      )}
+      {loading && (
         <div style={{ color: "#2563eb", fontWeight: 600 }}>Getting your location...</div>
       )}
       {permissionDenied && (
