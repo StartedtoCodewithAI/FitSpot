@@ -88,7 +88,8 @@ export default function Navbar() {
     <>
       <style>{`
         nav {
-          background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+          background: linear-gradient(90deg, #3ec6e0 0%, #81e6fc 100%);
+          /* Lighter blue/cyan gradient */
           padding: 0.5rem 1rem;
           position: sticky;
           top: 0;
@@ -151,7 +152,7 @@ export default function Navbar() {
           align-items: center;
         }
         .menu-link {
-          color: #f7fafc;
+          color: #0b2546;
           text-decoration: none;
           font-weight: 700;
           font-size: 1.1rem;
@@ -167,15 +168,15 @@ export default function Navbar() {
           outline: none;
         }
         .menu-link.active {
-          color: #3399ff;
+          color: #1d6fa5;
           box-shadow: 0 0 0 0px #3399ff, 0 8px 32px 0 rgba(51,153,255,0.12);
-          background: rgba(255,255,255,0.07);
+          background: rgba(255,255,255,0.14);
           border-bottom: 3px solid;
           border-image: linear-gradient(90deg,#80d0c7 0%,#0093e9 100%) 1;
         }
         .menu-link:hover, .menu-link:focus {
-          color: #00d2ff;
-          background: linear-gradient(90deg,#1e3c72 60%,#2a5298 100%);
+          color: #0093e9;
+          background: linear-gradient(90deg,#e0f7fa 60%,#b2ebf2 100%);
           box-shadow: 0 2px 16px 0 #0093e966;
         }
         .nav-btn.menu-link {
@@ -221,7 +222,8 @@ export default function Navbar() {
             right: 0;
             left: auto;
             min-height: 60vh;
-            background: linear-gradient(135deg,rgba(24,46,85,0.92) 20%,rgba(0,147,233,0.83) 100%);
+            background: linear-gradient(135deg,rgba(62,198,224,0.92) 20%,rgba(129,230,252,0.83) 100%);
+            /* lighter mobile glass effect */
             color: #1976d2;
             padding: 1.3rem 0.5rem 1.5rem 0.5rem;
             width: 94vw;
@@ -247,7 +249,7 @@ export default function Navbar() {
           .mobile-portal-menu .menu-link {
             font-size: 1.18rem;
             font-weight: 700;
-            color: #d6f3ff;
+            color: #0b2546;
             border-radius: 11px;
             background: none;
             padding: 0.7rem 1.1rem;
@@ -258,16 +260,16 @@ export default function Navbar() {
             border-bottom: none;
           }
           .mobile-portal-menu .menu-link.active {
-            color: #00e1ff;
-            text-shadow: 0 0 6px #00e1ff80;
-            background: rgba(255,255,255,0.08);
-            border-left: 5px solid #00e1ff99;
+            color: #0093e9;
+            text-shadow: 0 0 6px #00e1ff44;
+            background: rgba(255,255,255,0.13);
+            border-left: 5px solid #0093e9;
             border-image: none;
           }
           .mobile-portal-menu .menu-link:hover,
           .mobile-portal-menu .menu-link:focus {
-            background: linear-gradient(90deg,#0093e9 0%,#80d0c7 100%);
-            color: #fff;
+            background: linear-gradient(90deg,#e0f7fa 0%,#b2ebf2 100%);
+            color: #0093e9;
             text-shadow: 0 2px 8px #0093e9cc;
           }
           .hamburger {
