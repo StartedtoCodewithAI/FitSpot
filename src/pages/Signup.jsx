@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import SearchBar from "../components/SearchBar"; // <-- Add this line
 
 export default function Signup() {
   const [form, setForm] = useState({ name: "", email: "", avatar: "" });
@@ -42,7 +43,7 @@ export default function Signup() {
     }}>
       <h2 style={{ textAlign: "center" }}>Sign up for FitSpot</h2>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem", marginTop: "1.5rem" }}>
-        <input
+        <SearchBar
           type="text"
           name="name"
           value={form.name}
@@ -50,7 +51,7 @@ export default function Signup() {
           placeholder="Full Name"
           required
         />
-        <input
+        <SearchBar
           type="email"
           name="email"
           value={form.email}
