@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const DEFAULT_RADIUS_KM = 7;
 const FAVORITES_KEY = "fitspot_favorite_gyms";
@@ -38,6 +38,8 @@ export default function Gyms() {
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const [favorites, setFavorites] = useState(loadFavorites());
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef();
 
   useEffect(() => {
     saveFavorites(favorites);
@@ -160,10 +162,25 @@ export default function Gyms() {
     return a.distance - b.distance;
   });
 
-  // Filter based on showOnlyFavorites toggle
-  const displayedGyms = showOnlyFavorites
-    ? sortedGyms.filter(gym => favorites.includes(gym.id))
-    : sortedGyms;
+  // Filter based on showOnlyFavorites and searchTerm
+  const displayedGyms = sortedGyms.filter(gym => {
+    if (showOnlyFavorites && !favorites.includes(gym.id)) return false;
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.trim().toLowerCase();
+    const name = gym.name?.toLowerCase() || "";
+    // To filter by address too, uncomment the next line:
+    // const addr = gym.address?.toLowerCase() || "";
+    // return name.includes(term) || addr.includes(term);
+    return name.includes(term);
+  });
+
+  // Fancy clear function for search
+  const clearSearch = () => {
+    setSearchTerm("");
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
 
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
@@ -192,6 +209,72 @@ export default function Gyms() {
           ))}
         </select>
         radius. Change the radius if there are too few/many results.
+      </div>
+
+      {/* Fancy Search Bar */}
+      <div style={{
+        margin: "18px 0 18px 0",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        maxWidth: 420,
+        position: "relative"
+      }}>
+        <span style={{
+          position: "absolute",
+          left: 12,
+          top: "50%",
+          transform: "translateY(-50%)",
+          color: "#2563eb",
+          fontSize: "1.25rem",
+          pointerEvents: "none"
+        }}>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7" stroke="#2563eb" strokeWidth="2" />
+            <path d="M20 20L16.65 16.65" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          ref={searchInputRef}
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          placeholder="Search gyms by name..."
+          style={{
+            width: "100%",
+            fontSize: "1.09rem",
+            padding: "9px 38px 9px 39px",
+            borderRadius: 10,
+            border: "1.5px solid #2563eb44",
+            background: "#f8fafc",
+            boxShadow: "0 2px 8px #2563eb13",
+            outline: "none",
+            color: "#222",
+            transition: "border 0.15s",
+          }}
+        />
+        {searchTerm && (
+          <button
+            aria-label="Clear search"
+            title="Clear search"
+            onClick={clearSearch}
+            style={{
+              position: "absolute",
+              right: 10,
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              color: "#bbb",
+              fontSize: "1.25rem",
+              cursor: "pointer",
+              padding: 0,
+              outline: "none"
+            }}
+          >
+            ×
+          </button>
+        )}
       </div>
 
       {/* Fancy Show Only Favorites Toggle */}
@@ -295,7 +378,9 @@ export default function Gyms() {
         <div style={{ color: "#2563eb" }}>
           {showOnlyFavorites
             ? "You have no favorite gyms in this area."
-            : `No real gyms found within ${radiusKm}km of your location.`}
+            : searchTerm
+              ? "No gyms match your search."
+              : `No real gyms found within ${radiusKm}km of your location.`}
           <br />
           Try a different radius or clear the filter!
         </div>
