@@ -1,16 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaStar, FaRegStar, FaMapMarkerAlt, FaPhone, FaClock, FaExternalLinkAlt, FaSearch
-} from "react-icons/fa";
 
-const DEFAULT_RADIUS_KM = 7;
-const FAVORITES_KEY = "fitspot_favorite_gyms";
-const RADIUS_KEY = "fitspot_radius_km";
-const SEARCH_KEY = "fitspot_gym_search";
-const SORT_KEY = "fitspot_gym_sort";
-const FAVORITES_ANIMATION_TIME = 400;
-
+// Utility: Distance in km between two lat/lng
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -25,6 +16,8 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// Storage helpers
+const FAVORITES_KEY = "fitspot_favorite_gyms";
 function loadFavorites() {
   try {
     return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
@@ -32,26 +25,11 @@ function loadFavorites() {
     return [];
   }
 }
-
 function saveFavorites(favorites) {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
 }
 
-function loadSetting(key, def) {
-  try {
-    const v = localStorage.getItem(key);
-    return v !== null ? JSON.parse(v) : def;
-  } catch {
-    return def;
-  }
-}
-
-function saveSetting(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
 function getMapPreviewUrl(lat, lon) {
-  // OpenStreetMap Static Map example
   return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=16&size=330x140&maptype=mapnik&markers=${lat},${lon},lightblue1`;
 }
 
@@ -62,39 +40,17 @@ export default function Gyms() {
   const [loading, setLoading] = useState(false);
   const [gyms, setGyms] = useState([]);
   const [error, setError] = useState("");
-  const [radiusKm, setRadiusKm] = useState(loadSetting(RADIUS_KEY, DEFAULT_RADIUS_KM));
+  const [radiusKm, setRadiusKm] = useState(7);
   const [favorites, setFavorites] = useState(loadFavorites());
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(loadSetting(SEARCH_KEY, ""));
-  const [sortOption, setSortOption] = useState(loadSetting(SORT_KEY, "distance"));
-  const [favoriteAnim, setFavoriteAnim] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("distance");
   const searchInputRef = useRef();
 
-  // Save settings persistently
-  useEffect(() => saveSetting(RADIUS_KEY, radiusKm), [radiusKm]);
+  // Save favorites persistently
   useEffect(() => saveFavorites(favorites), [favorites]);
-  useEffect(() => saveSetting(SEARCH_KEY, searchTerm), [searchTerm]);
-  useEffect(() => saveSetting(SORT_KEY, sortOption), [sortOption]);
 
-  useEffect(() => {
-    if (gyms.length > 0) {
-      const validFavs = favorites.filter(favId =>
-        gyms.some(gym => gym.id === favId)
-      );
-      if (validFavs.length !== favorites.length) {
-        setFavorites(validFavs);
-      }
-    }
-    // eslint-disable-next-line
-  }, [gyms]);
-
-  // Debounced search input
-  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-  useEffect(() => {
-    const id = setTimeout(() => setDebouncedSearch(searchTerm), 250);
-    return () => clearTimeout(id);
-  }, [searchTerm]);
-
+  // Geolocation
   const handleAllowLocation = () => {
     setError("");
     if (!navigator.geolocation) {
@@ -126,8 +82,7 @@ export default function Gyms() {
             encodeURIComponent(query);
           const response = await fetch(url);
           if (!response.ok) {
-            const text = await response.text();
-            throw new Error("Overpass API error: " + text);
+            throw new Error("Overpass API error");
           }
           const data = await response.json();
 
@@ -147,7 +102,6 @@ export default function Gyms() {
                   : el.tags?.["addr:full"] || "",
               lat,
               lng,
-              tags: el.tags || {},
               phone: el.tags?.phone || el.tags?.["contact:phone"] || el.tags?.["contact:mobile"] || "",
               opening_hours: el.tags?.opening_hours || "",
             };
@@ -161,7 +115,7 @@ export default function Gyms() {
 
           setGyms(gymsFound);
         } catch (e) {
-          setError("Failed to fetch gyms from OpenStreetMap: " + e.message);
+          setError("Failed to fetch gyms from OpenStreetMap.");
         }
         setLoading(false);
       },
@@ -176,24 +130,7 @@ export default function Gyms() {
     );
   };
 
-  const handleRadiusChange = (e) => {
-    setRadiusKm(Number(e.target.value));
-    if (userLocation) {
-      handleAllowLocation();
-    }
-  };
-
-  // Animated favorite star
-  const toggleFavorite = (gymId) => {
-    setFavorites((prevFavs) =>
-      prevFavs.includes(gymId)
-        ? prevFavs.filter((f) => f !== gymId)
-        : [...prevFavs, gymId]
-    );
-    setFavoriteAnim((prev) => ({ ...prev, [gymId]: true }));
-    setTimeout(() => setFavoriteAnim((prev) => ({ ...prev, [gymId]: false })), FAVORITES_ANIMATION_TIME);
-  };
-
+  // Sorting/filtering
   function getSortedGyms(gymArray) {
     let arr = [...gymArray];
     if (sortOption === "name") {
@@ -214,25 +151,18 @@ export default function Gyms() {
 
   const filteredGyms = gyms.filter(gym => {
     if (showOnlyFavorites && !favorites.includes(gym.id)) return false;
-    if (!debouncedSearch.trim()) return true;
-    const term = debouncedSearch.trim().toLowerCase();
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.trim().toLowerCase();
     const name = gym.name?.toLowerCase() || "";
     return name.includes(term);
   });
 
   const displayedGyms = getSortedGyms(filteredGyms);
 
-  const clearSearch = () => {
-    setSearchTerm("");
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  };
-
   // Skeleton loader for gym cards
   function GymCardSkeleton() {
     return (
-      <div className="gym-card-skel" style={{
+      <div style={{
         flex: "1 0 320px",
         minWidth: 280,
         maxWidth: 370,
@@ -259,6 +189,15 @@ export default function Gyms() {
     );
   }
 
+  // Favorite star as emoji
+  function FavStar({ filled }) {
+    return (
+      <span role="img" aria-label={filled ? "Favorited" : "Not favorited"} style={{ fontSize: "1.2em" }}>
+        {filled ? "⭐" : "☆"}
+      </span>
+    );
+  }
+
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
@@ -267,7 +206,7 @@ export default function Gyms() {
         <b>Tip:</b> Searching within
         <select
           value={radiusKm}
-          onChange={handleRadiusChange}
+          onChange={e => setRadiusKm(Number(e.target.value))}
           style={{
             fontWeight: 700,
             color: "#2563eb",
@@ -303,9 +242,9 @@ export default function Gyms() {
           top: "50%",
           transform: "translateY(-50%)",
           color: "#2563eb",
-          fontSize: "1.25rem"
+          fontSize: "1.2rem"
         }}>
-          <FaSearch />
+          🔍
         </span>
         <input
           type="text"
@@ -331,7 +270,10 @@ export default function Gyms() {
           <button
             aria-label="Clear search"
             title="Clear search"
-            onClick={clearSearch}
+            onClick={() => {
+              setSearchTerm("");
+              if (searchInputRef.current) searchInputRef.current.focus();
+            }}
             style={{
               position: "absolute",
               right: 10,
@@ -494,7 +436,7 @@ export default function Gyms() {
         <div style={{ color: "#2563eb" }}>
           {showOnlyFavorites
             ? "You have no favorite gyms in this area."
-            : debouncedSearch
+            : searchTerm
               ? "No gyms match your search."
               : `No real gyms found within ${radiusKm}km of your location.`}
           <br />
@@ -571,51 +513,30 @@ export default function Gyms() {
                   }}>
                     <button
                       title={isFav ? "Remove from favorites" : "Add to favorites"}
-                      onClick={() => toggleFavorite(gym.id)}
+                      onClick={() => setFavorites((prevFavs) =>
+                        prevFavs.includes(gym.id)
+                          ? prevFavs.filter((f) => f !== gym.id)
+                          : [...prevFavs, gym.id]
+                      )}
                       aria-label={isFav ? "Unfavorite" : "Favorite"}
                       style={{
                         border: "none",
                         background: "none",
                         cursor: "pointer",
                         marginRight: 8,
-                        fontSize: "1.4rem",
-                        color: isFav ? "#FFD700" : "#bbb",
-                        transition: "color 0.2s, transform 0.2s",
+                        fontSize: "1.3rem",
                         padding: 0,
                         lineHeight: 1,
-                        outline: "none",
-                        transform: favoriteAnim[gym.id] ? "scale(1.25)" : "scale(1)",
-                        filter: favoriteAnim[gym.id] ? "drop-shadow(0 0 6px #FFD70066)" : undefined
+                        outline: "none"
                       }}
                     >
-                      {isFav ? <FaStar /> : <FaRegStar />}
+                      <FavStar filled={isFav} />
                     </button>
                     {gym.name}
-                    {gym.opening_hours && (
-                      <span
-                        style={{
-                          marginLeft: 10,
-                          padding: "2px 10px",
-                          borderRadius: 14,
-                          fontWeight: 600,
-                          fontSize: "0.93em",
-                          color: "#2563eb",
-                          background: "rgba(37,99,235,0.12)",
-                          border: "1.5px solid #2563eb44",
-                          marginBottom: 2,
-                          marginRight: 2,
-                          verticalAlign: "middle"
-                        }}
-                        title="Opening hours info available"
-                      >
-                        <FaClock style={{ marginRight: 4 }} /> {gym.opening_hours}
-                      </span>
-                    )}
                   </div>
                   {gym.address && (
                     <div style={{ color: "#0b2546", opacity: 0.78, marginBottom: 4, display: "flex", alignItems: "center" }}>
-                      <FaMapMarkerAlt style={{ marginRight: 6, color: "#38bdf8" }} />
-                      {gym.address}
+                      📍 {gym.address}
                     </div>
                   )}
                   <div style={{ fontSize: ".93rem", color: "#38bdf8", marginBottom: 2 }}>
@@ -625,13 +546,24 @@ export default function Gyms() {
                   </div>
                   {gym.phone && (
                     <div style={{ fontSize: ".93rem", color: "#222", marginBottom: 2, display: "flex", alignItems: "center" }}>
-                      <FaPhone style={{ marginRight: 5, color: "#2563eb" }} />
-                      <a href={`tel:${gym.phone}`} style={{ color: "#2563eb", textDecoration: "underline" }}>{gym.phone}</a>
+                      📞 <a href={`tel:${gym.phone}`} style={{ color: "#2563eb", textDecoration: "underline", marginLeft: 4 }}>{gym.phone}</a>
                     </div>
                   )}
                   {gym.opening_hours && (
-                    <div style={{ fontSize: ".93rem", color: "#444", marginBottom: 2, display: "none" }}>
-                      <FaClock style={{ marginRight: 6 }} /><span>{gym.opening_hours}</span>
+                    <div style={{
+                      marginLeft: 2,
+                      marginTop: 4,
+                      padding: "2px 10px",
+                      borderRadius: 14,
+                      fontWeight: 600,
+                      fontSize: "0.93em",
+                      color: "#2563eb",
+                      background: "rgba(37,99,235,0.12)",
+                      border: "1.5px solid #2563eb44",
+                      marginBottom: 2,
+                      verticalAlign: "middle"
+                    }}>
+                      🕒 {gym.opening_hours}
                     </div>
                   )}
                 </div>
@@ -645,7 +577,7 @@ export default function Gyms() {
                       fontWeight: 600,
                       display: "flex", alignItems: "center"
                     }}
-                  >OpenStreetMap <FaExternalLinkAlt style={{ marginLeft: 5, fontSize: 13 }} /></a>
+                  >OpenStreetMap <span style={{ marginLeft: 5, fontSize: 13 }}>↗️</span></a>
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${gym.lat},${gym.lng}`}
                     target="_blank" rel="noopener noreferrer"
@@ -655,7 +587,7 @@ export default function Gyms() {
                       fontWeight: 600,
                       display: "flex", alignItems: "center"
                     }}
-                  >Google Maps <FaExternalLinkAlt style={{ marginLeft: 5, fontSize: 13 }} /></a>
+                  >Google Maps <span style={{ marginLeft: 5, fontSize: 13 }}>↗️</span></a>
                 </div>
                 {/* BOLD BOOK SESSION BUTTON */}
                 <button
