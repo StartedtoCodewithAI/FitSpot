@@ -17,6 +17,23 @@ function saveBooking(booking) {
   localStorage.setItem(key, JSON.stringify(prev));
 }
 
+// Funny gym-themed sayings
+const funnySayings = [
+  "You crushed it, gym champ! 💪",
+  "Booking done! Time to lift your spirits—and some weights!",
+  "Look at you go! Gains are coming. 🏋️",
+  "There you go, player! You did it 😉",
+  "Booking confirmed: excuses cancelled. 🛑",
+  "Time to get those reps in! 🏆",
+  "Sweat now, shine later. Your journey starts!",
+  "Flex mode activated. See you at the gym!",
+  "Nice! Your muscles just sent a thank you card.",
+  "Let’s get physical... at the gym! 🎶",
+];
+function getRandomSaying() {
+  return funnySayings[Math.floor(Math.random() * funnySayings.length)];
+}
+
 export default function BookSession() {
   const { gymId } = useParams();
   const location = useLocation();
@@ -28,6 +45,10 @@ export default function BookSession() {
   const [step, setStep] = useState("form"); // "form", "payment", "done"
   const [code, setCode] = useState("");
   const [isPaying, setIsPaying] = useState(false);
+
+  // Popup state
+  const [showFunnyPopup, setShowFunnyPopup] = useState(false);
+  const [funnyText, setFunnyText] = useState("");
 
   if (!gym) {
     return (
@@ -99,18 +120,25 @@ export default function BookSession() {
           <button
             type="submit"
             style={{
-              padding: "0.7rem 2rem",
-              background: "#2563eb",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: 700,
-              fontSize: "1.1rem",
-              cursor: "pointer",
-              marginTop: 12,
+              background: 'linear-gradient(90deg, #38bdf8, #2563eb)',
+              color: '#fff',
+              fontSize: '1.25rem',
+              fontWeight: 800,
+              border: 'none',
+              borderRadius: '40px',
+              padding: '1.1rem 2.4rem',
+              marginTop: '1.3rem',
+              boxShadow: '0 4px 16px #2563eb22',
+              cursor: 'pointer',
+              letterSpacing: '.06em',
+              transition: 'background 0.2s, transform 0.1s',
+              display: 'block',
+              width: '100%'
             }}
+            onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #2563eb, #38bdf8)'}
+            onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #38bdf8, #2563eb)'}
           >
-            Proceed to Payment
+            💪 BOOK Session
           </button>
         </form>
         <button
@@ -167,8 +195,14 @@ export default function BookSession() {
                 code: sessionCode,
                 created: new Date().toISOString(),
               });
-              setStep("done");
               setIsPaying(false);
+              // Show funny popup
+              setFunnyText(getRandomSaying());
+              setShowFunnyPopup(true);
+              setTimeout(() => {
+                setShowFunnyPopup(false);
+                setStep("done");
+              }, 2400); // Show popup for 2.4s then show confirmation
             }, 1200);
           }}
           disabled={isPaying}
@@ -204,6 +238,38 @@ export default function BookSession() {
             Back
           </button>
         </div>
+        {/* FUNNY POPUP */}
+        {showFunnyPopup && (
+          <div
+            style={{
+              position: "fixed",
+              top: "22vh",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 9999,
+              background: "linear-gradient(90deg,#fef08a,#a7f3d0)",
+              color: "#713f12",
+              padding: "1.2rem 2.1rem",
+              borderRadius: 20,
+              fontWeight: 800,
+              fontSize: "1.35rem",
+              boxShadow: "0 10px 32px #fde04755",
+              animation: "pop-bounce 0.7s cubic-bezier(.36,1.56,.64,1) both"
+            }}
+            aria-live="polite"
+          >
+            🏋️‍♂️ {funnyText} 🏋️‍♀️
+            <style>
+              {`
+                @keyframes pop-bounce {
+                  0% { transform: scale(0.8); opacity: 0; }
+                  60% { transform: scale(1.15); opacity: 1; }
+                  100% { transform: scale(1); }
+                }
+              `}
+            </style>
+          </div>
+        )}
       </div>
     );
   }
@@ -245,7 +311,7 @@ export default function BookSession() {
           Saved to your bookings!
         </div>
         <button
-          onClick={() => navigate("/my-codes")}
+          onClick={() => navigate("/mycodes")}
           style={{
             marginTop: 28,
             background: "#2563eb",
