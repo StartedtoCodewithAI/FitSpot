@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-// Helper function to check if a booking is expired (simple implementation)
+// Helper function to check if a booking is expired
 function isExpired(booking) {
   if (!booking.date || !booking.time) return false;
   const bookingDateTime = new Date(`${booking.date}T${booking.time}`);
@@ -16,7 +16,6 @@ export default function MyCodes() {
   const [copiedIndex, setCopiedIndex] = useState(-1);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Simulate code creation success message (trigger this based on your flow)
   useEffect(() => {
     if (window.location.hash === "#code-created") {
       setShowSuccess(true);
@@ -168,7 +167,12 @@ export default function MyCodes() {
             }}
             aria-label={`Session code for ${b.gym?.name || "Unknown Gym"}`}
           >
-            <div style={{ padding: "1.2rem 1.5rem", display: "flex", alignItems: "center" }}>
+            <div style={{
+              padding: "1.2rem 1.5rem",
+              display: "flex",
+              alignItems: "flex-start", // top-align map and text
+              flexWrap: "wrap"
+            }}>
               <div style={{
                 fontSize: "2.1rem",
                 fontWeight: 900,
@@ -218,7 +222,13 @@ export default function MyCodes() {
                   </span>
                 )}
               </div>
-              <div style={{ flex: 1, marginLeft: "1.3rem" }}>
+              <div style={{
+                flex: 1,
+                minWidth: 0,
+                marginLeft: "1.3rem",
+                display: "flex",
+                flexDirection: "column"
+              }}>
                 <div style={{
                   fontWeight: 700,
                   fontSize: "1.1rem",
@@ -248,21 +258,29 @@ export default function MyCodes() {
                 </div>
                 {/* Inline Map Preview (Embedded Google Map - no API key required) */}
                 {b.gym?.lat && b.gym?.lng && (
-                  <iframe
-                    title="Gym location map preview"
-                    width="250"
-                    height="120"
-                    style={{
-                      border: "1px solid #cbd5e1",
-                      borderRadius: 8,
-                      marginTop: 6,
-                      marginBottom: 6
-                    }}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps?q=${b.gym.lat},${b.gym.lng}&hl=es;z=15&output=embed`}
-                  />
+                  <div style={{
+                    width: "100%",
+                    maxWidth: 300,
+                    minWidth: 200,
+                    margin: "8px 0",
+                    borderRadius: 8,
+                    overflow: "hidden"
+                  }}>
+                    <iframe
+                      title="Gym location map preview"
+                      width="100%"
+                      height="150"
+                      style={{
+                        border: "1px solid #cbd5e1",
+                        borderRadius: 8,
+                        display: "block"
+                      }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://www.google.com/maps?q=${b.gym.lat},${b.gym.lng}&hl=es;z=15&output=embed`}
+                    />
+                  </div>
                 )}
               </div>
               {/* Directions button only if code exists and not expired */}
@@ -279,7 +297,11 @@ export default function MyCodes() {
                     fontWeight: 700,
                     fontSize: ".99rem",
                     marginLeft: "1rem",
-                    textDecoration: "none"
+                    marginTop: "0.5rem",
+                    textDecoration: "none",
+                    height: 40,
+                    display: "flex",
+                    alignItems: "center"
                   }}
                   aria-label={`Directions to ${b.gym?.name || "gym"}`}
                 >
