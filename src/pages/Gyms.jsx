@@ -485,6 +485,26 @@ export default function Gyms() {
                       {isFav ? "★" : "☆"}
                     </button>
                     {gym.name}
+                    {gym.opening_hours && (
+                      <span
+                        style={{
+                          marginLeft: 10,
+                          padding: "2px 10px",
+                          borderRadius: 14,
+                          fontWeight: 600,
+                          fontSize: "0.93em",
+                          color: "#2563eb",
+                          background: "rgba(37,99,235,0.12)",
+                          border: "1.5px solid #2563eb44",
+                          marginBottom: 2,
+                          marginRight: 2,
+                          verticalAlign: "middle"
+                        }}
+                        title="Opening hours info available"
+                      >
+                        {gym.opening_hours}
+                      </span>
+                    )}
                   </div>
                   {gym.address && (
                     <div style={{ color: "#0b2546", opacity: 0.78, marginBottom: 4 }}>
