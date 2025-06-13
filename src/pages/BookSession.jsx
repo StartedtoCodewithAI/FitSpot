@@ -138,7 +138,7 @@ export default function BookSession() {
             onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #2563eb, #38bdf8)'}
             onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #38bdf8, #2563eb)'}
           >
-            💪 BOOK Session
+            🚀 Closer to your goals!
           </button>
         </form>
         <button
