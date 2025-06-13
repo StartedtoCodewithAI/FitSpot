@@ -9,7 +9,6 @@ function isExpired(booking) {
 
 // Helper function to get the user's name from localStorage
 function getUserName() {
-  // Store user name as 'fitspot_user_name' in localStorage
   const stored = localStorage.getItem("fitspot_user_name");
   if (!stored) return "athlete";
   return stored.replace(/[^a-zA-Z0-9 _-]/g, "").trim() || "athlete";
@@ -36,7 +35,6 @@ function getRandomSaying() {
 
 // Calculate max streak of consecutive booking days
 function getMaxStreak(bookings) {
-  // Get only unique, valid dates, sorted descending
   const dates = Array.from(
     new Set(
       bookings
@@ -76,12 +74,10 @@ export default function MyCodes() {
   const [userName, setUserName] = useState("athlete");
   const [maxStreak, setMaxStreak] = useState(0);
 
-  // Personalization: get user's name
   useEffect(() => {
     setUserName(getUserName());
   }, []);
 
-  // Show funny notification if redirected after booking
   useEffect(() => {
     if (window.location.hash === "#funny-success") {
       setFunnyText(getRandomSaying());
@@ -91,7 +87,6 @@ export default function MyCodes() {
     }
   }, []);
 
-  // Load bookings and recalculate streak
   useEffect(() => {
     try {
       setLoading(true);
@@ -111,10 +106,8 @@ export default function MyCodes() {
     setTimeout(() => setCopiedIndex(-1), 1500);
   };
 
-  // Delete used code
   const deleteBooking = (bookingIdx) => {
     const allBookings = JSON.parse(localStorage.getItem("fitspot_bookings") || "[]");
-    // bookings are displayed in reverse, so map to correct index
     const filteredBookings = allBookings.filter((_, idx) =>
       idx !== (allBookings.length - 1 - bookingIdx)
     );
@@ -123,7 +116,6 @@ export default function MyCodes() {
     setMaxStreak(getMaxStreak(filteredBookings));
   };
 
-  // Filter bookings
   const filteredActive = bookings.filter(
     b => !isExpired(b) && (search.trim() === "" || (b.gym?.name || "").toLowerCase().includes(search.trim().toLowerCase()))
   );
@@ -377,13 +369,18 @@ export default function MyCodes() {
                       </span>
                     )}
                   </div>
-                  <div style={{
-                    flex: 1,
-                    minWidth: 0,
-                    marginLeft: "1.3rem",
-                    display: "flex",
-                    flexDirection: "column"
-                  }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      marginLeft: "1.3rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                      overflowWrap: "anywhere"
+                    }}
+                  >
                     <div style={{
                       fontWeight: 700,
                       fontSize: "1.1rem",
@@ -399,7 +396,6 @@ export default function MyCodes() {
                       Date: {b.date} &nbsp;|&nbsp; Time: {b.time}
                     </div>
                   </div>
-                  {/* Directions button only if code exists and not expired */}
                   {b.code && !expired && (
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${b.gym?.lat},${b.gym?.lng}`}
@@ -477,13 +473,18 @@ export default function MyCodes() {
                 }}>
                   {b.code || <span style={{ color: "#64748b" }}>(No Code)</span>}
                 </div>
-                <div style={{
-                  flex: 1,
-                  minWidth: 0,
-                  marginLeft: "1.3rem",
-                  display: "flex",
-                  flexDirection: "column"
-                }}>
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    marginLeft: "1.3rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                    overflowWrap: "anywhere"
+                  }}
+                >
                   <div style={{
                     fontWeight: 700,
                     fontSize: "1.1rem",
@@ -510,7 +511,6 @@ export default function MyCodes() {
                     </span>
                   </div>
                 </div>
-                {/* Delete button for used codes */}
                 <button
                   onClick={() => deleteBooking(idx)}
                   aria-label="Delete expired session code"
