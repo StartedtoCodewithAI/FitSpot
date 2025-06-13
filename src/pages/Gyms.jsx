@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const MAX_DISTANCE_METERS = 10000; // 10km
+const MAX_DISTANCE_METERS = 20000; // 20km radius (increase as needed)
 
 // Haversine formula for distance in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -106,6 +106,10 @@ export default function Gyms() {
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
+      <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 16 }}>
+        <b>Tip:</b> You are searching in a <b>{MAX_DISTANCE_METERS / 1000} km</b> radius.
+        Edit <code>MAX_DISTANCE_METERS</code> in the code to change the search area.
+      </div>
 
       {!userLocation && !permissionDenied && !loading && (
         <button
@@ -169,7 +173,7 @@ export default function Gyms() {
       )}
       {userLocation && gyms.length === 0 && !loading && !error && (
         <div style={{ color: "#2563eb" }}>
-          No real gyms found within 10km of your location.<br />
+          No real gyms found within {MAX_DISTANCE_METERS / 1000}km of your location.<br />
           Try again or widen your search radius!
         </div>
       )}
