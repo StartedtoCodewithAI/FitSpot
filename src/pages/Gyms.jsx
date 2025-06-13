@@ -2,7 +2,6 @@ import React, { useState } from "react";
 
 const MAX_DISTANCE_METERS = 7000; // 7km radius
 
-// Haversine formula for distance in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -40,7 +39,6 @@ export default function Gyms() {
         };
         setUserLocation(userLoc);
 
-        // Construct Overpass query
         const query = `[out:json];
           (
             node["leisure"~"fitness_centre|gym"](around:${MAX_DISTANCE_METERS},${userLoc.lat},${userLoc.lng});
@@ -105,11 +103,7 @@ export default function Gyms() {
 
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
-      <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
-      <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 16 }}>
-        <b>Tip:</b> You are searching in a <b>{MAX_DISTANCE_METERS / 1000} km</b> radius.
-        Edit <code>MAX_DISTANCE_METERS</code> in the code to change the search area.
-      </div>
+      <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>TESTING GYMS PAGE</h1>
 
       {!userLocation && !permissionDenied && !loading && (
         <button
@@ -171,52 +165,23 @@ export default function Gyms() {
           Longitude: {userLocation.lng}
         </div>
       )}
+
+      {userLocation && gyms.length > 0 && (
+        <div>
+          {gyms.map((gym, i) => (
+            <div key={gym.id || i} style={{padding:8, borderBottom:'1px solid #ccc'}}>
+              <b>{gym.name}</b> {gym.address} {gym.distance.toFixed(2)} km
+            </div>
+          ))}
+        </div>
+      )}
+
       {userLocation && gyms.length === 0 && !loading && !error && (
         <div style={{ color: "#2563eb" }}>
           No real gyms found within {MAX_DISTANCE_METERS / 1000}km of your location.<br />
           Try again or widen your search radius!
         </div>
       )}
-
-      {userLocation && gyms.length > 0 && (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {gyms.map((gym) => (
-            <li key={gym.id} style={{
-              margin: "1.5rem 0",
-              padding: "1.5rem",
-              background: "rgba(37,99,235,0.09)",
-              borderRadius: 14,
-              boxShadow: "0 2px 16px #2563eb14",
-              position: "relative"
-            }}>
-              <div style={{ fontWeight: 700, fontSize: "1.15rem", color: "#2563eb" }}>
-                {gym.name}
-              </div>
-              {gym.address && (
-                <div style={{ color: "#0b2546", opacity: 0.8 }}>{gym.address}</div>
-              )}
-              <div style={{ fontSize: ".95rem", color: "#38bdf8" }}>
-                {gym.distance.toFixed(2)} km away
-              </div>
-              <div style={{ marginTop: 7 }}>
-                <a
-                  href={`https://www.openstreetmap.org/?mlat=${gym.lat}&mlon=${gym.lng}#map=18/${gym.lat}/${gym.lng}`}
-                  target="_blank" rel="noopener noreferrer"
-                  style={{
-                    color: "#2563eb",
-                    textDecoration: "underline",
-                    fontWeight: 600,
-                  }}
-                >View on OpenStreetMap</a>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div style={{ fontSize: "0.85rem", marginTop: 30, color: "#888" }}>
-        Data from <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors.
-      </div>
     </div>
   );
 }
