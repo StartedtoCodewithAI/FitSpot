@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const MAX_DISTANCE_METERS = 20000; // 20km radius (increase as needed)
+const MAX_DISTANCE_METERS = 20000; // 20km radius
 
 // Haversine formula for distance in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -34,6 +34,8 @@ export default function Gyms() {
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        // Uncomment to hardcode a specific location for testing (e.g. Athens center)
+        // const userLoc = { lat: 37.9755, lng: 23.7348 };
         const userLoc = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
@@ -54,8 +56,13 @@ export default function Gyms() {
             "https://overpass-api.de/api/interpreter?data=" +
             encodeURIComponent(query);
           const response = await fetch(url);
-          if (!response.ok) throw new Error("Overpass API error (try again later)");
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error("Overpass API error: " + text);
+          }
           const data = await response.json();
+          console.log("Fetched OSM data:", data); // DEBUG: Inspect the raw data in your browser console
+
           // Map nodes, ways, relations uniformly with lat/lng and basic info
           const gymsFound = (data.elements || []).map((el) => {
             let lat = el.lat;
@@ -169,6 +176,11 @@ export default function Gyms() {
           Latitude: {userLocation.lat}
           <br />
           Longitude: {userLocation.lng}
+        </div>
+      )}
+      {userLocation && (
+        <div style={{ marginBottom: 16, color: "#888" }}>
+          Fetched {gyms.length} gym(s) from OpenStreetMap API.
         </div>
       )}
       {userLocation && gyms.length === 0 && !loading && !error && (
