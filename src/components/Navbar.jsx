@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/FitSpot.png";
-import MobileMenuPortal from "./MobileMenuPortal";
 
 function stringToInitials(name) {
   if (!name) return "";
@@ -35,6 +34,7 @@ export default function Navbar() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Menu content for both desktop and mobile
   function MenuContent({ onClick }) {
     const menuItems = [
       { to: "/", label: "Home", match: (p) => p === "/" },
@@ -212,7 +212,7 @@ export default function Navbar() {
           ul {
             display: none;
           }
-          .mobile-portal-menu {
+          .mobile-menu {
             display: flex !important;
             flex-direction: column !important;
             gap: 0;
@@ -240,11 +240,11 @@ export default function Navbar() {
             0% { transform: translateX(120%); opacity: 0;}
             100% { transform: translateX(0); opacity: 1;}
           }
-          .mobile-portal-menu li {
+          .mobile-menu li {
             padding: 0.95rem 1.6rem;
             justify-content: flex-start;
           }
-          .mobile-portal-menu .menu-link {
+          .mobile-menu .menu-link {
             font-size: 1.18rem;
             font-weight: 700;
             color: #27272a;
@@ -257,15 +257,15 @@ export default function Navbar() {
             box-shadow: none;
             border-bottom: none;
           }
-          .mobile-portal-menu .menu-link.active {
+          .mobile-menu .menu-link.active {
             color: #8d8d92;
             text-shadow: 0 0 6px #a3a3a344;
             background: rgba(180,180,180,0.13);
             border-left: 5px solid #8d8d92;
             border-image: none;
           }
-          .mobile-portal-menu .menu-link:hover,
-          .mobile-portal-menu .menu-link:focus {
+          .mobile-menu .menu-link:hover,
+          .mobile-menu .menu-link:focus {
             background: linear-gradient(90deg,#e5e7eb 0%,#f3f4f6 100%);
             color: #52525b;
             text-shadow: 0 2px 8px #a3a3a3cc;
@@ -307,27 +307,27 @@ export default function Navbar() {
             <ul>
               <MenuContent onClick={() => setIsOpen(false)} />
             </ul>
+            {/* Mobile menu */}
+            {isOpen && isMobile && (
+              <>
+                <ul className="mobile-menu open">
+                  <MenuContent onClick={() => setIsOpen(false)} />
+                </ul>
+                {/* Overlay to close */}
+                <div
+                  onClick={() => setIsOpen(false)}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 1999,
+                    background: 'rgba(0,0,0,0.04)'
+                  }}
+                />
+              </>
+            )}
           </div>
         </div>
       </nav>
-      {/* Mobile menu in Portal */}
-      {isOpen && isMobile && (
-        <MobileMenuPortal>
-          <ul className="mobile-portal-menu open">
-            <MenuContent onClick={() => setIsOpen(false)} />
-          </ul>
-          {/* Overlay to close */}
-          <div
-            onClick={() => setIsOpen(false)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 1999,
-              background: 'rgba(0,0,0,0.04)'
-            }}
-          />
-        </MobileMenuPortal>
-      )}
     </>
   );
 }
