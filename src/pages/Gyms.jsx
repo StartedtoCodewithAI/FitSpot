@@ -473,6 +473,7 @@ export default function Gyms() {
                 <img
                   src={getMapPreviewUrl(gym.lat, gym.lng)}
                   alt={`Map preview for ${gym.name}`}
+                  onError={e => { e.target.onerror = null; e.target.src = "/placeholder-map.png"; }}
                   style={{
                     width: "100%",
                     height: 110,
