@@ -215,7 +215,21 @@ export default function Home() {
         </div>
         <section className="callToAction">
           <h2>Ready to start your fitness journey?</h2>
-          <button className="cta" onClick={() => navigate("/signup")}>Sign Up</button>
+          {/* Center Sign Up button */}
+          <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+            <button
+              className="cta"
+              style={{
+                position: "relative",
+                left: "0",
+                transform: "none",
+                margin: "0 auto"
+              }}
+              onClick={() => navigate("/signup")}
+            >
+              Sign Up
+            </button>
+          </div>
         </section>
         <footer>
           &copy; 2025 FitSpot. All rights reserved.
