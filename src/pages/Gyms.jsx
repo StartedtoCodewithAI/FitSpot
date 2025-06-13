@@ -34,8 +34,6 @@ export default function Gyms() {
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        // Uncomment to hardcode a location for testing:
-        // const userLoc = { lat: 37.9755, lng: 23.7348 };
         const userLoc = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
@@ -179,6 +177,7 @@ export default function Gyms() {
           Try again or widen your search radius!
         </div>
       )}
+
       {userLocation && gyms.length > 0 && (
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {gyms.map((gym) => (
@@ -214,6 +213,7 @@ export default function Gyms() {
           ))}
         </ul>
       )}
+
       <div style={{ fontSize: "0.85rem", marginTop: 30, color: "#888" }}>
         Data from <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors.
       </div>
