@@ -125,6 +125,11 @@ export default function Home() {
           width: 100%;
           display: flex;
           justify-content: center;
+          align-items: center;
+        }
+        .callToAction .center-btn-row .cta {
+          margin: 0 auto;
+          display: block;
         }
         footer {
           text-align: center;
