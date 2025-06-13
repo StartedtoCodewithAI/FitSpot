@@ -546,22 +546,32 @@ export default function Gyms() {
                       fontWeight: 600,
                     }}
                   >Google Maps</a>
-                  {/* Get Directions button removed */}
+                  {/* BOLD, APPEALING BOOK SESSION BUTTON */}
                   <button
                     style={{
-                      background: "#2563eb",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 8,
-                      padding: "8px 20px",
-                      fontWeight: 700,
-                      fontSize: "1rem",
-                      cursor: "pointer",
-                      boxShadow: "0 1px 6px #2563eb33"
+                      background: 'linear-gradient(90deg, #38bdf8, #2563eb)',
+                      color: '#fff',
+                      fontSize: '1.15rem',
+                      fontWeight: 800,
+                      border: 'none',
+                      borderRadius: '40px',
+                      padding: '1rem 2.2rem',
+                      marginTop: '1.3rem',
+                      boxShadow: '0 4px 16px #2563eb22',
+                      cursor: 'pointer',
+                      letterSpacing: '.06em',
+                      transition: 'background 0.2s, transform 0.1s',
+                      display: 'block',
+                      width: '100%',
+                      maxWidth: 270,
+                      marginLeft: 'auto',
+                      marginRight: 'auto'
                     }}
+                    onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #2563eb, #38bdf8)'}
+                    onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #38bdf8, #2563eb)'}
                     onClick={() => navigate(`/book/${gym.id}`, { state: { gym } })}
                   >
-                    Book Session
+                    💪 BOOK Session
                   </button>
                 </div>
               </div>
