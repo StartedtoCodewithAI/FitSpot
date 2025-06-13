@@ -16,7 +16,7 @@ const gyms = [
     lat: 38.0656,
     lng: 23.7536
   },
-  // You can add more gyms here!
+  // Add more gyms here as needed!
 ];
 
 // Haversine formula for distance in km
@@ -43,8 +43,7 @@ function generateRandomCode(length = 8) {
   return result;
 }
 
-// You can adjust this value for debugging!
-const MAX_DISTANCE_KM = 10; // Try 1000 to see if gyms appear even if your location is "wrong"
+const MAX_DISTANCE_KM = 10;
 
 export default function Gyms() {
   const [userLocation, setUserLocation] = useState(null);
@@ -71,10 +70,10 @@ export default function Gyms() {
           lng: pos.coords.longitude,
         };
         setUserLocation(userLoc);
-        console.log("User location (from browser):", userLoc);
-        console.log("User agent:", navigator.userAgent);
-        // Compute and log distances to all gyms
-        const gymsWithinXkm = gyms.filter((gym) => {
+
+        // DEBUG: Log user location and distance to all gyms
+        console.log("Your detected location:", userLoc);
+        gyms.forEach((gym) => {
           const dist = getDistanceFromLatLonInKm(
             userLoc.lat,
             userLoc.lng,
@@ -82,12 +81,24 @@ export default function Gyms() {
             gym.lng
           );
           console.log(
-            `Distance from (${userLoc.lat},${userLoc.lng}) to ${gym.name} (${gym.lat},${gym.lng}): ${dist.toFixed(2)} km`
+            `Distance to "${gym.name}": ${dist.toFixed(2)} km`
+          );
+        });
+
+        // Filter gyms within 10km
+        const gymsWithin10km = gyms.filter((gym) => {
+          const dist = getDistanceFromLatLonInKm(
+            userLoc.lat,
+            userLoc.lng,
+            gym.lat,
+            gym.lng
           );
           return dist <= MAX_DISTANCE_KM;
         });
-        console.log("Filtered gyms within", MAX_DISTANCE_KM, "km:", gymsWithinXkm);
-        setFilteredGyms(gymsWithinXkm);
+
+        console.log("Gyms within 10km:", gymsWithin10km);
+
+        setFilteredGyms(gymsWithin10km);
         setLoading(false);
       },
       (err) => {
@@ -96,7 +107,7 @@ export default function Gyms() {
         setFilteredGyms([]);
         console.error("Geolocation error:", err);
         alert(
-          `Error fetching location: ${err.message}. Please check your browser location settings, refresh, and try again.`
+          `Error fetching location: ${err.message}. Please check your browser location settings and try again.`
         );
       },
       { enableHighAccuracy: true }
@@ -171,59 +182,69 @@ export default function Gyms() {
         }}>
           <strong>Location permission denied.</strong>
           <br />
-          Please allow location access to see nearby gyms.<br/>
+          Please allow location access to see nearby gyms.<br />
           If you see an error, please check your site settings or clear site data and try again.
         </div>
       )}
       {userLocation && (
-        <div style={{ fontSize: ".95rem", color: "#64748b", marginBottom: 7 }}>
-          <strong>Your detected location:</strong><br/>
-          Latitude: {userLocation.lat} <br/>
+        <div style={{ fontSize: ".95rem", color: "#64748b", marginBottom: 14 }}>
+          <strong>Your detected location:</strong>
+          <br />
+          Latitude: {userLocation.lat}
+          <br />
           Longitude: {userLocation.lng}
         </div>
       )}
       {userLocation && filteredGyms.length === 0 && (
         <div style={{ color: "#2563eb" }}>
-          No gyms found within {MAX_DISTANCE_KM}km of your location.<br/>
+          No gyms found within {MAX_DISTANCE_KM}km of your location.<br />
           (Check your location in the debug info above. If the coordinates look wrong, try increasing the distance or check your mobile location settings.)
         </div>
       )}
       {userLocation && filteredGyms.length > 0 && (
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {filteredGyms.map((gym) => (
-            <li key={gym.id} style={{
-              margin: "1.5rem 0",
-              padding: "1.5rem",
-              background: "rgba(37,99,235,0.09)",
-              borderRadius: 14,
-              boxShadow: "0 2px 16px #2563eb14",
-              position: "relative"
-            }}>
-              <div style={{ fontWeight: 700, fontSize: "1.25rem", color: "#2563eb" }}>{gym.name}</div>
-              <div style={{ color: "#0b2546", opacity: 0.8 }}>{gym.address}</div>
-              <div style={{ fontSize: ".95rem", color: "#38bdf8" }}>
-                {getDistanceFromLatLonInKm(userLocation.lat, userLocation.lng, gym.lat, gym.lng).toFixed(2)} km away
-              </div>
-              <button
-                onClick={() => handleGenerateCode(gym)}
-                style={{
-                  marginTop: "1rem",
-                  padding: "0.7rem 1.5rem",
-                  background: "linear-gradient(90deg,#2563eb,#38bdf8)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 9,
-                  fontWeight: 700,
-                  fontSize: "1rem",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 8px #2563eb22",
-                  transition: "background 0.2s",
-                }}
-              >
-                Generate Session Code
-              </button>
-            </li>
-          ))}
+          {filteredGyms.map((gym) => {
+            const dist = getDistanceFromLatLonInKm(
+              userLocation.lat,
+              userLocation.lng,
+              gym.lat,
+              gym.lng
+            );
+            return (
+              <li key={gym.id} style={{
+                margin: "1.5rem 0",
+                padding: "1.5rem",
+                background: "rgba(37,99,235,0.09)",
+                borderRadius: 14,
+                boxShadow: "0 2px 16px #2563eb14",
+                position: "relative"
+              }}>
+                <div style={{ fontWeight: 700, fontSize: "1.25rem", color: "#2563eb" }}>{gym.name}</div>
+                <div style={{ color: "#0b2546", opacity: 0.8 }}>{gym.address}</div>
+                <div style={{ fontSize: ".95rem", color: "#38bdf8" }}>
+                  {dist.toFixed(2)} km away
+                </div>
+                <button
+                  onClick={() => handleGenerateCode(gym)}
+                  style={{
+                    marginTop: "1rem",
+                    padding: "0.7rem 1.5rem",
+                    background: "linear-gradient(90deg,#2563eb,#38bdf8)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 9,
+                    fontWeight: 700,
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 8px #2563eb22",
+                    transition: "background 0.2s",
+                  }}
+                >
+                  Generate Session Code
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
       {/* Modal */}
