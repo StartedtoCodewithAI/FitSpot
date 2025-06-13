@@ -7,19 +7,41 @@ function isExpired(booking) {
   return bookingDateTime < new Date();
 }
 
+// Funny gym-themed sayings
+const funnySayings = [
+  "You crushed it, gym champ! 💪",
+  "Booking done! Time to lift your spirits—and some weights!",
+  "Look at you go! Gains are coming. 🏋️",
+  "There you go, player! You did it 😉",
+  "Booking confirmed: excuses cancelled. 🛑",
+  "Time to get those reps in! 🏆",
+  "Sweat now, shine later. Your journey starts!",
+  "Flex mode activated. See you at the gym!",
+  "Nice! Your muscles just sent a thank you card.",
+  "Let’s get physical... at the gym! 🎶",
+];
+
+function getRandomSaying() {
+  return funnySayings[Math.floor(Math.random() * funnySayings.length)];
+}
+
 export default function MyCodes() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
   const [copiedIndex, setCopiedIndex] = useState(-1);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
+  const [showFunny, setShowFunny] = useState(false);
+  const [funnyText, setFunnyText] = useState("");
 
   useEffect(() => {
-    if (window.location.hash === "#code-created") {
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3500);
+    // Show funny notification if redirected after booking
+    if (window.location.hash === "#funny-success") {
+      setFunnyText(getRandomSaying());
+      setShowFunny(true);
+      setTimeout(() => setShowFunny(false), 3500);
+      window.location.hash = "";
     }
   }, []);
 
@@ -66,21 +88,52 @@ export default function MyCodes() {
         My Session Codes
       </h1>
 
-      {showSuccess && (
+      {/* Fancy funny notification */}
+      {showFunny && (
         <div
           style={{
-            background: "#d1fae5",
-            color: "#065f46",
-            padding: "1rem",
-            borderRadius: 8,
-            marginBottom: 20,
+            background: "linear-gradient(90deg,#fef08a,#a7f3d0)",
+            color: "#713f12",
+            padding: "1.1rem",
+            borderRadius: 14,
+            marginBottom: 22,
             textAlign: "center",
-            fontWeight: 600,
-            fontSize: "1.1rem"
+            fontWeight: 700,
+            fontSize: "1.15rem",
+            boxShadow: "0 10px 32px #fde04755",
+            position: "relative",
+            overflow: "hidden",
+            animation: "pop-bounce 0.7s cubic-bezier(.36,1.56,.64,1) both"
           }}
           aria-live="polite"
         >
-          Success! Your code has been created.
+          🏋️‍♂️ {funnyText} 🏋️‍♀️
+          <style>
+            {`
+              @keyframes pop-bounce {
+                0% { transform: scale(0.8); opacity: 0; }
+                60% { transform: scale(1.12); opacity: 1; }
+                100% { transform: scale(1); }
+              }
+              .confetti {
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                opacity: 0.7;
+                animation: confetti-fall 1.6s linear forwards;
+              }
+              @keyframes confetti-fall {
+                0% { top: -15px; }
+                100% { top: 80px; }
+              }
+            `}
+          </style>
+          {/* Fancy confetti */}
+          <span className="confetti" style={{background:'#fbbf24', left:'20%', animationDelay:'0.08s'}}></span>
+          <span className="confetti" style={{background:'#34d399', left:'40%', animationDelay:'0.18s'}}></span>
+          <span className="confetti" style={{background:'#60a5fa', left:'60%', animationDelay:'0.28s'}}></span>
+          <span className="confetti" style={{background:'#f472b6', left:'80%', animationDelay:'0.38s'}}></span>
         </div>
       )}
 
