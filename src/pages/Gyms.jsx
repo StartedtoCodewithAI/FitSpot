@@ -194,15 +194,6 @@ export default function Gyms() {
     }
   };
 
-  // Create Google Maps directions link
-  function getDirectionsLink(userLocation, gym) {
-    if (userLocation && gym.lat && gym.lng) {
-      return `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${gym.lat},${gym.lng}&travelmode=driving`;
-    }
-    // fallback: just go to the gym's location
-    return `https://www.google.com/maps/search/?api=1&query=${gym.lat},${gym.lng}`;
-  }
-
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
@@ -555,24 +546,7 @@ export default function Gyms() {
                       fontWeight: 600,
                     }}
                   >Google Maps</a>
-                  <a
-                    href={getDirectionsLink(userLocation, gym)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: "#fff",
-                      background: "#2563eb",
-                      borderRadius: 8,
-                      padding: "4px 13px",
-                      fontWeight: 700,
-                      marginLeft: 0,
-                      textDecoration: "none",
-                      boxShadow: "0 1px 6px #2563eb22",
-                      transition: "background 0.2s",
-                      display: "inline-block"
-                    }}
-                  >Get Directions</a>
-                  {/* BOOK SESSION BUTTON */}
+                  {/* Get Directions button removed */}
                   <button
                     style={{
                       background: "#2563eb",
