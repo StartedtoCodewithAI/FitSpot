@@ -43,6 +43,9 @@ function generateRandomCode(length = 8) {
   return result;
 }
 
+// You can adjust this value for debugging!
+const MAX_DISTANCE_KM = 10; // Try 1000 to see if gyms appear even if your location is "wrong"
+
 export default function Gyms() {
   const [userLocation, setUserLocation] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
@@ -68,17 +71,23 @@ export default function Gyms() {
           lng: pos.coords.longitude,
         };
         setUserLocation(userLoc);
-
-        const gymsWithin10km = gyms.filter((gym) => {
+        console.log("User location (from browser):", userLoc);
+        console.log("User agent:", navigator.userAgent);
+        // Compute and log distances to all gyms
+        const gymsWithinXkm = gyms.filter((gym) => {
           const dist = getDistanceFromLatLonInKm(
             userLoc.lat,
             userLoc.lng,
             gym.lat,
             gym.lng
           );
-          return dist <= 10;
+          console.log(
+            `Distance from (${userLoc.lat},${userLoc.lng}) to ${gym.name} (${gym.lat},${gym.lng}): ${dist.toFixed(2)} km`
+          );
+          return dist <= MAX_DISTANCE_KM;
         });
-        setFilteredGyms(gymsWithin10km);
+        console.log("Filtered gyms within", MAX_DISTANCE_KM, "km:", gymsWithinXkm);
+        setFilteredGyms(gymsWithinXkm);
         setLoading(false);
       },
       (err) => {
@@ -86,6 +95,9 @@ export default function Gyms() {
         setLoading(false);
         setFilteredGyms([]);
         console.error("Geolocation error:", err);
+        alert(
+          `Error fetching location: ${err.message}. Please check your browser location settings, refresh, and try again.`
+        );
       },
       { enableHighAccuracy: true }
     );
@@ -159,12 +171,21 @@ export default function Gyms() {
         }}>
           <strong>Location permission denied.</strong>
           <br />
-          Please allow location access to see nearby gyms.
+          Please allow location access to see nearby gyms.<br/>
+          If you see an error, please check your site settings or clear site data and try again.
+        </div>
+      )}
+      {userLocation && (
+        <div style={{ fontSize: ".95rem", color: "#64748b", marginBottom: 7 }}>
+          <strong>Your detected location:</strong><br/>
+          Latitude: {userLocation.lat} <br/>
+          Longitude: {userLocation.lng}
         </div>
       )}
       {userLocation && filteredGyms.length === 0 && (
         <div style={{ color: "#2563eb" }}>
-          No gyms found within 10km of your location.
+          No gyms found within {MAX_DISTANCE_KM}km of your location.<br/>
+          (Check your location in the debug info above. If the coordinates look wrong, try increasing the distance or check your mobile location settings.)
         </div>
       )}
       {userLocation && filteredGyms.length > 0 && (
