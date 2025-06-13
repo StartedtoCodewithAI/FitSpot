@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import SearchBar from "../components/SearchBar";
 
 // Utility: Distance in km between two lat/lng
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -45,7 +46,6 @@ export default function Gyms() {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("distance");
-  const searchInputRef = useRef();
 
   // Save favorites persistently
   useEffect(() => saveFavorites(favorites), [favorites]);
@@ -198,9 +198,47 @@ export default function Gyms() {
     );
   }
 
+  // Export gyms as CSV
+  function exportGymsToCSV() {
+    const header = "Name,Address,Distance (km),Phone,Opening Hours\n";
+    const rows = displayedGyms.map(g =>
+      [
+        `"${g.name}"`, 
+        `"${g.address || ""}"`, 
+        g.distance?.toFixed(2) || "",
+        `"${g.phone || ""}"`,
+        `"${g.opening_hours || ""}"`
+      ].join(",")
+    ).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "fitspot_gyms.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
+
+      <button
+        onClick={exportGymsToCSV}
+        style={{
+          marginBottom: 14,
+          background: "#2563eb",
+          color: "#fff",
+          border: "none",
+          borderRadius: 8,
+          fontWeight: 700,
+          fontSize: "1rem",
+          padding: "0.5rem 1rem",
+          cursor: "pointer"
+        }}
+      >
+        Export gyms as CSV
+      </button>
 
       <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 16 }}>
         <b>Tip:</b> Searching within
@@ -228,69 +266,13 @@ export default function Gyms() {
         radius. Change the radius if there are too few/many results.
       </div>
 
-      {/* Search Bar */}
-      <div style={{
-        margin: "18px 0 8px 0",
-        display: "flex",
-        alignItems: "center",
-        maxWidth: 420,
-        position: "relative"
-      }}>
-        <span style={{
-          position: "absolute",
-          left: 12,
-          top: "50%",
-          transform: "translateY(-50%)",
-          color: "#2563eb",
-          fontSize: "1.2rem"
-        }}>
-          🔍
-        </span>
-        <input
-          type="text"
-          ref={searchInputRef}
+      {/* Fancy Search Bar */}
+      <div style={{ margin: "18px 0 8px 0", maxWidth: 420 }}>
+        <SearchBar
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           placeholder="Search gyms by name..."
-          aria-label="Search gyms by name"
-          style={{
-            width: "100%",
-            fontSize: "1.09rem",
-            padding: "9px 38px 9px 39px",
-            borderRadius: 10,
-            border: "1.5px solid #2563eb44",
-            background: "#f8fafc",
-            boxShadow: "0 2px 8px #2563eb13",
-            outline: "none",
-            color: "#222",
-            transition: "border 0.15s",
-          }}
         />
-        {searchTerm && (
-          <button
-            aria-label="Clear search"
-            title="Clear search"
-            onClick={() => {
-              setSearchTerm("");
-              if (searchInputRef.current) searchInputRef.current.focus();
-            }}
-            style={{
-              position: "absolute",
-              right: 10,
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "none",
-              border: "none",
-              color: "#bbb",
-              fontSize: "1.25rem",
-              cursor: "pointer",
-              padding: 0,
-              outline: "none"
-            }}
-          >
-            ×
-          </button>
-        )}
       </div>
 
       {/* Sort Dropdown */}
