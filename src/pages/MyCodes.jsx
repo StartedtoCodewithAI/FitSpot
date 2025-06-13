@@ -11,7 +11,6 @@ function getStatusLabel(session) {
   if (!session.date) return "";
   const today = new Date();
   const sessionDate = new Date(session.date);
-  // Set time to start of day for comparison
   today.setHours(0, 0, 0, 0);
   sessionDate.setHours(0, 0, 0, 0);
   if (sessionDate.getTime() > today.getTime()) return "Upcoming";
@@ -38,11 +37,9 @@ export default function MyCodes() {
       setCodes(stored);
       setLoading(false);
 
-      // User name for streak banner
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       setUserName(user.name || "");
 
-      // Calculate streak
       const sorted = stored
         .filter(b => b.date)
         .sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -65,7 +62,6 @@ export default function MyCodes() {
     }
   }, []);
 
-  // For copy feedback
   useEffect(() => {
     if (copiedCode) {
       const timer = setTimeout(() => setCopiedCode(""), 1400);
@@ -119,7 +115,6 @@ export default function MyCodes() {
     setModalSession(null);
   }
 
-  // Filtering
   const lowerSearch = search.toLowerCase();
   const filteredActive = codes.filter(
     b =>
@@ -136,7 +131,6 @@ export default function MyCodes() {
         b.code?.toLowerCase().includes(lowerSearch))
   );
 
-  // Modal for session details
   function SessionModal({ session, onClose }) {
     if (!session) return null;
     return (
@@ -181,6 +175,20 @@ export default function MyCodes() {
             <div><strong>Time:</strong> {session.time}</div>
             <div><strong>Status:</strong> {getStatusLabel(session)}</div>
             <div><strong>Used:</strong> {session.used ? "Yes" : "No"}</div>
+            {session.gym?.lat && session.gym?.lng && (
+              <div style={{ marginTop: 10 }}>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${session.gym.lat},${session.gym.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#2563eb",
+                    textDecoration: "underline",
+                    fontWeight: 600
+                  }}
+                >Get directions</a>
+              </div>
+            )}
           </div>
           <button
             onClick={() => { handleCopy(session.code); }}
@@ -399,6 +407,23 @@ export default function MyCodes() {
                       {getStatusLabel(b)}
                     </span>
                   </div>
+                  {/* Add Google Maps link for directions */}
+                  {b.gym?.lat && b.gym?.lng && (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${b.gym.lat},${b.gym.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-block",
+                        marginTop: 8,
+                        color: "#2563eb",
+                        fontWeight: 600,
+                        textDecoration: "underline"
+                      }}
+                    >
+                      Get directions
+                    </a>
+                  )}
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
@@ -519,6 +544,23 @@ export default function MyCodes() {
                       {getStatusLabel(b)}
                     </span>
                   </div>
+                  {/* Add Google Maps link for directions */}
+                  {b.gym?.lat && b.gym?.lng && (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${b.gym.lat},${b.gym.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-block",
+                        marginTop: 8,
+                        color: "#2563eb",
+                        fontWeight: 600,
+                        textDecoration: "underline"
+                      }}
+                    >
+                      Get directions
+                    </a>
+                  )}
                 </div>
                 <button
                   onClick={() => handleCopy(b.code)}
