@@ -311,7 +311,7 @@ export default function BookSession() {
           Saved to your bookings!
         </div>
         <button
-          onClick={() => navigate("/mycodes")}
+          onClick={() => window.location.href = "/mycodes"}
           style={{
             marginTop: 28,
             background: "#2563eb",
