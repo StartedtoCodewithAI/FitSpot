@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
+import BookingSuccessModal from "../components/BookingSuccessModal"; // <-- Import the modal
 
 // Helper for generating a simple unique code
 function generateCode(length = 6) {
@@ -46,9 +47,9 @@ export default function BookSession() {
   const [code, setCode] = useState("");
   const [isPaying, setIsPaying] = useState(false);
 
-  // Popup state
-  const [showFunnyPopup, setShowFunnyPopup] = useState(false);
-  const [funnyText, setFunnyText] = useState("");
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [modalMsg, setModalMsg] = useState("");
 
   if (!gym) {
     return (
@@ -196,13 +197,10 @@ export default function BookSession() {
                 created: new Date().toISOString(),
               });
               setIsPaying(false);
-              // Show funny popup
-              setFunnyText(getRandomSaying());
-              setShowFunnyPopup(true);
-              setTimeout(() => {
-                setShowFunnyPopup(false);
-                setStep("done");
-              }, 2400); // Show popup for 2.4s then show confirmation
+
+              // Show fancy modal with confetti
+              setModalMsg(getRandomSaying());
+              setShowModal(true);
             }, 1200);
           }}
           disabled={isPaying}
@@ -238,38 +236,15 @@ export default function BookSession() {
             Back
           </button>
         </div>
-        {/* FUNNY POPUP */}
-        {showFunnyPopup && (
-          <div
-            style={{
-              position: "fixed",
-              top: "22vh",
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 9999,
-              background: "linear-gradient(90deg,#fef08a,#a7f3d0)",
-              color: "#713f12",
-              padding: "1.2rem 2.1rem",
-              borderRadius: 20,
-              fontWeight: 800,
-              fontSize: "1.35rem",
-              boxShadow: "0 10px 32px #fde04755",
-              animation: "pop-bounce 0.7s cubic-bezier(.36,1.56,.64,1) both"
-            }}
-            aria-live="polite"
-          >
-            🏋️‍♂️ {funnyText} 🏋️‍♀️
-            <style>
-              {`
-                @keyframes pop-bounce {
-                  0% { transform: scale(0.8); opacity: 0; }
-                  60% { transform: scale(1.15); opacity: 1; }
-                  100% { transform: scale(1); }
-                }
-              `}
-            </style>
-          </div>
-        )}
+        {/* FANCY MODAL */}
+        <BookingSuccessModal
+          open={showModal}
+          message={modalMsg}
+          onClose={() => {
+            setShowModal(false);
+            setStep("done");
+          }}
+        />
       </div>
     );
   }
