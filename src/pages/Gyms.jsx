@@ -39,6 +39,7 @@ export default function Gyms() {
   const [favorites, setFavorites] = useState(loadFavorites());
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("distance");
   const searchInputRef = useRef();
 
   useEffect(() => {
@@ -153,26 +154,35 @@ export default function Gyms() {
     );
   };
 
-  // Sort gyms: favorites first, then by distance.
-  const sortedGyms = [...gyms].sort((a, b) => {
-    const aFav = favorites.includes(a.id);
-    const bFav = favorites.includes(b.id);
-    if (aFav && !bFav) return -1;
-    if (!aFav && bFav) return 1;
-    return a.distance - b.distance;
-  });
+  // Fancy sort logic
+  function getSortedGyms(gymArray) {
+    let arr = [...gymArray];
+    if (sortOption === "name") {
+      arr.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    } else if (sortOption === "favorites") {
+      arr.sort((a, b) => {
+        const aFav = favorites.includes(a.id);
+        const bFav = favorites.includes(b.id);
+        if (aFav && !bFav) return -1;
+        if (!aFav && bFav) return 1;
+        return a.distance - b.distance;
+      });
+    } else {
+      arr.sort((a, b) => a.distance - b.distance); // Closest
+    }
+    return arr;
+  }
 
-  // Filter based on showOnlyFavorites and searchTerm
-  const displayedGyms = sortedGyms.filter(gym => {
+  // Filter and sort based on search, favorites, and sort option
+  const filteredGyms = gyms.filter(gym => {
     if (showOnlyFavorites && !favorites.includes(gym.id)) return false;
     if (!searchTerm.trim()) return true;
     const term = searchTerm.trim().toLowerCase();
     const name = gym.name?.toLowerCase() || "";
-    // To filter by address too, uncomment the next line:
-    // const addr = gym.address?.toLowerCase() || "";
-    // return name.includes(term) || addr.includes(term);
     return name.includes(term);
   });
+
+  const displayedGyms = getSortedGyms(filteredGyms);
 
   // Fancy clear function for search
   const clearSearch = () => {
@@ -213,7 +223,7 @@ export default function Gyms() {
 
       {/* Fancy Search Bar */}
       <div style={{
-        margin: "18px 0 18px 0",
+        margin: "18px 0 8px 0",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-start",
@@ -275,6 +285,43 @@ export default function Gyms() {
             ×
           </button>
         )}
+      </div>
+
+      {/* Fancy Sort Dropdown */}
+      <div style={{
+        margin: "0 0 12px 0",
+        display: "flex",
+        alignItems: "center"
+      }}>
+        <label htmlFor="sort-gyms" style={{
+          fontWeight: 600,
+          color: "#2563eb",
+          fontSize: "1.05rem",
+          marginRight: 10
+        }}>
+          Sort gyms:
+        </label>
+        <select
+          id="sort-gyms"
+          value={sortOption}
+          onChange={e => setSortOption(e.target.value)}
+          style={{
+            fontWeight: 600,
+            color: "#2563eb",
+            background: "#f1f5fd",
+            border: "1px solid #2563eb44",
+            borderRadius: 8,
+            padding: "5px 16px 5px 8px",
+            fontSize: "1.06rem",
+            boxShadow: "0 2px 8px #2563eb0a",
+            cursor: "pointer",
+            outline: "none"
+          }}
+        >
+          <option value="distance">Closest</option>
+          <option value="name">Name (A-Z)</option>
+          <option value="favorites">Favorites first</option>
+        </select>
       </div>
 
       {/* Fancy Show Only Favorites Toggle */}
