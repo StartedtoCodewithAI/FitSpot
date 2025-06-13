@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 
-// Helper: Simple SVG Avatar generator
+// --- SVG Avatar Component ---
 function AvatarSVG({ hair, eyes, nose, body, color }) {
-  // Simple shapes for demo - you can expand as much as you like!
   const hairOptions = {
     short: <ellipse cx="80" cy="58" rx="35" ry="22" fill={color} />,
     long: <ellipse cx="80" cy="60" rx="38" ry="28" fill={color} />,
@@ -43,31 +42,14 @@ function AvatarSVG({ hair, eyes, nose, body, color }) {
 
   return (
     <svg width="160" height="200" viewBox="0 0 160 200">
-      {/* Head */}
       <ellipse cx="80" cy="90" rx="40" ry="48" fill="#fcd7b6" stroke="#b97a56" strokeWidth="2"/>
-      {/* Hair */}
       {hairOptions[hair]}
-      {/* Eyes */}
       {eyeOptions[eyes]}
-      {/* Nose */}
       {noseOptions[nose]}
-      {/* Body */}
       {bodyOptions[body]}
     </svg>
   );
 }
-
-const defaultProfile = {
-  name: "",
-  email: "",
-  hair: "short",
-  eyes: "brown",
-  nose: "medium",
-  body: "average",
-  color: "#4B3E2A",
-  goals: "",
-  target: "",
-};
 
 const hairColors = [
   { value: "#4B3E2A", label: "Dark Brown" },
@@ -79,15 +61,53 @@ const hairColors = [
   { value: "#ff62b6", label: "Pink" },
 ];
 
+const defaultProfile = {
+  name: "",
+  email: "",
+  hair: "short",
+  eyes: "brown",
+  nose: "medium",
+  body: "average",
+  color: "#4B3E2A",
+  goals: "",
+  // Progress tracker fields
+  targetLabel: "",
+  targetTotal: "",
+  currentProgress: 0,
+  progressLog: [],
+};
+
+const MOTIVATION = [
+  { pct: 0, msg: "Let's get started! Every step counts." },
+  { pct: 25, msg: "You're making progress! Keep it up!" },
+  { pct: 50, msg: "Halfway there! Stay strong!" },
+  { pct: 75, msg: "Almost at your target. Finish strong!" },
+  { pct: 100, msg: "Congratulations! Target achieved! 🎉" }
+];
+
+function getMotivationalMsg(pct) {
+  if (pct >= 100) return MOTIVATION[4].msg;
+  if (pct >= 75) return MOTIVATION[3].msg;
+  if (pct >= 50) return MOTIVATION[2].msg;
+  if (pct >= 25) return MOTIVATION[1].msg;
+  return MOTIVATION[0].msg;
+}
+
 export default function Profile() {
   const [profile, setProfile] = useState(defaultProfile);
   const [editMode, setEditMode] = useState(false);
+  const [progressInput, setProgressInput] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem("fitspot_profile");
+    const stored = localStorage.getItem("fitspot_profile_v2");
     if (stored) setProfile(JSON.parse(stored));
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("fitspot_profile_v2", JSON.stringify(profile));
+  }, [profile]);
+
+  // --- Profile editing
   const handleChange = e => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
@@ -95,18 +115,51 @@ export default function Profile() {
 
   const handleSave = e => {
     e.preventDefault();
-    localStorage.setItem("fitspot_profile", JSON.stringify(profile));
     setEditMode(false);
+  };
+
+  // --- Progress tracker actions
+  const targetTotalNum = Number(profile.targetTotal) > 0 ? Number(profile.targetTotal) : 0;
+  const pct = targetTotalNum
+    ? Math.min(100, Math.round((profile.currentProgress / targetTotalNum) * 100))
+    : 0;
+
+  const handleProgressAdd = e => {
+    e.preventDefault();
+    const addNum = Number(progressInput);
+    if (!addNum || addNum <= 0) return;
+    setProfile(prev => ({
+      ...prev,
+      currentProgress: prev.currentProgress + addNum,
+      progressLog: [
+        ...(prev.progressLog || []),
+        { date: new Date().toISOString(), amount: addNum }
+      ]
+    }));
+    setProgressInput("");
+  };
+
+  const handleProgressReset = () => {
+    if (
+      // eslint-disable-next-line no-restricted-globals
+      window.confirm("Reset progress for this target?")
+    ) {
+      setProfile(prev => ({
+        ...prev,
+        currentProgress: 0,
+        progressLog: [],
+      }));
+    }
   };
 
   return (
     <div style={{
-      maxWidth: 500,
+      maxWidth: 540,
       margin: "3.5rem auto",
       background: "#fff",
-      borderRadius: 16,
+      borderRadius: 20,
       boxShadow: "0 8px 32px rgba(0,0,0,0.09)",
-      padding: "2.6rem 2.3rem",
+      padding: "2.4rem 2.1rem 1.7rem 2.1rem",
       textAlign: "center"
     }}>
       <h1 style={{ color: "#2563eb", marginBottom: 20 }}>Your Profile</h1>
@@ -119,15 +172,107 @@ export default function Profile() {
           <div style={{ color: "#64748b", marginBottom: 8 }}>{profile.email || "No Email"}</div>
           <div style={{ marginBottom: 14 }}>
             <strong>Goals:</strong>
-            <div style={{ color: "#2563eb", fontWeight: 500 }}>
+            <div style={{ color: "#2563eb", fontWeight: 500, whiteSpace: "pre-line" }}>
               {profile.goals ? profile.goals : <span style={{ color: "#aaa" }}>No goals set yet</span>}
             </div>
           </div>
-          <div style={{ marginBottom: 20 }}>
-            <strong>Your Target:</strong>
-            <div style={{ color: "#22c55e", fontWeight: 600 }}>
-              {profile.target ? profile.target : <span style={{ color: "#aaa" }}>No target yet</span>}
+          {/* --- Progress Tracker Section --- */}
+          <div style={{ background: "#f1f5f9", padding: "1.1rem 1rem", borderRadius: 12, marginBottom: 18 }}>
+            <strong>Your Main Target:</strong>
+            <div style={{ fontWeight: 600, color: "#22c55e", fontSize: "1.05rem", margin: "8px 0 4px 0" }}>
+              {profile.targetLabel && profile.targetTotal
+                ? `${profile.targetLabel} (${profile.currentProgress} / ${profile.targetTotal})`
+                : <span style={{ color: "#aaa" }}>Not set</span>
+              }
             </div>
+            {/* Progress bar */}
+            {profile.targetLabel && profile.targetTotal ? (
+              <>
+                <div style={{
+                  background: "#e0e7ef",
+                  borderRadius: 8,
+                  height: 20,
+                  width: "100%",
+                  margin: "8px 0"
+                }}>
+                  <div style={{
+                    background: pct >= 100 ? "#22c55e" : "#2563eb",
+                    width: `${pct}%`,
+                    height: 20,
+                    borderRadius: 8,
+                    transition: "width 0.4s"
+                  }}>
+                  </div>
+                </div>
+                <div style={{ margin: "6px 0 0 0", fontWeight: 600, color: "#2563eb" }}>
+                  {pct}% complete
+                </div>
+                <div style={{ margin: "12px 0 0 0", color: "#64748b", fontSize: ".98rem" }}>
+                  {getMotivationalMsg(pct)}
+                </div>
+                {/* Add Progress */}
+                {pct < 100 && (
+                  <form style={{ marginTop: 10, display: "flex", gap: 7, justifyContent: "center" }} onSubmit={handleProgressAdd}>
+                    <input
+                      type="number"
+                      min={1}
+                      max={profile.targetTotal - profile.currentProgress}
+                      placeholder="Add progress"
+                      value={progressInput}
+                      onChange={e => setProgressInput(e.target.value)}
+                      style={{ width: 80, padding: 6, borderRadius: 6, border: "1px solid #bcd" }}
+                      required
+                    />
+                    <button
+                      type="submit"
+                      style={{
+                        background: "#22c55e",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 8,
+                        fontWeight: 700,
+                        fontSize: "1.01rem",
+                        padding: "0.38rem 1.1rem",
+                        cursor: "pointer"
+                      }}>
+                      Log
+                    </button>
+                  </form>
+                )}
+                {profile.currentProgress > 0 && (
+                  <button
+                    onClick={handleProgressReset}
+                    style={{
+                      marginTop: 10,
+                      background: "#f1f5f9",
+                      color: "#dc2626",
+                      border: "1px solid #dc2626",
+                      borderRadius: 8,
+                      fontWeight: 700,
+                      fontSize: ".98rem",
+                      padding: "0.36rem 1rem",
+                      cursor: "pointer"
+                    }}>
+                    Reset Progress
+                  </button>
+                )}
+                {/* Log of progress */}
+                {profile.progressLog && profile.progressLog.length > 0 && (
+                  <div style={{ marginTop: 10, textAlign: "left", fontSize: ".97rem", color: "#64748b" }}>
+                    <strong>Progress Log:</strong>
+                    <ul style={{ margin: "7px 0 0 0", padding: "0 0 0 18px" }}>
+                      {profile.progressLog.slice().reverse().map((item, i) => (
+                        <li key={i}>
+                          +{item.amount} ({new Date(item.date).toLocaleDateString()})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            ) : (
+              <span style={{ color: "#aaa" }}>Set a target to track your progress!</span>
+            )}
           </div>
           <button
             style={{
@@ -225,14 +370,27 @@ export default function Profile() {
               placeholder="e.g. Lose 10kg, run a marathon, build muscle..."
             />
           </div>
+          {/* --- Target tracker fields --- */}
           <div style={{ marginBottom: 18 }}>
-            <label style={{ fontWeight: 600 }}>Set a target</label>
+            <label style={{ fontWeight: 600 }}>Main Target (label)</label>
             <input
-              name="target"
-              value={profile.target}
+              name="targetLabel"
+              value={profile.targetLabel}
               onChange={handleChange}
               style={{ width: "100%", padding: 8, borderRadius: 7, border: "1px solid #cbd5e1", marginTop: 4 }}
-              placeholder="e.g. 5 workouts per week"
+              placeholder="e.g. Workouts, Kilometers, Sessions"
+            />
+          </div>
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontWeight: 600 }}>Target Amount (number)</label>
+            <input
+              name="targetTotal"
+              value={profile.targetTotal}
+              onChange={handleChange}
+              type="number"
+              min={1}
+              style={{ width: "100%", padding: 8, borderRadius: 7, border: "1px solid #cbd5e1", marginTop: 4 }}
+              placeholder="e.g. 20"
             />
           </div>
           <div style={{ display: "flex", gap: 12 }}>
