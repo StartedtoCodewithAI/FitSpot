@@ -7,8 +7,10 @@ import Profile from './pages/Profile';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import About from './pages/About';
-import MyCodes from './pages/MyCodes'; // <-- Add this line
+import MyCodes from './pages/MyCodes';
 import PrivateRoute from './components/PrivateRoute';
+// NEW IMPORT
+import BookSession from './pages/BookSession';
 
 export default function App() {
   return (
@@ -25,7 +27,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/gyms" element={<Gyms />} />
-        <Route path="/my-codes" element={<MyCodes />} /> {/* <-- Add this line */}
+        <Route path="/my-codes" element={<MyCodes />} />
         <Route
           path="/profile"
           element={
@@ -37,6 +39,8 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
+        {/* NEW ROUTE for the booking flow */}
+        <Route path="/book/:gymId" element={<BookSession />} />
       </Routes>
     </Router>
   );
