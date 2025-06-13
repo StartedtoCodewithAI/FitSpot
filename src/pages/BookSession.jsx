@@ -1,6 +1,7 @@
+// src/pages/BookSession.jsx
 import React, { useState } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import BookingSuccessModal from "../components/BookingSuccessModal"; // <-- Import the modal
+import BookingSuccessModal from "../components/BookingSuccessModal";
 
 // Helper for generating a simple unique code
 function generateCode(length = 6) {
@@ -43,7 +44,7 @@ export default function BookSession() {
 
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [step, setStep] = useState("form"); // "form", "payment", "done"
+  const [step, setStep] = useState("form");
   const [code, setCode] = useState("");
   const [isPaying, setIsPaying] = useState(false);
 
@@ -198,7 +199,7 @@ export default function BookSession() {
               });
               setIsPaying(false);
 
-              // Show fancy modal with confetti
+              // Show fancy modal with confetti and a funny message
               setModalMsg(getRandomSaying());
               setShowModal(true);
             }, 1200);
@@ -236,14 +237,18 @@ export default function BookSession() {
             Back
           </button>
         </div>
-        {/* FANCY MODAL */}
+        {/* Success Modal */}
         <BookingSuccessModal
-          open={showModal}
-          message={modalMsg}
+          isOpen={showModal}
           onClose={() => {
             setShowModal(false);
             setStep("done");
           }}
+          message={modalMsg}
+          bookingCode={code}
+          gymName={gym.name}
+          date={date}
+          time={time}
         />
       </div>
     );
