@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  FaStar, FaRegStar, FaMapMarkerAlt, FaPhone, FaClock, FaExternalLinkAlt, FaSearch
+} from "react-icons/fa";
 
 const DEFAULT_RADIUS_KM = 7;
 const FAVORITES_KEY = "fitspot_favorite_gyms";
+const RADIUS_KEY = "fitspot_radius_km";
+const SEARCH_KEY = "fitspot_gym_search";
+const SORT_KEY = "fitspot_gym_sort";
+const FAVORITES_ANIMATION_TIME = 400;
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -30,6 +37,24 @@ function saveFavorites(favorites) {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
 }
 
+function loadSetting(key, def) {
+  try {
+    const v = localStorage.getItem(key);
+    return v !== null ? JSON.parse(v) : def;
+  } catch {
+    return def;
+  }
+}
+
+function saveSetting(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getMapPreviewUrl(lat, lon) {
+  // OpenStreetMap Static Map example
+  return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=16&size=330x140&maptype=mapnik&markers=${lat},${lon},lightblue1`;
+}
+
 export default function Gyms() {
   const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState(null);
@@ -37,16 +62,19 @@ export default function Gyms() {
   const [loading, setLoading] = useState(false);
   const [gyms, setGyms] = useState([]);
   const [error, setError] = useState("");
-  const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
+  const [radiusKm, setRadiusKm] = useState(loadSetting(RADIUS_KEY, DEFAULT_RADIUS_KM));
   const [favorites, setFavorites] = useState(loadFavorites());
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState("distance");
+  const [searchTerm, setSearchTerm] = useState(loadSetting(SEARCH_KEY, ""));
+  const [sortOption, setSortOption] = useState(loadSetting(SORT_KEY, "distance"));
+  const [favoriteAnim, setFavoriteAnim] = useState({});
   const searchInputRef = useRef();
 
-  useEffect(() => {
-    saveFavorites(favorites);
-  }, [favorites]);
+  // Save settings persistently
+  useEffect(() => saveSetting(RADIUS_KEY, radiusKm), [radiusKm]);
+  useEffect(() => saveFavorites(favorites), [favorites]);
+  useEffect(() => saveSetting(SEARCH_KEY, searchTerm), [searchTerm]);
+  useEffect(() => saveSetting(SORT_KEY, sortOption), [sortOption]);
 
   useEffect(() => {
     if (gyms.length > 0) {
@@ -59,6 +87,13 @@ export default function Gyms() {
     }
     // eslint-disable-next-line
   }, [gyms]);
+
+  // Debounced search input
+  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(searchTerm), 250);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
   const handleAllowLocation = () => {
     setError("");
@@ -148,15 +183,17 @@ export default function Gyms() {
     }
   };
 
+  // Animated favorite star
   const toggleFavorite = (gymId) => {
     setFavorites((prevFavs) =>
       prevFavs.includes(gymId)
         ? prevFavs.filter((f) => f !== gymId)
         : [...prevFavs, gymId]
     );
+    setFavoriteAnim((prev) => ({ ...prev, [gymId]: true }));
+    setTimeout(() => setFavoriteAnim((prev) => ({ ...prev, [gymId]: false })), FAVORITES_ANIMATION_TIME);
   };
 
-  // Fancy sort logic
   function getSortedGyms(gymArray) {
     let arr = [...gymArray];
     if (sortOption === "name") {
@@ -175,24 +212,52 @@ export default function Gyms() {
     return arr;
   }
 
-  // Filter and sort based on search, favorites, and sort option
   const filteredGyms = gyms.filter(gym => {
     if (showOnlyFavorites && !favorites.includes(gym.id)) return false;
-    if (!searchTerm.trim()) return true;
-    const term = searchTerm.trim().toLowerCase();
+    if (!debouncedSearch.trim()) return true;
+    const term = debouncedSearch.trim().toLowerCase();
     const name = gym.name?.toLowerCase() || "";
     return name.includes(term);
   });
 
   const displayedGyms = getSortedGyms(filteredGyms);
 
-  // Fancy clear function for search
   const clearSearch = () => {
     setSearchTerm("");
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
   };
+
+  // Skeleton loader for gym cards
+  function GymCardSkeleton() {
+    return (
+      <div className="gym-card-skel" style={{
+        flex: "1 0 320px",
+        minWidth: 280,
+        maxWidth: 370,
+        background: "#f1f5f9",
+        borderRadius: 15,
+        boxShadow: "0 2px 15px #2563eb14",
+        marginBottom: "0.5rem",
+        height: 262,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-end",
+        animation: "pulse 1.3s infinite"
+      }}>
+        <div style={{
+          height: 110, width: "100%", background: "#e0e7ef", borderRadius: "15px 15px 0 0"
+        }} />
+        <div style={{ height: 20, width: "60%", background: "#e0e7ef", borderRadius: 8, margin: "15px 0 10px 16px" }} />
+        <div style={{ height: 16, width: "40%", background: "#e0e7ef", borderRadius: 8, margin: "0 0 8px 16px" }} />
+        <div style={{ height: 16, width: "30%", background: "#e0e7ef", borderRadius: 8, margin: "0 0 24px 16px" }} />
+        <style>
+          {`@keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }`}
+        </style>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
@@ -213,6 +278,7 @@ export default function Gyms() {
             padding: "2px 8px",
             background: "#f1f5fd",
           }}
+          aria-label="Change search radius"
         >
           {[3, 5, 7, 10, 15, 20].map((km) => (
             <option key={km} value={km}>
@@ -223,12 +289,11 @@ export default function Gyms() {
         radius. Change the radius if there are too few/many results.
       </div>
 
-      {/* Fancy Search Bar */}
+      {/* Search Bar */}
       <div style={{
         margin: "18px 0 8px 0",
         display: "flex",
         alignItems: "center",
-        justifyContent: "flex-start",
         maxWidth: 420,
         position: "relative"
       }}>
@@ -238,13 +303,9 @@ export default function Gyms() {
           top: "50%",
           transform: "translateY(-50%)",
           color: "#2563eb",
-          fontSize: "1.25rem",
-          pointerEvents: "none"
+          fontSize: "1.25rem"
         }}>
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="7" stroke="#2563eb" strokeWidth="2" />
-            <path d="M20 20L16.65 16.65" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
-          </svg>
+          <FaSearch />
         </span>
         <input
           type="text"
@@ -252,6 +313,7 @@ export default function Gyms() {
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           placeholder="Search gyms by name..."
+          aria-label="Search gyms by name"
           style={{
             width: "100%",
             fontSize: "1.09rem",
@@ -289,7 +351,7 @@ export default function Gyms() {
         )}
       </div>
 
-      {/* Fancy Sort Dropdown */}
+      {/* Sort Dropdown */}
       <div style={{
         margin: "0 0 12px 0",
         display: "flex",
@@ -326,7 +388,7 @@ export default function Gyms() {
         </select>
       </div>
 
-      {/* Fancy Show Only Favorites Toggle */}
+      {/* Show Only Favorites Toggle */}
       <div style={{ display: "flex", alignItems: "center", margin: "14px 0" }}>
         <label style={{ display: "flex", alignItems: "center", cursor: "pointer", fontWeight: 600, color: "#2563eb", fontSize: "1.08rem" }}>
           <span style={{ marginRight: 9 }}>Show only favorites</span>
@@ -336,6 +398,7 @@ export default function Gyms() {
               checked={showOnlyFavorites}
               onChange={() => setShowOnlyFavorites(v => !v)}
               style={{ opacity: 0, width: 0, height: 0 }}
+              aria-label="Toggle show only favorites"
             />
             <span style={{
               position: "absolute",
@@ -381,11 +444,15 @@ export default function Gyms() {
           Allow Location
         </button>
       )}
+
       {loading && (
-        <div style={{ color: "#2563eb", fontWeight: 600 }}>
-          Locating you and searching for real gyms...
+        <div style={{
+          display: "flex", gap: 20, flexWrap: "wrap", marginTop: 12, marginBottom: 20
+        }}>
+          {[1, 2, 3].map(i => <GymCardSkeleton key={i} />)}
         </div>
       )}
+
       {permissionDenied && (
         <div style={{
           background: "#fee2e2",
@@ -427,7 +494,7 @@ export default function Gyms() {
         <div style={{ color: "#2563eb" }}>
           {showOnlyFavorites
             ? "You have no favorite gyms in this area."
-            : searchTerm
+            : debouncedSearch
               ? "No gyms match your search."
               : `No real gyms found within ${radiusKm}km of your location.`}
           <br />
@@ -435,31 +502,65 @@ export default function Gyms() {
         </div>
       )}
 
+      {/* Gyms Listing */}
       {userLocation && displayedGyms.length > 0 && (
         <div style={{
           display: "flex",
           flexWrap: "wrap",
           gap: "1.2rem",
           marginTop: 20,
+          justifyContent: "center"
         }}>
           {displayedGyms.map((gym) => {
             const isFav = favorites.includes(gym.id);
             return (
-              <div key={gym.id} style={{
-                flex: "1 0 320px",
-                minWidth: 280,
-                maxWidth: 370,
-                background: isFav ? "rgba(255,215,0,0.14)" : "rgba(37,99,235,0.08)",
-                border: isFav ? "2px solid gold" : "1px solid #2563eb22",
-                borderRadius: 15,
-                boxShadow: "0 2px 15px #2563eb14",
-                padding: "1.3rem 1.3rem 1.1rem 1.3rem",
-                marginBottom: "0.5rem",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between"
-              }}>
+              <div
+                key={gym.id}
+                tabIndex={0}
+                aria-label={`Gym: ${gym.name}`}
+                style={{
+                  flex: "1 0 320px",
+                  minWidth: 280,
+                  maxWidth: 370,
+                  background: isFav ? "rgba(255,215,0,0.14)" : "rgba(37,99,235,0.08)",
+                  border: isFav ? "2px solid gold" : "1px solid #2563eb22",
+                  borderRadius: 15,
+                  boxShadow: "0 2px 15px #2563eb14",
+                  padding: "1.3rem 1.3rem 1.1rem 1.3rem",
+                  marginBottom: "0.5rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  transition: "box-shadow .18s, transform .16s",
+                  outline: "none",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.boxShadow = "0 8px 32px #2563eb33";
+                  e.currentTarget.style.transform = "translateY(-2px) scale(1.02)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.boxShadow = "0 2px 15px #2563eb14";
+                  e.currentTarget.style.transform = "none";
+                }}
+                onFocus={e => { e.currentTarget.style.boxShadow = "0 8px 32px #38bdf866"; }}
+                onBlur={e => { e.currentTarget.style.boxShadow = "0 2px 15px #2563eb14"; }}
+              >
+                {/* Map Preview */}
+                <img
+                  src={getMapPreviewUrl(gym.lat, gym.lng)}
+                  alt={`Map preview for ${gym.name}`}
+                  style={{
+                    width: "100%",
+                    height: 110,
+                    objectFit: "cover",
+                    borderRadius: "12px 12px 10px 10px",
+                    marginBottom: 12,
+                    boxShadow: "0 2px 10px #2563eb12"
+                  }}
+                  loading="lazy"
+                />
                 <div>
+                  {/* Gym Name & Favorite Star */}
                   <div style={{
                     fontWeight: 700,
                     fontSize: "1.18rem",
@@ -479,12 +580,15 @@ export default function Gyms() {
                         marginRight: 8,
                         fontSize: "1.4rem",
                         color: isFav ? "#FFD700" : "#bbb",
-                        transition: "color 0.2s",
+                        transition: "color 0.2s, transform 0.2s",
                         padding: 0,
                         lineHeight: 1,
+                        outline: "none",
+                        transform: favoriteAnim[gym.id] ? "scale(1.25)" : "scale(1)",
+                        filter: favoriteAnim[gym.id] ? "drop-shadow(0 0 6px #FFD70066)" : undefined
                       }}
                     >
-                      {isFav ? "★" : "☆"}
+                      {isFav ? <FaStar /> : <FaRegStar />}
                     </button>
                     {gym.name}
                     {gym.opening_hours && (
@@ -504,26 +608,30 @@ export default function Gyms() {
                         }}
                         title="Opening hours info available"
                       >
-                        {gym.opening_hours}
+                        <FaClock style={{ marginRight: 4 }} /> {gym.opening_hours}
                       </span>
                     )}
                   </div>
                   {gym.address && (
-                    <div style={{ color: "#0b2546", opacity: 0.78, marginBottom: 4 }}>
+                    <div style={{ color: "#0b2546", opacity: 0.78, marginBottom: 4, display: "flex", alignItems: "center" }}>
+                      <FaMapMarkerAlt style={{ marginRight: 6, color: "#38bdf8" }} />
                       {gym.address}
                     </div>
                   )}
                   <div style={{ fontSize: ".93rem", color: "#38bdf8", marginBottom: 2 }}>
-                    {gym.distance.toFixed(2)} km away
+                    {gym.distance < 1
+                      ? `${Math.round(gym.distance * 1000)} m away`
+                      : `${gym.distance.toFixed(1)} km away`}
                   </div>
                   {gym.phone && (
-                    <div style={{ fontSize: ".93rem", color: "#222", marginBottom: 2 }}>
-                      📞 <a href={`tel:${gym.phone}`} style={{ color: "#2563eb", textDecoration: "underline" }}>{gym.phone}</a>
+                    <div style={{ fontSize: ".93rem", color: "#222", marginBottom: 2, display: "flex", alignItems: "center" }}>
+                      <FaPhone style={{ marginRight: 5, color: "#2563eb" }} />
+                      <a href={`tel:${gym.phone}`} style={{ color: "#2563eb", textDecoration: "underline" }}>{gym.phone}</a>
                     </div>
                   )}
                   {gym.opening_hours && (
-                    <div style={{ fontSize: ".93rem", color: "#444", marginBottom: 2 }}>
-                      🕒 <span>{gym.opening_hours}</span>
+                    <div style={{ fontSize: ".93rem", color: "#444", marginBottom: 2, display: "none" }}>
+                      <FaClock style={{ marginRight: 6 }} /><span>{gym.opening_hours}</span>
                     </div>
                   )}
                 </div>
@@ -535,8 +643,9 @@ export default function Gyms() {
                       color: "#2563eb",
                       textDecoration: "underline",
                       fontWeight: 600,
+                      display: "flex", alignItems: "center"
                     }}
-                  >OpenStreetMap</a>
+                  >OpenStreetMap <FaExternalLinkAlt style={{ marginLeft: 5, fontSize: 13 }} /></a>
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${gym.lat},${gym.lng}`}
                     target="_blank" rel="noopener noreferrer"
@@ -544,36 +653,38 @@ export default function Gyms() {
                       color: "#38bdf8",
                       textDecoration: "underline",
                       fontWeight: 600,
+                      display: "flex", alignItems: "center"
                     }}
-                  >Google Maps</a>
-                  {/* BOLD, APPEALING BOOK SESSION BUTTON */}
-                  <button
-                    style={{
-                      background: 'linear-gradient(90deg, #38bdf8, #2563eb)',
-                      color: '#fff',
-                      fontSize: '1.15rem',
-                      fontWeight: 800,
-                      border: 'none',
-                      borderRadius: '40px',
-                      padding: '1rem 2.2rem',
-                      marginTop: '1.3rem',
-                      boxShadow: '0 4px 16px #2563eb22',
-                      cursor: 'pointer',
-                      letterSpacing: '.06em',
-                      transition: 'background 0.2s, transform 0.1s',
-                      display: 'block',
-                      width: '100%',
-                      maxWidth: 270,
-                      marginLeft: 'auto',
-                      marginRight: 'auto'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #2563eb, #38bdf8)'}
-                    onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #38bdf8, #2563eb)'}
-                    onClick={() => navigate(`/book/${gym.id}`, { state: { gym } })}
-                  >
-                    💪 BOOK Session
-                  </button>
+                  >Google Maps <FaExternalLinkAlt style={{ marginLeft: 5, fontSize: 13 }} /></a>
                 </div>
+                {/* BOLD BOOK SESSION BUTTON */}
+                <button
+                  style={{
+                    background: 'linear-gradient(90deg, #38bdf8, #2563eb)',
+                    color: '#fff',
+                    fontSize: '1.15rem',
+                    fontWeight: 800,
+                    border: 'none',
+                    borderRadius: '40px',
+                    padding: '1rem 2.2rem',
+                    marginTop: '1.3rem',
+                    boxShadow: '0 4px 16px #2563eb22',
+                    cursor: 'pointer',
+                    letterSpacing: '.06em',
+                    transition: 'background 0.2s, transform 0.1s',
+                    display: 'block',
+                    width: '100%',
+                    maxWidth: 270,
+                    marginLeft: 'auto',
+                    marginRight: 'auto'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #2563eb, #38bdf8)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #38bdf8, #2563eb)'}
+                  onClick={() => navigate(`/book/${gym.id}`, { state: { gym } })}
+                  aria-label={`Book session at ${gym.name}`}
+                >
+                  💪 BOOK Session
+                </button>
               </div>
             );
           })}
