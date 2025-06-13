@@ -1,23 +1,6 @@
 import React, { useState } from "react";
 
-// Add gyms in Agios Dimitrios and Metamorfosi, Athens
-const gyms = [
-  {
-    id: 1,
-    name: "Agios Dimitrios Fitness",
-    address: "123 Dim Street, Agios Dimitrios, Athens",
-    lat: 37.9397,
-    lng: 23.7283
-  },
-  {
-    id: 2,
-    name: "Metamorfosi Power Gym",
-    address: "456 Meta Ave, Metamorfosi, Athens",
-    lat: 38.0656,
-    lng: 23.7536
-  },
-  // Add more gyms here as needed!
-];
+const MAX_DISTANCE_METERS = 10000; // 10km
 
 // Haversine formula for distance in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -34,79 +17,85 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// Random code generator (8 chars)
-function generateRandomCode(length = 8) {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let result = "";
-  for (let i = 0; i < length; i++)
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  return result;
-}
-
-const MAX_DISTANCE_KM = 10;
-
 export default function Gyms() {
   const [userLocation, setUserLocation] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
-  const [filteredGyms, setFilteredGyms] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Modal state
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalGym, setModalGym] = useState(null);
-  const [sessionCode, setSessionCode] = useState(null);
-  const [expiry, setExpiry] = useState(null);
+  const [gyms, setGyms] = useState([]);
+  const [error, setError] = useState("");
 
   const handleAllowLocation = () => {
+    setError("");
     if (!navigator.geolocation) {
       setPermissionDenied(true);
+      setError("Geolocation is not supported by your browser.");
       return;
     }
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const userLoc = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         };
         setUserLocation(userLoc);
 
-        // DEBUG: Log user location and distance to all gyms
-        console.log("Your detected location:", userLoc);
-        gyms.forEach((gym) => {
-          const dist = getDistanceFromLatLonInKm(
-            userLoc.lat,
-            userLoc.lng,
-            gym.lat,
-            gym.lng
+        // Construct Overpass query
+        const query = `[out:json];
+          (
+            node["leisure"~"fitness_centre|gym"](around:${MAX_DISTANCE_METERS},${userLoc.lat},${userLoc.lng});
+            way["leisure"~"fitness_centre|gym"](around:${MAX_DISTANCE_METERS},${userLoc.lat},${userLoc.lng});
+            relation["leisure"~"fitness_centre|gym"](around:${MAX_DISTANCE_METERS},${userLoc.lat},${userLoc.lng});
           );
-          console.log(
-            `Distance to "${gym.name}": ${dist.toFixed(2)} km`
-          );
-        });
+          out center;`;
 
-        // Filter gyms within 10km
-        const gymsWithin10km = gyms.filter((gym) => {
-          const dist = getDistanceFromLatLonInKm(
-            userLoc.lat,
-            userLoc.lng,
-            gym.lat,
-            gym.lng
-          );
-          return dist <= MAX_DISTANCE_KM;
-        });
+        try {
+          const url =
+            "https://overpass-api.de/api/interpreter?data=" +
+            encodeURIComponent(query);
+          const response = await fetch(url);
+          if (!response.ok) throw new Error("Overpass API error (try again later)");
+          const data = await response.json();
+          // Map nodes, ways, relations uniformly with lat/lng and basic info
+          const gymsFound = (data.elements || []).map((el) => {
+            let lat = el.lat;
+            let lng = el.lon;
+            if (!lat && el.center) {
+              lat = el.center.lat;
+              lng = el.center.lon;
+            }
+            return {
+              id: el.id,
+              name: el.tags?.name || "Unnamed Gym",
+              address:
+                el.tags?.["addr:street"]
+                  ? `${el.tags["addr:street"]}${el.tags["addr:housenumber"] ? " " + el.tags["addr:housenumber"] : ""}, ${el.tags["addr:city"] || ""}`
+                  : el.tags?.["addr:full"] || "",
+              lat,
+              lng,
+              tags: el.tags || {},
+            };
+          })
+          // Only keep gyms with valid coordinates
+          .filter((g) => g.lat && g.lng)
+          // Add distance for sorting
+          .map((g) => ({
+            ...g,
+            distance: getDistanceFromLatLonInKm(userLoc.lat, userLoc.lng, g.lat, g.lng),
+          }))
+          // Sort by distance ascending
+          .sort((a, b) => a.distance - b.distance);
 
-        console.log("Gyms within 10km:", gymsWithin10km);
-
-        setFilteredGyms(gymsWithin10km);
+          setGyms(gymsFound);
+        } catch (e) {
+          setError("Failed to fetch gyms from OpenStreetMap: " + e.message);
+        }
         setLoading(false);
       },
       (err) => {
         setPermissionDenied(true);
         setLoading(false);
-        setFilteredGyms([]);
-        console.error("Geolocation error:", err);
-        alert(
+        setError(
           `Error fetching location: ${err.message}. Please check your browser location settings and try again.`
         );
       },
@@ -114,40 +103,9 @@ export default function Gyms() {
     );
   };
 
-  // Modal logic
-  const handleGenerateCode = (gym) => {
-    const code = generateRandomCode(8);
-    const now = Date.now();
-    const expiresAt = now + 30 * 60 * 1000; // 30 minutes from now
-    setModalGym(gym);
-    setSessionCode(code);
-    setExpiry(expiresAt);
-    setModalOpen(true);
-    // Save to localStorage (demo only; backend for real app)
-    localStorage.setItem(
-      `fitspot-sessioncode-${code}`,
-      JSON.stringify({
-        gymId: gym.id,
-        gymName: gym.name,
-        code,
-        generatedAt: now,
-        expiresAt,
-        used: false,
-        usedAt: null,
-      })
-    );
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setModalGym(null);
-    setSessionCode(null);
-    setExpiry(null);
-  };
-
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
-      <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Gyms Near You</h1>
+      <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
 
       {!userLocation && !permissionDenied && !loading && (
         <button
@@ -169,7 +127,9 @@ export default function Gyms() {
         </button>
       )}
       {loading && (
-        <div style={{ color: "#2563eb", fontWeight: 600 }}>Getting your location...</div>
+        <div style={{ color: "#2563eb", fontWeight: 600 }}>
+          Locating you and searching for real gyms...
+        </div>
       )}
       {permissionDenied && (
         <div style={{
@@ -182,8 +142,20 @@ export default function Gyms() {
         }}>
           <strong>Location permission denied.</strong>
           <br />
-          Please allow location access to see nearby gyms.<br />
+          Please allow location access to see real gyms nearby.<br />
           If you see an error, please check your site settings or clear site data and try again.
+        </div>
+      )}
+      {error && (
+        <div style={{
+          background: "#fee2e2",
+          color: "#b91c1c",
+          padding: "1.1rem 1.5rem",
+          borderRadius: 12,
+          marginBottom: "1rem",
+          maxWidth: 600
+        }}>
+          {error}
         </div>
       )}
       {userLocation && (
@@ -195,129 +167,50 @@ export default function Gyms() {
           Longitude: {userLocation.lng}
         </div>
       )}
-      {userLocation && filteredGyms.length === 0 && (
+      {userLocation && gyms.length === 0 && !loading && !error && (
         <div style={{ color: "#2563eb" }}>
-          No gyms found within {MAX_DISTANCE_KM}km of your location.<br />
-          (Check your location in the debug info above. If the coordinates look wrong, try increasing the distance or check your mobile location settings.)
+          No real gyms found within 10km of your location.<br />
+          Try again or widen your search radius!
         </div>
       )}
-      {userLocation && filteredGyms.length > 0 && (
+      {userLocation && gyms.length > 0 && (
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {filteredGyms.map((gym) => {
-            const dist = getDistanceFromLatLonInKm(
-              userLocation.lat,
-              userLocation.lng,
-              gym.lat,
-              gym.lng
-            );
-            return (
-              <li key={gym.id} style={{
-                margin: "1.5rem 0",
-                padding: "1.5rem",
-                background: "rgba(37,99,235,0.09)",
-                borderRadius: 14,
-                boxShadow: "0 2px 16px #2563eb14",
-                position: "relative"
-              }}>
-                <div style={{ fontWeight: 700, fontSize: "1.25rem", color: "#2563eb" }}>{gym.name}</div>
+          {gyms.map((gym) => (
+            <li key={gym.id} style={{
+              margin: "1.5rem 0",
+              padding: "1.5rem",
+              background: "rgba(37,99,235,0.09)",
+              borderRadius: 14,
+              boxShadow: "0 2px 16px #2563eb14",
+              position: "relative"
+            }}>
+              <div style={{ fontWeight: 700, fontSize: "1.15rem", color: "#2563eb" }}>
+                {gym.name}
+              </div>
+              {gym.address && (
                 <div style={{ color: "#0b2546", opacity: 0.8 }}>{gym.address}</div>
-                <div style={{ fontSize: ".95rem", color: "#38bdf8" }}>
-                  {dist.toFixed(2)} km away
-                </div>
-                <button
-                  onClick={() => handleGenerateCode(gym)}
+              )}
+              <div style={{ fontSize: ".95rem", color: "#38bdf8" }}>
+                {gym.distance.toFixed(2)} km away
+              </div>
+              <div style={{ marginTop: 7 }}>
+                <a
+                  href={`https://www.openstreetmap.org/?mlat=${gym.lat}&mlon=${gym.lng}#map=18/${gym.lat}/${gym.lng}`}
+                  target="_blank" rel="noopener noreferrer"
                   style={{
-                    marginTop: "1rem",
-                    padding: "0.7rem 1.5rem",
-                    background: "linear-gradient(90deg,#2563eb,#38bdf8)",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 9,
-                    fontWeight: 700,
-                    fontSize: "1rem",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 8px #2563eb22",
-                    transition: "background 0.2s",
+                    color: "#2563eb",
+                    textDecoration: "underline",
+                    fontWeight: 600,
                   }}
-                >
-                  Generate Session Code
-                </button>
-              </li>
-            );
-          })}
+                >View on OpenStreetMap</a>
+              </div>
+            </li>
+          ))}
         </ul>
       )}
-      {/* Modal */}
-      {modalOpen && modalGym && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(30,41,59,0.35)",
-          zIndex: 9999,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}>
-          <div style={{
-            background: "#fff",
-            borderRadius: 18,
-            boxShadow: "0 8px 32px #2563eb33",
-            padding: "2.2rem 2.5rem 2.2rem 2.5rem",
-            minWidth: 320,
-            maxWidth: "94vw",
-            textAlign: "center",
-            position: "relative"
-          }}>
-            <button
-              onClick={closeModal}
-              style={{
-                position: "absolute",
-                top: 18,
-                right: 22,
-                background: "none",
-                border: "none",
-                fontSize: "1.5rem",
-                color: "#2563eb",
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
-              aria-label="Close"
-            >
-              ×
-            </button>
-            <div style={{ fontSize: "1.2rem", color: "#2563eb", marginBottom: 7 }}>
-              One-Session Code for
-            </div>
-            <div style={{ fontWeight: 800, color: "#0b2546", fontSize: "1.4rem", marginBottom: 24 }}>
-              {modalGym.name}
-            </div>
-            <div style={{
-              fontSize: "2.2rem",
-              letterSpacing: "0.25em",
-              fontWeight: 900,
-              color: "#2563eb",
-              background: "#e0f2fe",
-              padding: "1.1rem",
-              borderRadius: 12,
-              margin: "0 auto 1.3rem auto",
-              textAlign: "center",
-              wordBreak: "break-all",
-              userSelect: "all"
-            }}>
-              {sessionCode}
-            </div>
-            <div style={{ fontSize: "1.1rem", color: "#0b2546", marginBottom: 8 }}>
-              Expires: <span style={{ color: "#38bdf8" }}>{new Date(expiry).toLocaleTimeString()}</span>
-            </div>
-            <div style={{ fontSize: ".93rem", color: "#64748b", marginTop: 16 }}>
-              Show this code to the gym staff for one session.<br />
-              <span style={{ fontSize: ".90rem", color: "#d97706" }}>
-                Code is valid for 30 minutes and can only be used once.
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+      <div style={{ fontSize: "0.85rem", marginTop: 30, color: "#888" }}>
+        Data from <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors.
+      </div>
     </div>
   );
 }
