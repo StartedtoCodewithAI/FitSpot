@@ -28,11 +28,6 @@ const funnySayings = [
   "Let’s get physical... at the gym! 🎶",
 ];
 
-// Get random saying
-function getRandomSaying() {
-  return funnySayings[Math.floor(Math.random() * funnySayings.length)];
-}
-
 // Calculate max streak of consecutive booking days
 function getMaxStreak(bookings) {
   const dates = Array.from(
@@ -69,22 +64,11 @@ export default function MyCodes() {
   const [error, setError] = useState("");
   const [copiedIndex, setCopiedIndex] = useState(-1);
   const [activeTab, setActiveTab] = useState("active");
-  const [showFunny, setShowFunny] = useState(false);
-  const [funnyText, setFunnyText] = useState("");
   const [userName, setUserName] = useState("athlete");
   const [maxStreak, setMaxStreak] = useState(0);
 
   useEffect(() => {
     setUserName(getUserName());
-  }, []);
-
-  useEffect(() => {
-    if (window.location.hash === "#funny-success") {
-      setFunnyText(getRandomSaying());
-      setShowFunny(true);
-      setTimeout(() => setShowFunny(false), 3500);
-      window.location.hash = "";
-    }
   }, []);
 
   useEffect(() => {
@@ -149,55 +133,6 @@ export default function MyCodes() {
           : <>No streak yet – book those sessions and start your fitness journey!</>
         }
       </div>
-
-      {/* Fancy funny notification */}
-      {showFunny && (
-        <div
-          style={{
-            background: "linear-gradient(90deg,#fef08a,#a7f3d0)",
-            color: "#713f12",
-            padding: "1.1rem",
-            borderRadius: 14,
-            marginBottom: 22,
-            textAlign: "center",
-            fontWeight: 700,
-            fontSize: "1.15rem",
-            boxShadow: "0 10px 32px #fde04755",
-            position: "relative",
-            overflow: "hidden",
-            animation: "pop-bounce 0.7s cubic-bezier(.36,1.56,.64,1) both"
-          }}
-          aria-live="polite"
-        >
-          🏋️‍♂️ {funnyText} 🏋️‍♀️
-          <style>
-            {`
-              @keyframes pop-bounce {
-                0% { transform: scale(0.8); opacity: 0; }
-                60% { transform: scale(1.12); opacity: 1; }
-                100% { transform: scale(1); }
-              }
-              .confetti {
-                position: absolute;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                opacity: 0.7;
-                animation: confetti-fall 1.6s linear forwards;
-              }
-              @keyframes confetti-fall {
-                0% { top: -15px; }
-                100% { top: 80px; }
-              }
-            `}
-          </style>
-          {/* Fancy confetti */}
-          <span className="confetti" style={{background:'#fbbf24', left:'20%', animationDelay:'0.08s'}}></span>
-          <span className="confetti" style={{background:'#34d399', left:'40%', animationDelay:'0.18s'}}></span>
-          <span className="confetti" style={{background:'#60a5fa', left:'60%', animationDelay:'0.28s'}}></span>
-          <span className="confetti" style={{background:'#f472b6', left:'80%', animationDelay:'0.38s'}}></span>
-        </div>
-      )}
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
@@ -372,13 +307,13 @@ export default function MyCodes() {
                   <div
                     style={{
                       flex: 1,
-                      minWidth: 0,
+                      minWidth: 120,
                       marginLeft: "1.3rem",
                       display: "flex",
                       flexDirection: "column",
-                      wordBreak: "break-word",
+                      wordBreak: "normal",
                       whiteSpace: "normal",
-                      overflowWrap: "anywhere"
+                      overflowWrap: "break-word"
                     }}
                   >
                     <div style={{
@@ -476,13 +411,13 @@ export default function MyCodes() {
                 <div
                   style={{
                     flex: 1,
-                    minWidth: 0,
+                    minWidth: 120,
                     marginLeft: "1.3rem",
                     display: "flex",
                     flexDirection: "column",
-                    wordBreak: "break-word",
+                    wordBreak: "normal",
                     whiteSpace: "normal",
-                    overflowWrap: "anywhere"
+                    overflowWrap: "break-word"
                   }}
                 >
                   <div style={{
