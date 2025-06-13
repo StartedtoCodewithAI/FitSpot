@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const MAX_DISTANCE_METERS = 20000; // 20km radius
+const MAX_DISTANCE_METERS = 7000; // 7km radius
 
 // Haversine formula for distance in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -34,7 +34,7 @@ export default function Gyms() {
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        // Uncomment to hardcode a specific location for testing (e.g. Athens center)
+        // Uncomment for hardcoded location for testing:
         // const userLoc = { lat: 37.9755, lng: 23.7348 };
         const userLoc = {
           lat: pos.coords.latitude,
@@ -61,9 +61,8 @@ export default function Gyms() {
             throw new Error("Overpass API error: " + text);
           }
           const data = await response.json();
-          console.log("Fetched OSM data:", data); // DEBUG: Inspect the raw data in your browser console
+          console.log("Fetched OSM data:", data); // DEBUG
 
-          // Map nodes, ways, relations uniformly with lat/lng and basic info
           const gymsFound = (data.elements || []).map((el) => {
             let lat = el.lat;
             let lng = el.lon;
@@ -83,16 +82,14 @@ export default function Gyms() {
               tags: el.tags || {},
             };
           })
-          // Only keep gyms with valid coordinates
           .filter((g) => g.lat && g.lng)
-          // Add distance for sorting
           .map((g) => ({
             ...g,
             distance: getDistanceFromLatLonInKm(userLoc.lat, userLoc.lng, g.lat, g.lng),
           }))
-          // Sort by distance ascending
           .sort((a, b) => a.distance - b.distance);
 
+          console.log("Parsed gymsFound:", gymsFound); // DEBUG
           setGyms(gymsFound);
         } catch (e) {
           setError("Failed to fetch gyms from OpenStreetMap: " + e.message);
@@ -182,6 +179,20 @@ export default function Gyms() {
         <div style={{ marginBottom: 16, color: "#888" }}>
           Fetched {gyms.length} gym(s) from OpenStreetMap API.
         </div>
+      )}
+      {/* DEBUG BLOCK: Shows first 5 gyms as JSON */}
+      {userLocation && gyms.length > 0 && (
+        <pre style={{
+          maxHeight: 300,
+          overflow: 'auto',
+          fontSize: 12,
+          color: '#2563eb',
+          background: '#f3f4f6',
+          padding: 8,
+          borderRadius: 6
+        }}>
+          {JSON.stringify(gyms.slice(0, 5), null, 2)}
+        </pre>
       )}
       {userLocation && gyms.length === 0 && !loading && !error && (
         <div style={{ color: "#2563eb" }}>
