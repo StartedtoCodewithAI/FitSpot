@@ -39,7 +39,7 @@ export default function Navbar() {
     const menuItems = [
       { to: "/", label: "Home", match: (p) => p === "/" },
       { to: "/gyms", label: "Gyms", match: (p) => p.startsWith("/gyms") },
-      { to: "/my-codes", label: "My Codes", match: (p) => p === "/my-codes" }, // <-- Added!
+      { to: "/my-codes", label: "My Codes", match: (p) => p === "/my-codes" },
       { to: "/about", label: "About", match: (p) => p === "/about" },
       { to: "/profile", label: "Profile", match: (p) => p === "/profile" },
     ];
@@ -88,12 +88,12 @@ export default function Navbar() {
     <>
       <style>{`
         nav {
-          background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
+          background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 100%);
           padding: 0.5rem 1rem;
           position: sticky;
           top: 0;
           z-index: 999;
-          box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+          box-shadow: 0 8px 32px 0 rgba(31,38,135,0.10);
           backdrop-filter: blur(4px);
         }
         .navbar-container {
@@ -107,7 +107,7 @@ export default function Navbar() {
         .logo {
           height: 44px;
           cursor: pointer;
-          filter: drop-shadow(0 2px 8px rgba(30,60,114,0.2));
+          filter: drop-shadow(0 2px 8px rgba(60,60,60,0.10));
         }
         .flex-spacer {
           flex: 1 1 auto;
@@ -132,11 +132,11 @@ export default function Navbar() {
         .bar {
           height: 4px;
           width: 100%;
-          background: linear-gradient(90deg,#80d0c7 0%,#0093e9 100%);
+          background: linear-gradient(90deg,#a3a3a3 0%,#71717a 100%);
           border-radius: 2px;
           margin: 5px 0;
           transition: all 0.3s cubic-bezier(0.68,-0.55,0.27,1.55);
-          box-shadow: 0 2px 8px #0093e944;
+          box-shadow: 0 2px 8px #a3a3a344;
         }
         ul {
           list-style: none;
@@ -151,7 +151,7 @@ export default function Navbar() {
           align-items: center;
         }
         .menu-link {
-          color: #0b2546;
+          color: #27272a;
           text-decoration: none;
           font-weight: 700;
           font-size: 1.1rem;
@@ -167,30 +167,30 @@ export default function Navbar() {
           outline: none;
         }
         .menu-link.active {
-          color: #1d6fa5;
-          box-shadow: 0 0 0 0px #3399ff, 0 8px 32px 0 rgba(51,153,255,0.12);
-          background: rgba(255,255,255,0.14);
-          border-bottom: 3px solid;
-          border-image: linear-gradient(90deg,#80d0c7 0%,#0093e9 100%) 1;
+          color: #52525b;
+          box-shadow: 0 0 0 0px #a3a3a3, 0 8px 32px 0 rgba(160,160,160,0.08);
+          background: rgba(180,180,180,0.12);
+          border-bottom: 3px solid #8d8d92;
+          border-image: none;
         }
         .menu-link:hover, .menu-link:focus {
-          color: #0093e9;
-          background: linear-gradient(90deg,#e0f7fa 60%,#b2ebf2 100%);
-          box-shadow: 0 2px 16px 0 #0093e966;
+          color: #52525b;
+          background: linear-gradient(90deg,#e5e7eb 60%,#f3f4f6 100%);
+          box-shadow: 0 2px 16px 0 #d4d4d466;
         }
         .nav-btn.menu-link {
-          background: linear-gradient(90deg,#0093e9 0%,#80d0c7 100%);
-          color: #fff;
+          background: linear-gradient(90deg,#a3a3a3 0%,#d4d4d4 100%);
+          color: #27272a;
           font-weight: 700;
           border-radius: 11px;
           margin-left: 0.4em;
           padding: 0.6rem 1.1rem;
-          box-shadow: 0 2px 8px #0093e955;
+          box-shadow: 0 2px 8px #a3a3a355;
           border: none;
           transition: filter 0.2s;
         }
         .nav-btn.menu-link:hover {
-          filter: brightness(1.12);
+          filter: brightness(1.08);
         }
         .avatar-nav {
           width: 32px;
@@ -199,15 +199,15 @@ export default function Navbar() {
           object-fit: cover;
           margin-right: 0.5rem;
           border: 2px solid #fff;
-          background: #e0e7ef;
+          background: #f1f5f9;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 1.1rem;
-          color: #336699;
-          box-shadow: 0 2px 8px #1e3c7290;
+          color: #52525b;
+          box-shadow: 0 2px 8px #a1a1aa80;
         }
-        /* Mesmerising glassmorphism & animation for mobile */
+        /* Glassy grey mobile menu */
         @media (max-width: 768px) {
           ul {
             display: none;
@@ -221,20 +221,20 @@ export default function Navbar() {
             right: 0;
             left: auto;
             min-height: 60vh;
-            background: linear-gradient(135deg,rgba(56,189,248,0.92) 20%,rgba(37,99,235,0.95) 100%);
-            color: #1976d2;
+            background: linear-gradient(135deg,rgba(229,231,235,0.97) 20%,rgba(243,244,246,0.98) 100%);
+            color: #27272a;
             padding: 1.3rem 0.5rem 1.5rem 0.5rem;
             width: 94vw;
             max-width: 345px;
             border-radius: 22px 0 0 22px;
-            box-shadow: 0 12px 48px 0 #0093e9bb, 0 4px 32px 0 #1e3c7280;
-            border: 1px solid #e3e6ea;
+            box-shadow: 0 12px 48px 0 #bdbdbdbb, 0 4px 32px 0 #a3a3a380;
+            border: 1px solid #e5e7eb;
             opacity: 1;
             pointer-events: auto;
             z-index: 2000;
             margin: 0;
             animation: glassSlideIn .35s cubic-bezier(0.7,0,0.3,1);
-            backdrop-filter: blur(16px) saturate(150%);
+            backdrop-filter: blur(13px) saturate(140%);
           }
           @keyframes glassSlideIn {
             0% { transform: translateX(120%); opacity: 0;}
@@ -247,7 +247,7 @@ export default function Navbar() {
           .mobile-portal-menu .menu-link {
             font-size: 1.18rem;
             font-weight: 700;
-            color: #0b2546;
+            color: #27272a;
             border-radius: 11px;
             background: none;
             padding: 0.7rem 1.1rem;
@@ -258,17 +258,17 @@ export default function Navbar() {
             border-bottom: none;
           }
           .mobile-portal-menu .menu-link.active {
-            color: #0093e9;
-            text-shadow: 0 0 6px #00e1ff44;
-            background: rgba(255,255,255,0.13);
-            border-left: 5px solid #0093e9;
+            color: #8d8d92;
+            text-shadow: 0 0 6px #a3a3a344;
+            background: rgba(180,180,180,0.13);
+            border-left: 5px solid #8d8d92;
             border-image: none;
           }
           .mobile-portal-menu .menu-link:hover,
           .mobile-portal-menu .menu-link:focus {
-            background: linear-gradient(90deg,#e0f7fa 0%,#b2ebf2 100%);
-            color: #0093e9;
-            text-shadow: 0 2px 8px #0093e9cc;
+            background: linear-gradient(90deg,#e5e7eb 0%,#f3f4f6 100%);
+            color: #52525b;
+            text-shadow: 0 2px 8px #a3a3a3cc;
           }
           .hamburger {
             display: flex;
