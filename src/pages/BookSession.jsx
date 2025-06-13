@@ -1,56 +1,21 @@
-// src/pages/BookSession.jsx
 import React, { useState } from "react";
-import { useLocation, useParams, useNavigate } from "react-router-dom";
-import BookingSuccessModal from "../components/BookingSuccessModal";
+import { useLocation, useNavigate } from "react-router-dom";
 
-// Helper for generating a simple unique code
-function generateCode(length = 6) {
-  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  let result = "";
-  for (let i = 0; i < length; i++) result += chars[Math.floor(Math.random() * chars.length)];
-  return result;
-}
-
-// Save booking in localStorage (demo)
-function saveBooking(booking) {
-  const key = "fitspot_bookings";
-  const prev = JSON.parse(localStorage.getItem(key) || "[]");
-  prev.push(booking);
-  localStorage.setItem(key, JSON.stringify(prev));
-}
-
-// Funny gym-themed sayings
-const funnySayings = [
-  "You crushed it, gym champ! 💪",
-  "Booking done! Time to lift your spirits—and some weights!",
-  "Look at you go! Gains are coming. 🏋️",
-  "There you go, player! You did it 😉",
-  "Booking confirmed: excuses cancelled. 🛑",
-  "Time to get those reps in! 🏆",
-  "Sweat now, shine later. Your journey starts!",
-  "Flex mode activated. See you at the gym!",
-  "Nice! Your muscles just sent a thank you card.",
-  "Let’s get physical... at the gym! 🎶",
-];
-function getRandomSaying() {
-  return funnySayings[Math.floor(Math.random() * funnySayings.length)];
-}
+// ... (any other imports you use)
 
 export default function BookSession() {
-  const { gymId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const gym = location.state?.gym;
 
+  // State and other variables
+  const gym = location.state?.gym;
+  const [step, setStep] = useState("form");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [step, setStep] = useState("form");
-  const [code, setCode] = useState("");
   const [isPaying, setIsPaying] = useState(false);
-
-  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
+  const [code, setCode] = useState("");
 
   if (!gym) {
     return (
@@ -156,18 +121,18 @@ export default function BookSession() {
             cursor: "pointer",
           }}
         >
-          Cancel
+          Back to Gyms
         </button>
       </div>
     );
   }
 
-  // Step 2: Fake Payment
+  // Step 2: Payment (simulate payment)
   if (step === "payment") {
     return (
-      <div style={{ padding: "2rem", maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
-        <h2>Payment</h2>
-        <div style={{ margin: "1.4rem 0", color: "#444" }}>
+      <div style={{ padding: "2rem", maxWidth: 480, margin: "0 auto" }}>
+        <h2>Confirm & Pay</h2>
+        <div style={{ marginBottom: 24 }}>
           <div>
             <strong>Gym:</strong> {gym.name}
           </div>
@@ -177,45 +142,54 @@ export default function BookSession() {
           <div>
             <strong>Time:</strong> {time}
           </div>
+          <div>
+            <strong>Price:</strong> ${gym.price || "10"}
+          </div>
         </div>
-        <p>
-          This is a demo payment screen.<br />
-          <strong>Session Price:</strong> <span style={{ color: "#2563eb" }}>₹100</span>
-        </p>
         <button
           onClick={() => {
             setIsPaying(true);
             setTimeout(() => {
-              // Simulate payment and booking code generation
-              const sessionCode = generateCode();
-              setCode(sessionCode);
-              saveBooking({
-                gymId: gym.id,
+              // Generate fake booking code
+              const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+              setCode(generatedCode);
+
+              // Save booking to localStorage
+              const prev = JSON.parse(localStorage.getItem("fitspot_bookings") || "[]");
+              prev.push({
+                code: generatedCode,
                 gym,
                 date,
                 time,
-                code: sessionCode,
-                created: new Date().toISOString(),
+                created: Date.now()
               });
-              setIsPaying(false);
+              localStorage.setItem("fitspot_bookings", JSON.stringify(prev));
 
-              // Show fancy modal with confetti and a funny message
-              setModalMsg(getRandomSaying());
+              setIsPaying(false);
               setShowModal(true);
-            }, 1200);
+              setModalMsg("Payment successful! Your session is booked.");
+              setStep("done");
+            }, 1800);
           }}
           disabled={isPaying}
           style={{
-            padding: "0.8rem 2.2rem",
-            background: isPaying ? "#93c5fd" : "#2563eb",
+            background: isPaying
+              ? "linear-gradient(90deg, #b6ccfa, #7fa7e4)"
+              : "linear-gradient(90deg, #38bdf8, #2563eb)",
             color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            fontWeight: 700,
-            fontSize: "1.1rem",
-            cursor: isPaying ? "not-allowed" : "pointer",
+            fontSize: '1.25rem',
+            fontWeight: 800,
+            border: 'none',
+            borderRadius: '40px',
+            padding: '1.1rem 2.4rem',
             marginBottom: 16,
             marginTop: 16,
+            boxShadow: '0 4px 16px #2563eb22',
+            cursor: isPaying ? "not-allowed" : "pointer",
+            letterSpacing: '.06em',
+            transition: 'background 0.2s, transform 0.1s',
+            display: 'block',
+            width: '100%'
           }}
         >
           {isPaying ? "Processing..." : "Pay Now"}
@@ -237,19 +211,6 @@ export default function BookSession() {
             Back
           </button>
         </div>
-        {/* Success Modal */}
-        <BookingSuccessModal
-          isOpen={showModal}
-          onClose={() => {
-            setShowModal(false);
-            setStep("done");
-          }}
-          message={modalMsg}
-          bookingCode={code}
-          gymName={gym.name}
-          date={date}
-          time={time}
-        />
       </div>
     );
   }
@@ -291,7 +252,7 @@ export default function BookSession() {
           Saved to your bookings!
         </div>
         <button
-          onClick={() => window.location.href = "/mycodes"}
+          onClick={() => navigate("/mycodes")}
           style={{
             marginTop: 28,
             background: "#2563eb",
