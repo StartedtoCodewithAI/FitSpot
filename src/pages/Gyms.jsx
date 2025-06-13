@@ -34,7 +34,7 @@ export default function Gyms() {
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        // Uncomment for hardcoded location for testing:
+        // Uncomment to hardcode a location for testing:
         // const userLoc = { lat: 37.9755, lng: 23.7348 };
         const userLoc = {
           lat: pos.coords.latitude,
@@ -61,7 +61,6 @@ export default function Gyms() {
             throw new Error("Overpass API error: " + text);
           }
           const data = await response.json();
-          console.log("Fetched OSM data:", data); // DEBUG
 
           const gymsFound = (data.elements || []).map((el) => {
             let lat = el.lat;
@@ -89,7 +88,6 @@ export default function Gyms() {
           }))
           .sort((a, b) => a.distance - b.distance);
 
-          console.log("Parsed gymsFound:", gymsFound); // DEBUG
           setGyms(gymsFound);
         } catch (e) {
           setError("Failed to fetch gyms from OpenStreetMap: " + e.message);
@@ -174,25 +172,6 @@ export default function Gyms() {
           <br />
           Longitude: {userLocation.lng}
         </div>
-      )}
-      {userLocation && (
-        <div style={{ marginBottom: 16, color: "#888" }}>
-          Fetched {gyms.length} gym(s) from OpenStreetMap API.
-        </div>
-      )}
-      {/* DEBUG BLOCK: Shows first 5 gyms as JSON */}
-      {userLocation && gyms.length > 0 && (
-        <pre style={{
-          maxHeight: 300,
-          overflow: 'auto',
-          fontSize: 12,
-          color: '#2563eb',
-          background: '#f3f4f6',
-          padding: 8,
-          borderRadius: 6
-        }}>
-          {JSON.stringify(gyms.slice(0, 5), null, 2)}
-        </pre>
       )}
       {userLocation && gyms.length === 0 && !loading && !error && (
         <div style={{ color: "#2563eb" }}>
