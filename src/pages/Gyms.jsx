@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const MAX_DISTANCE_METERS = 7000; // 7km radius
+const DEFAULT_RADIUS_KM = 7;
+const FAVORITES_KEY = "fitspot_favorite_gyms";
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -16,12 +17,45 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+function loadFavorites() {
+  try {
+    return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFavorites(favorites) {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+}
+
 export default function Gyms() {
   const [userLocation, setUserLocation] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [gyms, setGyms] = useState([]);
   const [error, setError] = useState("");
+  const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
+  const [favorites, setFavorites] = useState(loadFavorites());
+
+  // Update favorites in localStorage whenever favorites state changes
+  useEffect(() => {
+    saveFavorites(favorites);
+  }, [favorites]);
+
+  // Refresh favorites after gyms load, to keep only valid gym IDs
+  useEffect(() => {
+    // Remove favorites that are not in gyms list anymore
+    if (gyms.length > 0) {
+      const validFavs = favorites.filter(favId =>
+        gyms.some(gym => gym.id === favId)
+      );
+      if (validFavs.length !== favorites.length) {
+        setFavorites(validFavs);
+      }
+    }
+    // eslint-disable-next-line
+  }, [gyms]);
 
   const handleAllowLocation = () => {
     setError("");
@@ -39,11 +73,12 @@ export default function Gyms() {
         };
         setUserLocation(userLoc);
 
+        const radiusMeters = radiusKm * 1000;
         const query = `[out:json];
           (
-            node["leisure"~"fitness_centre|gym"](around:${MAX_DISTANCE_METERS},${userLoc.lat},${userLoc.lng});
-            way["leisure"~"fitness_centre|gym"](around:${MAX_DISTANCE_METERS},${userLoc.lat},${userLoc.lng});
-            relation["leisure"~"fitness_centre|gym"](around:${MAX_DISTANCE_METERS},${userLoc.lat},${userLoc.lng});
+            node["leisure"~"fitness_centre|gym"](around:${radiusMeters},${userLoc.lat},${userLoc.lng});
+            way["leisure"~"fitness_centre|gym"](around:${radiusMeters},${userLoc.lat},${userLoc.lng});
+            relation["leisure"~"fitness_centre|gym"](around:${radiusMeters},${userLoc.lat},${userLoc.lng});
           );
           out center;`;
 
@@ -70,11 +105,13 @@ export default function Gyms() {
               name: el.tags?.name || "Unnamed Gym",
               address:
                 el.tags?.["addr:street"]
-                  ? `${el.tags["addr:street"]}${el.tags["addr:housenumber"] ? " " + el.tags["addr:housenumber"] : ""}, ${el.tags["addr:city"] || ""}`
+                  ? `${el.tags["addr:street"]}${el.tags["addr:housenumber"] ? " " + el.tags["addr:housenumber"] : ""}${el.tags["addr:city"] ? ", " + el.tags["addr:city"] : ""}`
                   : el.tags?.["addr:full"] || "",
               lat,
               lng,
               tags: el.tags || {},
+              phone: el.tags?.phone || el.tags?.["contact:phone"] || el.tags?.["contact:mobile"] || "",
+              opening_hours: el.tags?.opening_hours || "",
             };
           })
           .filter((g) => g.lat && g.lng)
@@ -101,9 +138,59 @@ export default function Gyms() {
     );
   };
 
+  const handleRadiusChange = (e) => {
+    setRadiusKm(Number(e.target.value));
+    // If you've already found location, auto-refresh gyms for new radius
+    if (userLocation) {
+      handleAllowLocation();
+    }
+  };
+
+  const toggleFavorite = (gymId) => {
+    setFavorites((prevFavs) =>
+      prevFavs.includes(gymId)
+        ? prevFavs.filter((f) => f !== gymId)
+        : [...prevFavs, gymId]
+    );
+  };
+
+  // Sort gyms: favorites first, then by distance.
+  const sortedGyms = [...gyms].sort((a, b) => {
+    const aFav = favorites.includes(a.id);
+    const bFav = favorites.includes(b.id);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return a.distance - b.distance;
+  });
+
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
-      <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>TESTING GYMS PAGE</h1>
+      <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
+
+      <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 16 }}>
+        <b>Tip:</b> Searching within
+        <select
+          value={radiusKm}
+          onChange={handleRadiusChange}
+          style={{
+            fontWeight: 700,
+            color: "#2563eb",
+            border: "1px solid #2563eb44",
+            borderRadius: 6,
+            marginLeft: 8,
+            marginRight: 6,
+            padding: "2px 8px",
+            background: "#f1f5fd",
+          }}
+        >
+          {[3, 5, 7, 10, 15, 20].map((km) => (
+            <option key={km} value={km}>
+              {km} km
+            </option>
+          ))}
+        </select>
+        radius. Change the radius if there are too few/many results.
+      </div>
 
       {!userLocation && !permissionDenied && !loading && (
         <button
@@ -166,22 +253,116 @@ export default function Gyms() {
         </div>
       )}
 
-      {userLocation && gyms.length > 0 && (
-        <div>
-          {gyms.map((gym, i) => (
-            <div key={gym.id || i} style={{padding:8, borderBottom:'1px solid #ccc'}}>
-              <b>{gym.name}</b> {gym.address} {gym.distance.toFixed(2)} km
-            </div>
-          ))}
+      {userLocation && sortedGyms.length === 0 && !loading && !error && (
+        <div style={{ color: "#2563eb" }}>
+          No real gyms found within {radiusKm}km of your location.<br />
+          Try a different radius!
         </div>
       )}
 
-      {userLocation && gyms.length === 0 && !loading && !error && (
-        <div style={{ color: "#2563eb" }}>
-          No real gyms found within {MAX_DISTANCE_METERS / 1000}km of your location.<br />
-          Try again or widen your search radius!
+      {userLocation && sortedGyms.length > 0 && (
+        <div style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "1.2rem",
+          marginTop: 20,
+        }}>
+          {sortedGyms.map((gym) => {
+            const isFav = favorites.includes(gym.id);
+            return (
+              <div key={gym.id} style={{
+                flex: "1 0 320px",
+                minWidth: 280,
+                maxWidth: 370,
+                background: isFav ? "rgba(255,215,0,0.14)" : "rgba(37,99,235,0.08)",
+                border: isFav ? "2px solid gold" : "1px solid #2563eb22",
+                borderRadius: 15,
+                boxShadow: "0 2px 15px #2563eb14",
+                padding: "1.3rem 1.3rem 1.1rem 1.3rem",
+                marginBottom: "0.5rem",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between"
+              }}>
+                <div>
+                  <div style={{
+                    fontWeight: 700,
+                    fontSize: "1.18rem",
+                    color: "#2563eb",
+                    marginBottom: 4,
+                    display: "flex",
+                    alignItems: "center",
+                  }}>
+                    <button
+                      title={isFav ? "Remove from favorites" : "Add to favorites"}
+                      onClick={() => toggleFavorite(gym.id)}
+                      aria-label={isFav ? "Unfavorite" : "Favorite"}
+                      style={{
+                        border: "none",
+                        background: "none",
+                        cursor: "pointer",
+                        marginRight: 8,
+                        fontSize: "1.4rem",
+                        color: isFav ? "#FFD700" : "#bbb",
+                        transition: "color 0.2s",
+                        padding: 0,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {isFav ? "★" : "☆"}
+                    </button>
+                    {gym.name}
+                  </div>
+                  {gym.address && (
+                    <div style={{ color: "#0b2546", opacity: 0.78, marginBottom: 4 }}>
+                      {gym.address}
+                    </div>
+                  )}
+                  <div style={{ fontSize: ".93rem", color: "#38bdf8", marginBottom: 2 }}>
+                    {gym.distance.toFixed(2)} km away
+                  </div>
+                  {gym.phone && (
+                    <div style={{ fontSize: ".93rem", color: "#222", marginBottom: 2 }}>
+                      📞 <a href={`tel:${gym.phone}`} style={{ color: "#2563eb", textDecoration: "underline" }}>{gym.phone}</a>
+                    </div>
+                  )}
+                  {gym.opening_hours && (
+                    <div style={{ fontSize: ".93rem", color: "#444", marginBottom: 2 }}>
+                      🕒 <span>{gym.opening_hours}</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{ marginTop: 7 }}>
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${gym.lat}&mlon=${gym.lng}#map=18/${gym.lat}/${gym.lng}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{
+                      color: "#2563eb",
+                      textDecoration: "underline",
+                      fontWeight: 600,
+                    }}
+                  >OpenStreetMap</a>
+                  {" "}
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${gym.lat},${gym.lng}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{
+                      color: "#38bdf8",
+                      textDecoration: "underline",
+                      fontWeight: 600,
+                      marginLeft: 12
+                    }}
+                  >Google Maps</a>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
+
+      <div style={{ fontSize: "0.85rem", marginTop: 30, color: "#888" }}>
+        Data from <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors.
+      </div>
     </div>
   );
 }
