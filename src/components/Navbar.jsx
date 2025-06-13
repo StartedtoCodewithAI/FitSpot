@@ -88,7 +88,7 @@ export default function Navbar() {
     <>
       <style>{`
         nav {
-          background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 100%);
+          background: linear-gradient(90deg, #e5e7eb 0%, #d1d5db 100%);
           padding: 0.5rem 1rem;
           position: sticky;
           top: 0;
@@ -221,7 +221,7 @@ export default function Navbar() {
             right: 0;
             left: auto;
             min-height: 60vh;
-            background: linear-gradient(135deg,rgba(229,231,235,0.97) 20%,rgba(243,244,246,0.98) 100%);
+            background: linear-gradient(135deg,rgba(255,255,255,0.98) 20%,rgba(243,244,246,0.98) 100%);
             color: #27272a;
             padding: 1.3rem 0.5rem 1.5rem 0.5rem;
             width: 94vw;
