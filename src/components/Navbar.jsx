@@ -86,8 +86,196 @@ export default function Navbar() {
 
   return (
     <>
-      {/* (Keep your style block as you had before) */}
-      <style>{`/* ... all your CSS from before ... */`}</style>
+      <style>{`
+        nav {
+          background: linear-gradient(90deg, #e5e7eb 0%, #d1d5db 100%);
+          padding: 0.5rem 1rem;
+          position: sticky;
+          top: 0;
+          z-index: 999;
+          box-shadow: 0 8px 32px 0 rgba(31,38,135,0.10);
+          backdrop-filter: blur(4px);
+        }
+        .navbar-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          display: flex;
+          align-items: center;
+          position: relative;
+          width: 100%;
+        }
+        .logo {
+          height: 44px;
+          cursor: pointer;
+          filter: drop-shadow(0 2px 8px rgba(60,60,60,0.10));
+        }
+        .flex-spacer {
+          flex: 1 1 auto;
+        }
+        .nav-actions {
+          display: flex;
+          align-items: center;
+          position: relative;
+        }
+        .hamburger {
+          display: none;
+          flex-direction: column;
+          justify-content: center;
+          width: 38px;
+          height: 38px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          margin-left: 1rem;
+          z-index: 3000;
+        }
+        .bar {
+          height: 4px;
+          width: 100%;
+          background: linear-gradient(90deg,#a3a3a3 0%,#71717a 100%);
+          border-radius: 2px;
+          margin: 5px 0;
+          transition: all 0.3s cubic-bezier(0.68,-0.55,0.27,1.55);
+          box-shadow: 0 2px 8px #a3a3a344;
+        }
+        ul {
+          list-style: none;
+          display: flex;
+          gap: 2rem;
+          margin: 0;
+          padding: 0;
+          align-items: center;
+        }
+        li {
+          display: flex;
+          align-items: center;
+        }
+        .menu-link {
+          color: #27272a;
+          text-decoration: none;
+          font-weight: 700;
+          font-size: 1.1rem;
+          letter-spacing: 0.02em;
+          transition: color 0.3s, box-shadow 0.3s, background 0.3s;
+          border: none;
+          background: none;
+          cursor: pointer;
+          border-radius: 11px;
+          padding: 0.6rem 1.1rem;
+          position: relative;
+          overflow: hidden;
+          outline: none;
+        }
+        .menu-link.active {
+          color: #52525b;
+          box-shadow: 0 0 0 0px #a3a3a3, 0 8px 32px 0 rgba(160,160,160,0.08);
+          background: rgba(180,180,180,0.12);
+          border-bottom: 3px solid #8d8d92;
+          border-image: none;
+        }
+        .menu-link:hover, .menu-link:focus {
+          color: #52525b;
+          background: linear-gradient(90deg,#e5e7eb 60%,#f3f4f6 100%);
+          box-shadow: 0 2px 16px 0 #d4d4d466;
+        }
+        .nav-btn.menu-link {
+          background: linear-gradient(90deg,#a3a3a3 0%,#d4d4d4 100%);
+          color: #27272a;
+          font-weight: 700;
+          border-radius: 11px;
+          margin-left: 0.4em;
+          padding: 0.6rem 1.1rem;
+          box-shadow: 0 2px 8px #a3a3a355;
+          border: none;
+          transition: filter 0.2s;
+        }
+        .nav-btn.menu-link:hover {
+          filter: brightness(1.08);
+        }
+        .avatar-nav {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          object-fit: cover;
+          margin-right: 0.5rem;
+          border: 2px solid #fff;
+          background: #f1f5f9;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          color: #52525b;
+          box-shadow: 0 2px 8px #a1a1aa80;
+        }
+        /* Glassy grey mobile menu */
+        @media (max-width: 768px) {
+          ul {
+            display: none;
+          }
+          .mobile-portal-menu {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0;
+            position: fixed;
+            top: 58px;
+            right: 0;
+            left: auto;
+            min-height: 60vh;
+            background: linear-gradient(135deg,rgba(255,255,255,0.98) 20%,rgba(243,244,246,0.98) 100%);
+            color: #27272a;
+            padding: 1.3rem 0.5rem 1.5rem 0.5rem;
+            width: 94vw;
+            max-width: 345px;
+            border-radius: 22px 0 0 22px;
+            box-shadow: 0 12px 48px 0 #bdbdbdbb, 0 4px 32px 0 #a3a3a380;
+            border: 1px solid #e5e7eb;
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 2000;
+            margin: 0;
+            animation: glassSlideIn .35s cubic-bezier(0.7,0,0.3,1);
+            backdrop-filter: blur(13px) saturate(140%);
+          }
+          @keyframes glassSlideIn {
+            0% { transform: translateX(120%); opacity: 0;}
+            100% { transform: translateX(0); opacity: 1;}
+          }
+          .mobile-portal-menu li {
+            padding: 0.95rem 1.6rem;
+            justify-content: flex-start;
+          }
+          .mobile-portal-menu .menu-link {
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: #27272a;
+            border-radius: 11px;
+            background: none;
+            padding: 0.7rem 1.1rem;
+            transition: background 0.2s, color 0.2s;
+            width: 100%;
+            text-align: left;
+            box-shadow: none;
+            border-bottom: none;
+          }
+          .mobile-portal-menu .menu-link.active {
+            color: #8d8d92;
+            text-shadow: 0 0 6px #a3a3a344;
+            background: rgba(180,180,180,0.13);
+            border-left: 5px solid #8d8d92;
+            border-image: none;
+          }
+          .mobile-portal-menu .menu-link:hover,
+          .mobile-portal-menu .menu-link:focus {
+            background: linear-gradient(90deg,#e5e7eb 0%,#f3f4f6 100%);
+            color: #52525b;
+            text-shadow: 0 2px 8px #a3a3a3cc;
+          }
+          .hamburger {
+            display: flex;
+            margin-left: 0;
+          }
+        }
+      `}</style>
       <nav>
         <div className="navbar-container">
           <Link to="/">
