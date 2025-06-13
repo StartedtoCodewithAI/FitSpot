@@ -121,6 +121,11 @@ export default function Home() {
           width: 100%;
           display: block;
         }
+        .callToAction .center-btn-row {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
         footer {
           text-align: center;
           padding: 2rem 1rem;
@@ -215,18 +220,8 @@ export default function Home() {
         </div>
         <section className="callToAction">
           <h2>Ready to start your fitness journey?</h2>
-          {/* Center Sign Up button */}
-          <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            <button
-              className="cta"
-              style={{
-                position: "relative",
-                left: "0",
-                transform: "none",
-                margin: "0 auto"
-              }}
-              onClick={() => navigate("/signup")}
-            >
+          <div className="center-btn-row">
+            <button className="cta" onClick={() => navigate("/signup")}>
               Sign Up
             </button>
           </div>
