@@ -1,7 +1,15 @@
-// BookingSuccessModal.jsx
+// src/components/BookingSuccessModal.jsx
 import React from 'react';
 
-const BookingSuccessModal = ({ isOpen, onClose, bookingCode, gymName, date, time }) => {
+const BookingSuccessModal = ({
+  isOpen,
+  onClose,
+  bookingCode,
+  gymName,
+  date,
+  time,
+  message
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -28,6 +36,17 @@ const BookingSuccessModal = ({ isOpen, onClose, bookingCode, gymName, date, time
         }}
       >
         <h2>Booking Successful!</h2>
+        {/* Show the funny message if provided */}
+        {message && (
+          <div style={{
+            marginBottom: "1.5rem",
+            color: "#2563eb",
+            fontWeight: 600,
+            fontSize: "1.1rem"
+          }}>
+            {message}
+          </div>
+        )}
         <p>
           <strong>Gym:</strong> {gymName}<br/>
           <strong>Date:</strong> {date}<br/>
