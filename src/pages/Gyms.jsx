@@ -37,15 +37,13 @@ export default function Gyms() {
   const [error, setError] = useState("");
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const [favorites, setFavorites] = useState(loadFavorites());
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
-  // Update favorites in localStorage whenever favorites state changes
   useEffect(() => {
     saveFavorites(favorites);
   }, [favorites]);
 
-  // Refresh favorites after gyms load, to keep only valid gym IDs
   useEffect(() => {
-    // Remove favorites that are not in gyms list anymore
     if (gyms.length > 0) {
       const validFavs = favorites.filter(favId =>
         gyms.some(gym => gym.id === favId)
@@ -140,7 +138,6 @@ export default function Gyms() {
 
   const handleRadiusChange = (e) => {
     setRadiusKm(Number(e.target.value));
-    // If you've already found location, auto-refresh gyms for new radius
     if (userLocation) {
       handleAllowLocation();
     }
@@ -162,6 +159,11 @@ export default function Gyms() {
     if (!aFav && bFav) return 1;
     return a.distance - b.distance;
   });
+
+  // Filter based on showOnlyFavorites toggle
+  const displayedGyms = showOnlyFavorites
+    ? sortedGyms.filter(gym => favorites.includes(gym.id))
+    : sortedGyms;
 
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
@@ -190,6 +192,42 @@ export default function Gyms() {
           ))}
         </select>
         radius. Change the radius if there are too few/many results.
+      </div>
+
+      {/* Fancy Show Only Favorites Toggle */}
+      <div style={{ display: "flex", alignItems: "center", margin: "14px 0" }}>
+        <label style={{ display: "flex", alignItems: "center", cursor: "pointer", fontWeight: 600, color: "#2563eb", fontSize: "1.08rem" }}>
+          <span style={{ marginRight: 9 }}>Show only favorites</span>
+          <span style={{ position: "relative", display: "inline-block", width: 44, height: 24 }}>
+            <input
+              type="checkbox"
+              checked={showOnlyFavorites}
+              onChange={() => setShowOnlyFavorites(v => !v)}
+              style={{ opacity: 0, width: 0, height: 0 }}
+            />
+            <span style={{
+              position: "absolute",
+              cursor: "pointer",
+              top: 0, left: 0,
+              width: "44px", height: "24px",
+              background: showOnlyFavorites ? "#2563eb" : "#e5e7eb",
+              borderRadius: "16px",
+              transition: "background 0.2s",
+              boxShadow: showOnlyFavorites ? "0 0 4px #2563eb99" : undefined
+            }}>
+            </span>
+            <span style={{
+              position: "absolute",
+              left: showOnlyFavorites ? "22px" : "2px",
+              top: "2px",
+              width: "20px", height: "20px",
+              borderRadius: "50%",
+              background: "#fff",
+              boxShadow: "0 2px 6px #0001",
+              transition: "left 0.2s"
+            }}></span>
+          </span>
+        </label>
       </div>
 
       {!userLocation && !permissionDenied && !loading && (
@@ -253,21 +291,24 @@ export default function Gyms() {
         </div>
       )}
 
-      {userLocation && sortedGyms.length === 0 && !loading && !error && (
+      {userLocation && displayedGyms.length === 0 && !loading && !error && (
         <div style={{ color: "#2563eb" }}>
-          No real gyms found within {radiusKm}km of your location.<br />
-          Try a different radius!
+          {showOnlyFavorites
+            ? "You have no favorite gyms in this area."
+            : `No real gyms found within ${radiusKm}km of your location.`}
+          <br />
+          Try a different radius or clear the filter!
         </div>
       )}
 
-      {userLocation && sortedGyms.length > 0 && (
+      {userLocation && displayedGyms.length > 0 && (
         <div style={{
           display: "flex",
           flexWrap: "wrap",
           gap: "1.2rem",
           marginTop: 20,
         }}>
-          {sortedGyms.map((gym) => {
+          {displayedGyms.map((gym) => {
             const isFav = favorites.includes(gym.id);
             return (
               <div key={gym.id} style={{
