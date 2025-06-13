@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const DEFAULT_RADIUS_KM = 7;
 const FAVORITES_KEY = "fitspot_favorite_gyms";
@@ -30,6 +31,7 @@ function saveFavorites(favorites) {
 }
 
 export default function Gyms() {
+  const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -570,6 +572,23 @@ export default function Gyms() {
                       display: "inline-block"
                     }}
                   >Get Directions</a>
+                  {/* BOOK SESSION BUTTON */}
+                  <button
+                    style={{
+                      background: "#2563eb",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 8,
+                      padding: "8px 20px",
+                      fontWeight: 700,
+                      fontSize: "1rem",
+                      cursor: "pointer",
+                      boxShadow: "0 1px 6px #2563eb33"
+                    }}
+                    onClick={() => navigate(`/book/${gym.id}`, { state: { gym } })}
+                  >
+                    Book Session
+                  </button>
                 </div>
               </div>
             );
