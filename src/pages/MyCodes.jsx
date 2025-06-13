@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 
-// Helper function to check if a booking is expired
+// Helper: Is booking expired?
 function isExpired(booking) {
   if (!booking.date || !booking.time) return false;
   const bookingDateTime = new Date(`${booking.date}T${booking.time}`);
   return bookingDateTime < new Date();
 }
 
-// Helper function to get the user's name from localStorage
+// Helper: Get user's name from localStorage
 function getUserName() {
   const stored = localStorage.getItem("fitspot_user_name");
   if (!stored) return "athlete";
@@ -27,6 +27,9 @@ const funnySayings = [
   "Nice! Your muscles just sent a thank you card.",
   "Let’s get physical... at the gym! 🎶",
 ];
+function getRandomSaying() {
+  return funnySayings[Math.floor(Math.random() * funnySayings.length)];
+}
 
 // Calculate max streak of consecutive booking days
 function getMaxStreak(bookings) {
@@ -67,6 +70,10 @@ export default function MyCodes() {
   const [userName, setUserName] = useState("athlete");
   const [maxStreak, setMaxStreak] = useState(0);
 
+  // For delete confirmation
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [toDeleteIdx, setToDeleteIdx] = useState(null);
+
   useEffect(() => {
     setUserName(getUserName());
   }, []);
@@ -90,7 +97,13 @@ export default function MyCodes() {
     setTimeout(() => setCopiedIndex(-1), 1500);
   };
 
-  const deleteBooking = (bookingIdx) => {
+  const confirmDeleteBooking = (bookingIdx) => {
+    setToDeleteIdx(bookingIdx);
+    setShowConfirm(true);
+  };
+
+  const deleteBooking = () => {
+    const bookingIdx = toDeleteIdx;
     const allBookings = JSON.parse(localStorage.getItem("fitspot_bookings") || "[]");
     const filteredBookings = allBookings.filter((_, idx) =>
       idx !== (allBookings.length - 1 - bookingIdx)
@@ -98,6 +111,8 @@ export default function MyCodes() {
     localStorage.setItem("fitspot_bookings", JSON.stringify(filteredBookings.reverse()));
     setBookings(filteredBookings);
     setMaxStreak(getMaxStreak(filteredBookings));
+    setShowConfirm(false);
+    setToDeleteIdx(null);
   };
 
   const filteredActive = bookings.filter(
@@ -108,7 +123,7 @@ export default function MyCodes() {
   );
 
   return (
-    <div style={{ maxWidth: 700, margin: "0 auto", padding: "2.5rem 1rem" }}>
+    <div style={{ maxWidth: 700, margin: "0 auto", padding: "2.5rem 1rem", position: "relative" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "2rem", outline: 0 }} tabIndex={0} aria-label="My Session Codes">
         Welcome, {userName}! <span role="img" aria-label="waving hand">👋</span>
       </h1>
@@ -229,6 +244,7 @@ export default function MyCodes() {
             color: "#64748b",
             textAlign: "center"
           }}>
+            <div style={{ fontSize: "1.25rem", marginBottom: "1rem" }}>{getRandomSaying()}</div>
             You haven’t generated any active session codes yet.
           </div>
         ) : (
@@ -323,6 +339,15 @@ export default function MyCodes() {
                     }}>
                       {b.gym?.name || "(Unknown Gym)"}
                     </div>
+                    {b.gym?.address &&
+                      <div style={{
+                        color: "#64748b",
+                        fontSize: ".96rem",
+                        marginBottom: ".15rem"
+                      }}>
+                        Address: {b.gym.address}
+                      </div>
+                    }
                     <div style={{
                       color: "#64748b",
                       fontSize: ".96rem",
@@ -331,7 +356,7 @@ export default function MyCodes() {
                       Date: {b.date} &nbsp;|&nbsp; Time: {b.time}
                     </div>
                   </div>
-                  {b.code && !expired && (
+                  {b.code && !expired && b.gym?.lat && b.gym?.lng && (
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${b.gym?.lat},${b.gym?.lng}`}
                       target="_blank"
@@ -427,6 +452,15 @@ export default function MyCodes() {
                   }}>
                     {b.gym?.name || "(Unknown Gym)"}
                   </div>
+                  {b.gym?.address &&
+                    <div style={{
+                      color: "#64748b",
+                      fontSize: ".96rem",
+                      marginBottom: ".15rem"
+                    }}>
+                      Address: {b.gym.address}
+                    </div>
+                  }
                   <div style={{
                     color: "#64748b",
                     fontSize: ".96rem",
@@ -447,7 +481,7 @@ export default function MyCodes() {
                   </div>
                 </div>
                 <button
-                  onClick={() => deleteBooking(idx)}
+                  onClick={() => confirmDeleteBooking(idx)}
                   aria-label="Delete expired session code"
                   style={{
                     marginLeft: "1rem",
@@ -468,6 +502,61 @@ export default function MyCodes() {
             </div>
           ))
         )
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showConfirm && (
+        <div
+          style={{
+            position: "fixed",
+            left: 0, top: 0, right: 0, bottom: 0,
+            zIndex: 2000,
+            background: "rgba(0,0,0,0.25)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
+          <div style={{
+            background: "#fff",
+            padding: "2rem",
+            borderRadius: 12,
+            boxShadow: "0 2px 10px #0002",
+            maxWidth: 320,
+            minWidth: 250,
+            textAlign: "center"
+          }}>
+            <div style={{ fontSize: "1.2rem", marginBottom: 20 }}>
+              Are you sure you want to delete this expired session code?
+            </div>
+            <button
+              onClick={deleteBooking}
+              style={{
+                background: "#dc2626",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                padding: "0.6rem 1.6rem",
+                fontWeight: 700,
+                fontSize: "1.05rem",
+                marginRight: 14,
+                cursor: "pointer"
+              }}
+            >Yes, Delete</button>
+            <button
+              onClick={() => setShowConfirm(false)}
+              style={{
+                background: "#f1f5f9",
+                color: "#2563eb",
+                border: "1px solid #2563eb",
+                borderRadius: 8,
+                padding: "0.6rem 1.6rem",
+                fontWeight: 700,
+                fontSize: "1.05rem",
+                cursor: "pointer"
+              }}
+            >Cancel</button>
+          </div>
+        </div>
       )}
     </div>
   );
