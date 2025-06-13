@@ -52,23 +52,25 @@ export default function MyCodes() {
                 Date: {b.date} &nbsp;|&nbsp; Time: {b.time}
               </div>
             </div>
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${b.gym?.lat},${b.gym?.lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                background: "#38bdf8",
-                color: "#fff",
-                padding: "0.5rem 1.1rem",
-                borderRadius: 100,
-                fontWeight: 700,
-                fontSize: ".99rem",
-                marginLeft: "1rem",
-                textDecoration: "none"
-              }}
-            >
-              Directions
-            </a>
+            {b.code && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${b.gym?.lat},${b.gym?.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: "#38bdf8",
+                  color: "#fff",
+                  padding: "0.5rem 1.1rem",
+                  borderRadius: 100,
+                  fontWeight: 700,
+                  fontSize: ".99rem",
+                  marginLeft: "1rem",
+                  textDecoration: "none"
+                }}
+              >
+                Directions
+              </a>
+            )}
           </div>
         </div>
       ))}
