@@ -7,6 +7,14 @@ function isExpired(booking) {
   return bookingDateTime < new Date();
 }
 
+// Helper function to get the user's name from localStorage
+function getUserName() {
+  // Store user name as 'fitspot_user_name' in localStorage
+  const stored = localStorage.getItem("fitspot_user_name");
+  if (!stored) return "athlete";
+  return stored.replace(/[^a-zA-Z0-9 _-]/g, "").trim() || "athlete";
+}
+
 // Funny gym-themed sayings
 const funnySayings = [
   "You crushed it, gym champ! 💪",
@@ -21,8 +29,39 @@ const funnySayings = [
   "Let’s get physical... at the gym! 🎶",
 ];
 
+// Get random saying
 function getRandomSaying() {
   return funnySayings[Math.floor(Math.random() * funnySayings.length)];
+}
+
+// Calculate max streak of consecutive booking days
+function getMaxStreak(bookings) {
+  // Get only unique, valid dates, sorted descending
+  const dates = Array.from(
+    new Set(
+      bookings
+        .filter(b => b.date)
+        .map(b => b.date)
+        .sort((a, b) => new Date(b) - new Date(a))
+    )
+  );
+  if (dates.length === 0) return 0;
+
+  let maxStreak = 1;
+  let streak = 1;
+
+  for (let i = 1; i < dates.length; i++) {
+    const prev = new Date(dates[i - 1]);
+    const curr = new Date(dates[i]);
+    const diff = (prev - curr) / (1000 * 60 * 60 * 24);
+    if (diff === 1) {
+      streak++;
+      if (streak > maxStreak) maxStreak = streak;
+    } else {
+      streak = 1;
+    }
+  }
+  return maxStreak;
 }
 
 export default function MyCodes() {
@@ -34,9 +73,16 @@ export default function MyCodes() {
   const [activeTab, setActiveTab] = useState("active");
   const [showFunny, setShowFunny] = useState(false);
   const [funnyText, setFunnyText] = useState("");
+  const [userName, setUserName] = useState("athlete");
+  const [maxStreak, setMaxStreak] = useState(0);
 
+  // Personalization: get user's name
   useEffect(() => {
-    // Show funny notification if redirected after booking
+    setUserName(getUserName());
+  }, []);
+
+  // Show funny notification if redirected after booking
+  useEffect(() => {
     if (window.location.hash === "#funny-success") {
       setFunnyText(getRandomSaying());
       setShowFunny(true);
@@ -45,11 +91,13 @@ export default function MyCodes() {
     }
   }, []);
 
+  // Load bookings and recalculate streak
   useEffect(() => {
     try {
       setLoading(true);
       const stored = JSON.parse(localStorage.getItem("fitspot_bookings") || "[]");
       setBookings(stored.reverse());
+      setMaxStreak(getMaxStreak(stored));
       setLoading(false);
     } catch (e) {
       setError("There was an error loading your session codes.");
@@ -72,6 +120,7 @@ export default function MyCodes() {
     );
     localStorage.setItem("fitspot_bookings", JSON.stringify(filteredBookings.reverse()));
     setBookings(filteredBookings);
+    setMaxStreak(getMaxStreak(filteredBookings));
   };
 
   // Filter bookings
@@ -85,8 +134,29 @@ export default function MyCodes() {
   return (
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "2.5rem 1rem" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "2rem", outline: 0 }} tabIndex={0} aria-label="My Session Codes">
-        My Session Codes
+        Welcome, {userName}! <span role="img" aria-label="waving hand">👋</span>
       </h1>
+
+      {/* Streak Counter */}
+      <div style={{
+        background: "#f0fdf4",
+        color: "#16a34a",
+        padding: "0.85rem 1rem",
+        borderRadius: 10,
+        marginBottom: 20,
+        fontWeight: 600,
+        fontSize: "1.08rem",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        boxShadow: maxStreak > 1 ? "0 0 16px #4ade8035" : undefined
+      }}>
+        <span style={{ fontSize: "1.5rem" }}>🔥</span>
+        {maxStreak > 1
+          ? <>You’re on a <span style={{color:"#2563eb"}}>{maxStreak}-day streak</span>! Keep it up, {userName}!</>
+          : <>No streak yet – book those sessions and start your fitness journey!</>
+        }
+      </div>
 
       {/* Fancy funny notification */}
       {showFunny && (
