@@ -30,10 +30,6 @@ function saveFavorites(favorites) {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
 }
 
-function getMapPreviewUrl(lat, lon) {
-  return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=16&size=330x140&maptype=mapnik&markers=${lat},${lon},lightblue1`;
-}
-
 export default function Gyms() {
   const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState(null);
@@ -469,14 +465,10 @@ export default function Gyms() {
                 onFocus={e => { e.currentTarget.style.boxShadow = "0 8px 32px #38bdf866"; }}
                 onBlur={e => { e.currentTarget.style.boxShadow = "0 2px 15px #2563eb14"; }}
               >
-                {/* Map Preview */}
+                {/* RANDOM IMAGE for now */}
                 <img
-                  src={getMapPreviewUrl(gym.lat, gym.lng)}
-                  alt={`Map preview for ${gym.name}`}
-                  onError={e => {
-                    e.target.onerror = null;
-                    e.target.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Map_marker_blank.svg/330px-Map_marker_blank.svg.png";
-                  }}
+                  src={`https://picsum.photos/seed/${gym.id || gym.name}/330/140`}
+                  alt={`Random gym for ${gym.name}`}
                   style={{
                     width: "100%",
                     height: 110,
