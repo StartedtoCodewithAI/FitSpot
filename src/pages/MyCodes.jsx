@@ -1,6 +1,24 @@
 import React, { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
 
+// Helper: format date to "YYYY-MM-DD"
+function formatDate(date) {
+  return date ? new Date(date).toLocaleDateString() : "";
+}
+
+// Helper: status label
+function getStatusLabel(session) {
+  if (!session.date) return "";
+  const today = new Date();
+  const sessionDate = new Date(session.date);
+  // Set time to start of day for comparison
+  today.setHours(0, 0, 0, 0);
+  sessionDate.setHours(0, 0, 0, 0);
+  if (sessionDate.getTime() > today.getTime()) return "Upcoming";
+  if (sessionDate.getTime() === today.getTime()) return "Today";
+  return "Past";
+}
+
 export default function MyCodes() {
   const [codes, setCodes] = useState([]);
   const [search, setSearch] = useState("");
@@ -9,6 +27,9 @@ export default function MyCodes() {
   const [error, setError] = useState("");
   const [userName, setUserName] = useState("");
   const [maxStreak, setMaxStreak] = useState(0);
+  const [copiedCode, setCopiedCode] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalSession, setModalSession] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -17,7 +38,7 @@ export default function MyCodes() {
       setCodes(stored);
       setLoading(false);
 
-      // Optional: calculate streak or other stats
+      // User name for streak banner
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       setUserName(user.name || "");
 
@@ -44,12 +65,58 @@ export default function MyCodes() {
     }
   }, []);
 
+  // For copy feedback
+  useEffect(() => {
+    if (copiedCode) {
+      const timer = setTimeout(() => setCopiedCode(""), 1400);
+      return () => clearTimeout(timer);
+    }
+  }, [copiedCode]);
+
   function handleDelete(code) {
     if (window.confirm("Delete this code?")) {
       const updated = codes.filter(b => b.code !== code);
       setCodes(updated);
       localStorage.setItem("fitspot_bookings", JSON.stringify(updated));
     }
+  }
+
+  function handleCopy(code) {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+  }
+
+  function exportToCSV() {
+    const header = "Code,Gym,Date,Time,Used\n";
+    const rows = codes.map(b =>
+      [b.code, b.gym?.name, b.date, b.time, b.used ? "Yes" : "No"].join(",")
+    ).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "my_fitspot_codes.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleMarkAsUsed(code) {
+    if (!window.confirm("Mark this session as used?")) return;
+    const updated = codes.map(b =>
+      b.code === code ? { ...b, used: true } : b
+    );
+    setCodes(updated);
+    localStorage.setItem("fitspot_bookings", JSON.stringify(updated));
+  }
+
+  function openModal(session) {
+    setModalSession(session);
+    setShowModal(true);
+  }
+
+  function closeModal() {
+    setShowModal(false);
+    setModalSession(null);
   }
 
   // Filtering
@@ -69,9 +136,112 @@ export default function MyCodes() {
         b.code?.toLowerCase().includes(lowerSearch))
   );
 
+  // Modal for session details
+  function SessionModal({ session, onClose }) {
+    if (!session) return null;
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(30,41,59,0.22)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 99,
+        }}
+        onClick={onClose}
+        tabIndex={-1}
+        aria-modal="true"
+        role="dialog"
+      >
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 12,
+            padding: "2rem 2.2rem",
+            minWidth: 320,
+            maxWidth: "90vw",
+            boxShadow: "0 6px 30px #2563eb29",
+            position: "relative"
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            onClick={onClose}
+            aria-label="Close session details"
+            style={{
+              position: "absolute", top: 14, right: 18,
+              background: "none", border: "none", fontSize: "1.5rem", color: "#64748b", cursor: "pointer"
+            }}
+          >×</button>
+          <h2 style={{ color: "#2563eb" }}>Session Details</h2>
+          <div style={{ margin: "1.1rem 0" }}>
+            <div><strong>Code:</strong> <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{session.code}</span></div>
+            <div><strong>Gym:</strong> {session.gym?.name}</div>
+            <div><strong>Date:</strong> {formatDate(session.date)}</div>
+            <div><strong>Time:</strong> {session.time}</div>
+            <div><strong>Status:</strong> {getStatusLabel(session)}</div>
+            <div><strong>Used:</strong> {session.used ? "Yes" : "No"}</div>
+          </div>
+          <button
+            onClick={() => { handleCopy(session.code); }}
+            style={{
+              background: "#e0e7ef",
+              color: "#2563eb",
+              border: "none",
+              borderRadius: 7,
+              padding: "0.5rem 1.1rem",
+              fontWeight: 700,
+              fontSize: ".97rem",
+              cursor: "pointer",
+              marginRight: 10
+            }}
+          >
+            Copy Code
+          </button>
+          {!session.used && (
+            <button
+              onClick={() => { handleMarkAsUsed(session.code); onClose(); }}
+              style={{
+                background: "#22c55e",
+                color: "#fff",
+                border: "none",
+                borderRadius: 7,
+                padding: "0.5rem 1.1rem",
+                fontWeight: 700,
+                fontSize: ".97rem",
+                cursor: "pointer"
+              }}
+            >
+              Mark as Used
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "2.5rem 1rem", position: "relative" }}>
       <h1 style={{ textAlign: "center", color: "#2563eb", marginBottom: 18 }}>My Session Codes</h1>
+      <button
+        onClick={exportToCSV}
+        style={{
+          marginBottom: 16,
+          background: "#2563eb",
+          color: "#fff",
+          border: "none",
+          borderRadius: 8,
+          fontWeight: 700,
+          fontSize: "1rem",
+          padding: "0.5rem 1rem",
+          cursor: "pointer",
+          float: "right"
+        }}
+      >
+        Export as CSV
+      </button>
+      <div style={{ clear: "both" }} />
+
       <div style={{
         background: "#f1f5f9",
         borderRadius: 12,
@@ -84,7 +254,7 @@ export default function MyCodes() {
       }}>
         <span style={{ fontSize: "1.5rem" }}>🔥</span>
         {maxStreak > 1
-          ? <>You’re on a <span style={{color:"#2563eb"}}>{maxStreak}-day streak</span>! Keep it up, {userName}!</>
+          ? <>You’re on a <span style={{ color: "#2563eb" }}>{maxStreak}-day streak</span>! Keep it up, {userName}!</>
           : <>No streak yet – book those sessions and start your fitness journey!</>
         }
       </div>
@@ -127,7 +297,7 @@ export default function MyCodes() {
       <SearchBar
         value={search}
         onChange={e => setSearch(e.target.value)}
-        placeholder="Search by gym name"
+        placeholder="Search by gym name or code"
       />
 
       {loading && (
@@ -190,42 +360,94 @@ export default function MyCodes() {
                 boxShadow: "0 2px 10px #2563eb10",
                 display: "flex",
                 alignItems: "center",
-                gap: 16
+                gap: 16,
+                flexWrap: "wrap"
               }}>
-                <div style={{
-                  fontFamily: "monospace",
-                  fontWeight: 700,
-                  fontSize: "1.45rem",
-                  color: "#2563eb",
-                  letterSpacing: ".16em",
-                  background: "#f1f5f9",
-                  padding: "8px 18px",
-                  borderRadius: 12,
-                  marginRight: 18
-                }}>
-                  {b.code}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700 }}>{b.gym?.name}</div>
-                  <div style={{ color: "#64748b", fontSize: ".97rem" }}>
-                    {b.date} &middot; {b.time}
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleDelete(b.code)}
+                <div
                   style={{
-                    background: "#fee2e2",
-                    color: "#dc2626",
-                    border: "none",
-                    borderRadius: 7,
-                    padding: "0.5rem 1.1rem",
+                    fontFamily: "monospace",
                     fontWeight: 700,
-                    fontSize: ".97rem",
+                    fontSize: "1.45rem",
+                    color: "#2563eb",
+                    letterSpacing: ".16em",
+                    background: "#f1f5f9",
+                    padding: "8px 18px",
+                    borderRadius: 12,
+                    marginRight: 18,
                     cursor: "pointer"
                   }}
+                  tabIndex={0}
+                  aria-label="View session details"
+                  onClick={() => openModal(b)}
+                  onKeyPress={e => { if (e.key === "Enter") openModal(b); }}
+                  title="Click for details"
                 >
-                  Delete
-                </button>
+                  {b.code}
+                </div>
+                <div style={{ flex: 1, minWidth: 120 }}>
+                  <div style={{ fontWeight: 700 }}>{b.gym?.name}</div>
+                  <div style={{ color: "#64748b", fontSize: ".97rem" }}>
+                    {formatDate(b.date)} &middot; {b.time}
+                    <span style={{
+                      marginLeft: 10,
+                      padding: "2px 10px",
+                      background: "#f1f5f9",
+                      borderRadius: 8,
+                      fontSize: ".92rem",
+                      color: "#2563eb"
+                    }}>
+                      {getStatusLabel(b)}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => handleCopy(b.code)}
+                    style={{
+                      background: "#e0e7ef",
+                      color: "#2563eb",
+                      border: "none",
+                      borderRadius: 7,
+                      padding: "0.5rem 1rem",
+                      fontWeight: 700,
+                      fontSize: ".97rem",
+                      cursor: "pointer"
+                    }}
+                    aria-label={`Copy code ${b.code}`}
+                  >
+                    {copiedCode === b.code ? "Copied!" : "Copy"}
+                  </button>
+                  <button
+                    onClick={() => handleMarkAsUsed(b.code)}
+                    style={{
+                      background: "#22c55e",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 7,
+                      padding: "0.5rem 1.1rem",
+                      fontWeight: 700,
+                      fontSize: ".97rem",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Mark as Used
+                  </button>
+                  <button
+                    onClick={() => handleDelete(b.code)}
+                    style={{
+                      background: "#fee2e2",
+                      color: "#dc2626",
+                      border: "none",
+                      borderRadius: 7,
+                      padding: "0.5rem 1.1rem",
+                      fontWeight: 700,
+                      fontSize: ".97rem",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -258,32 +480,70 @@ export default function MyCodes() {
                 display: "flex",
                 alignItems: "center",
                 gap: 16,
-                opacity: 0.7
+                opacity: 0.7,
+                flexWrap: "wrap"
               }}>
-                <div style={{
-                  fontFamily: "monospace",
-                  fontWeight: 700,
-                  fontSize: "1.45rem",
-                  color: "#64748b",
-                  letterSpacing: ".16em",
-                  background: "#f1f5f9",
-                  padding: "8px 18px",
-                  borderRadius: 12,
-                  marginRight: 18
-                }}>
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontWeight: 700,
+                    fontSize: "1.45rem",
+                    color: "#64748b",
+                    letterSpacing: ".16em",
+                    background: "#f1f5f9",
+                    padding: "8px 18px",
+                    borderRadius: 12,
+                    marginRight: 18,
+                    cursor: "pointer"
+                  }}
+                  tabIndex={0}
+                  aria-label="View session details"
+                  onClick={() => openModal(b)}
+                  onKeyPress={e => { if (e.key === "Enter") openModal(b); }}
+                  title="Click for details"
+                >
                   {b.code}
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 120 }}>
                   <div style={{ fontWeight: 700 }}>{b.gym?.name}</div>
                   <div style={{ color: "#64748b", fontSize: ".97rem" }}>
-                    {b.date} &middot; {b.time}
+                    {formatDate(b.date)} &middot; {b.time}
+                    <span style={{
+                      marginLeft: 10,
+                      padding: "2px 10px",
+                      background: "#f1f5f9",
+                      borderRadius: 8,
+                      fontSize: ".92rem",
+                      color: "#2563eb"
+                    }}>
+                      {getStatusLabel(b)}
+                    </span>
                   </div>
                 </div>
+                <button
+                  onClick={() => handleCopy(b.code)}
+                  style={{
+                    background: "#e0e7ef",
+                    color: "#2563eb",
+                    border: "none",
+                    borderRadius: 7,
+                    padding: "0.5rem 1rem",
+                    fontWeight: 700,
+                    fontSize: ".97rem",
+                    cursor: "pointer"
+                  }}
+                  aria-label={`Copy code ${b.code}`}
+                >
+                  {copiedCode === b.code ? "Copied!" : "Copy"}
+                </button>
               </div>
             ))}
           </div>
         )
       )}
+
+      {/* Session details modal */}
+      {showModal && <SessionModal session={modalSession} onClose={closeModal} />}
     </div>
   );
 }
