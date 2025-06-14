@@ -1,23 +1,24 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-// Dummy data for notifications and profile
+// Dummy data for notifications
 const notifications = [
   { id: 1, text: "Your session is confirmed!" },
   { id: 2, text: "New gym added near you." },
   { id: 3, text: "Profile updated successfully." },
 ];
-const userName = "Alex";
-const profilePicUrl = ""; // Add a URL for a real image, or leave blank for fallback
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [notifList, setNotifList] = useState(notifications);
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
   const menuRef = useRef(null);
   const location = useLocation();
 
@@ -46,16 +47,19 @@ export default function Navbar() {
     setSearch("");
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setProfileOpen(false);
-    alert("Logged out!");
-  };
-
   const handleLogin = () => {
-    setIsAuthenticated(true);
+    const dummyUser = { name: "Alex Sample", avatar: "" };
+    localStorage.setItem("user", JSON.stringify(dummyUser));
+    setUser(dummyUser);
     setProfileOpen(false);
     alert("Logged in!");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    setProfileOpen(false);
+    alert("Logged out!");
   };
 
   const handleDarkModeToggle = () => setDarkMode((d) => !d);
@@ -291,9 +295,9 @@ export default function Navbar() {
             aria-label="Profile menu"
             tabIndex={0}
           >
-            {profilePicUrl
-              ? <img src={profilePicUrl} alt="profile" style={{ width: 32, height: 32, borderRadius: "50%" }} />
-              : <span role="img" aria-label="Profile">{userName ? userName[0] : "👤"}</span>
+            {user && user.avatar
+              ? <img src={user.avatar} alt="profile" style={{ width: 32, height: 32, borderRadius: "50%" }} />
+              : <span role="img" aria-label="Profile">{user && user.name ? user.name[0] : "👤"}</span>
             }
           </button>
           {profileOpen && (
@@ -314,7 +318,7 @@ export default function Navbar() {
               tabIndex={0}
             >
               <div style={{ padding: "0.9rem 1rem", color: darkMode ? "#FFD700" : "#333", fontWeight: 500 }}>
-                {isAuthenticated ? `Hi, ${userName}!` : "Welcome!"}
+                {user ? `Hi, ${user.name}!` : "Welcome!"}
               </div>
               <Link to="/profile" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>
                 Profile
@@ -325,7 +329,7 @@ export default function Navbar() {
               <Link to="/book-session" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>
                 Book Session
               </Link>
-              {isAuthenticated ? (
+              {user ? (
                 <button
                   onClick={handleLogout}
                   style={{
