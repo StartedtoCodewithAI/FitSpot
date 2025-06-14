@@ -1,236 +1,111 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import notifications from "../data/notifications";
+import fitspotLogo from "../assets/FitSpot.png";
 
-// Uses CSS variables for colors (see CSS section below)
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [notifList, setNotifList] = useState(notifications);
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-
-  const notifRef = useRef(null);
-  const profileRef = useRef(null);
-  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchUserAndProfile() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const sessionUser = sessionData?.session?.user || null;
-      setUser(sessionUser);
-
-      if (sessionUser) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", sessionUser.id)
-          .single();
-        setProfile(profileData || null);
-      } else {
-        setProfile(null);
-      }
-    }
-
-    fetchUserAndProfile();
-
+    supabase.auth.getSession().then(({ data: sessionData }) => {
+      setUser(sessionData?.session?.user || null);
+    });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
-      if (session?.user) {
-        supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data }) => setProfile(data || null));
-      } else {
-        setProfile(null);
-      }
     });
-
     return () => listener?.subscription?.unsubscribe?.();
   }, []);
 
-  useEffect(() => {
-    const closeMenus = (e) => {
-      if (
-        (notifRef.current && notifRef.current.contains(e.target)) ||
-        (profileRef.current && profileRef.current.contains(e.target))
-      ) {
-        return;
-      }
-      setProfileOpen(false);
-      setNotifOpen(false);
-    };
-    document.addEventListener("mousedown", closeMenus);
-    return () => document.removeEventListener("mousedown", closeMenus);
-  }, []);
-
-  useEffect(() => {
-    setMenuOpen(false);
-    setProfileOpen(false);
-    setNotifOpen(false);
-  }, [location.pathname]);
-
-  const handleLogin = async () => {
-    const email = prompt("Enter your email:");
-    const password = prompt("Enter your password:");
-    if (!email || !password) {
-      alert("Email and password are required!");
-      return;
-    }
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert(error.message);
-    else alert("Logged in!");
-    setProfileOpen(false);
-  };
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) alert(error.message);
-    else alert("Logged out!");
-    setProfileOpen(false);
-  };
-
-  const clearNotifications = () => setNotifList([]);
-
-  const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/gyms", label: "Explore" },
-    { to: "/my-sessions", label: "My Sessions" }
-  ];
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setUser(null);
+    navigate("/login");
+  }
 
   return (
-    <nav className="nav-root">
-      <div className="nav-inner">
-        {/* Hamburger for mobile */}
-        <button
-          onClick={() => setMenuOpen(o => !o)}
-          className="navbar-hamburger"
-          aria-label="Toggle navigation menu"
-        >
-          ☰
-        </button>
-
-        {/* Brand */}
-        <div className="nav-brand">
-          <Link to="/">FitSpot</Link>
-        </div>
-
-        {/* Desktop nav */}
-        <div className="navbar-links-desktop">
-          {navLinks.map(({ to, label }) => (
-            <Link key={to} to={to}>{label}</Link>
-          ))}
-        </div>
-
-        {/* Book Session FAB/Link */}
-        <Link to="/book-session" className="nav-fab" aria-label="Book a session">
-          +
+    <nav
+      style={{
+        background: "#fff",
+        borderBottom: "1px solid #e0e7ef",
+        padding: "0.7rem 2.2rem",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        position: "sticky",
+        top: 0,
+        zIndex: 1000
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+        <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <img src={fitspotLogo} alt="FitSpot Logo" style={{ height: 38, marginRight: 12, borderRadius: 8 }} />
+          <span style={{ color: "#2563eb", fontWeight: 800, fontSize: "1.25rem", letterSpacing: ".5px" }}>
+            FitSpot
+          </span>
         </Link>
-
-        {/* Notification bell and profile */}
-        <div className="nav-icons">
-          {/* Notification bell */}
-          <div ref={notifRef} className="nav-notif-wrap">
-            <button
-              className="nav-notif"
-              aria-label="Show notifications"
-              onClick={() => {
-                setNotifOpen(!notifOpen);
-                setProfileOpen(false);
-              }}
-              tabIndex={0}
-            >
-              <span role="img" aria-label="Notifications">🔔</span>
-              {notifList.length > 0 && (
-                <span className="nav-notif-badge">{notifList.length}</span>
-              )}
-            </button>
-            {notifOpen && (
-              <div className="nav-notif-dropdown" tabIndex={0}>
-                <div className="nav-notif-title">Notifications</div>
-                {notifList.length === 0 ? (
-                  <div className="nav-notif-none">No new notifications.</div>
-                ) : (
-                  <ul className="nav-notif-list">
-                    {notifList.map(n =>
-                      <li key={n.id}>{n.text}</li>
-                    )}
-                  </ul>
-                )}
-                <button onClick={clearNotifications} className="nav-notif-clear">
-                  Clear all
-                </button>
-              </div>
-            )}
-          </div>
-          {/* Profile/Avatar Dropdown */}
-          <div ref={profileRef} className="nav-profile-wrap">
-            <button
-              onClick={() => {
-                setProfileOpen(!profileOpen);
-                setNotifOpen(false);
-              }}
-              className="nav-profile-btn"
-              aria-label="Profile menu"
-              tabIndex={0}
-            >
-              {user && profile && profile.avatar_url
-                ? (
-                    <img
-                      src={profile.avatar_url}
-                      alt="Avatar"
-                      className="nav-avatar"
-                    />
-                  )
-                : user && user.email
-                  ? <span className="nav-avatar">{user.email[0].toUpperCase()}</span>
-                  : <span className="nav-avatar">👤</span>
-              }
-            </button>
-            {profileOpen && (
-              <div className="nav-profile-dropdown" tabIndex={0}>
-                <div className="nav-profile-title">
-                  {user ? `Hi, ${user.email}!` : "Welcome!"}
-                </div>
-                <Link to="/profile">Account</Link>
-                <Link to="/my-codes">Rewards</Link>
-                <Link to="/about">About</Link>
-                {user ? (
-                  <button onClick={handleLogout} className="nav-profile-logout">
-                    Logout
-                  </button>
-                ) : (
-                  <button onClick={handleLogin} className="nav-profile-login">
-                    Login
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        <Link to="/gyms" style={{ color: "#334155", textDecoration: "none", marginLeft: 24, fontWeight: 600 }}>
+          Gyms
+        </Link>
+        <Link to="/about" style={{ color: "#334155", textDecoration: "none", marginLeft: 24, fontWeight: 600 }}>
+          About
+        </Link>
+        {user && (
+          <>
+            <Link to="/profile" style={{ color: "#334155", textDecoration: "none", marginLeft: 24, fontWeight: 600 }}>
+              Profile
+            </Link>
+            <Link to="/my-codes" style={{ color: "#334155", textDecoration: "none", marginLeft: 24, fontWeight: 600 }}>
+              My Codes
+            </Link>
+          </>
+        )}
       </div>
-      {/* Mobile Navigation */}
-      <div className="navbar-links-mobile" style={{display: menuOpen ? 'flex' : 'none'}}>
-        {navLinks.map(({ to, label }) => (
-          <Link
-            key={to}
-            to={to}
-            onClick={() => setMenuOpen(false)}
+      <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        {!user ? (
+          <>
+            <Link
+              to="/login"
+              style={{
+                color: "#2563eb",
+                textDecoration: "none",
+                fontWeight: 600,
+                marginRight: 18
+              }}
+            >
+              Login
+            </Link>
+            <Link
+              to="/signup"
+              style={{
+                background: "#2563eb",
+                color: "#fff",
+                borderRadius: 6,
+                padding: "0.5rem 1.2rem",
+                fontWeight: 600,
+                textDecoration: "none"
+              }}
+            >
+              Sign Up
+            </Link>
+          </>
+        ) : (
+          <button
+            onClick={handleLogout}
+            style={{
+              background: "#f1f5f9",
+              color: "#dc2626",
+              border: "none",
+              borderRadius: 7,
+              padding: "0.48rem 1.2rem",
+              fontWeight: 600,
+              fontSize: ".98rem",
+              cursor: "pointer"
+            }}
           >
-            {label}
-          </Link>
-        ))}
-        <Link
-          to="/book-session"
-          className="nav-mobile-book"
-          onClick={() => setMenuOpen(false)}
-        >
-          Book Session
-        </Link>
+            Logout
+          </button>
+        )}
       </div>
     </nav>
   );
