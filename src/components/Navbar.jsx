@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 // Dummy data for notifications
 const notifications = [
@@ -15,19 +16,27 @@ export default function Navbar() {
   const [search, setSearch] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [notifList, setNotifList] = useState(notifications);
-  const [user, setUser] = useState(() => {
-    try {
-      const stored = localStorage.getItem("user");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(null);
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
   const location = useLocation();
+
+  // Listen for Supabase auth state
+  useEffect(() => {
+    // Initial session check
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data?.session?.user || null);
+    });
+
+    // Listen for login/logout
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => listener?.subscription?.unsubscribe?.();
+  }, []);
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -58,19 +67,26 @@ export default function Navbar() {
     setSearch("");
   };
 
-  const handleLogin = () => {
-    const dummyUser = { name: "Alex Sample", avatar: "" };
-    localStorage.setItem("user", JSON.stringify(dummyUser));
-    setUser(dummyUser);
+  // Supabase login
+  const handleLogin = async () => {
+    const email = prompt("Enter your email:");
+    const password = prompt("Enter your password:");
+    if (!email || !password) {
+      alert("Email and password are required!");
+      return;
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+    else alert("Logged in!");
     setProfileOpen(false);
-    alert("Logged in!");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
+  // Supabase logout
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) alert(error.message);
+    else alert("Logged out!");
     setProfileOpen(false);
-    alert("Logged out!");
   };
 
   const handleDarkModeToggle = () => setDarkMode((d) => !d);
@@ -306,9 +322,10 @@ export default function Navbar() {
             aria-label="Profile menu"
             tabIndex={0}
           >
-            {user && user.avatar
-              ? <img src={user.avatar} alt="profile" style={{ width: 32, height: 32, borderRadius: "50%" }} />
-              : <span role="img" aria-label="Profile">{user && user.name ? user.name[0] : "👤"}</span>
+            {/* Show first letter of email or 👤 */}
+            {user && user.email
+              ? <span role="img" aria-label="Profile">{user.email[0].toUpperCase()}</span>
+              : <span role="img" aria-label="Profile">👤</span>
             }
           </button>
           {profileOpen && (
@@ -329,7 +346,7 @@ export default function Navbar() {
               tabIndex={0}
             >
               <div style={{ padding: "0.9rem 1rem", color: darkMode ? "#FFD700" : "#333", fontWeight: 500 }}>
-                {user ? `Hi, ${user.name}!` : "Welcome!"}
+                {user ? `Hi, ${user.email}!` : "Welcome!"}
               </div>
               <Link to="/profile" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>
                 Profile
