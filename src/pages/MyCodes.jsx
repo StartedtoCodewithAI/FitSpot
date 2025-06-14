@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient"; // Make sure this import is correct
 import SearchBar from "../components/SearchBar";
 
 // Helper: format date to "YYYY-MM-DD"
@@ -32,33 +33,38 @@ export default function MyCodes() {
 
   useEffect(() => {
     setLoading(true);
-    try {
-      const stored = JSON.parse(localStorage.getItem("fitspot_bookings") || "[]");
-      setCodes(stored);
+    async function fetchUserAndCodes() {
+      try {
+        // Get Supabase user
+        const { data: { user } } = await supabase.auth.getUser();
+        setUserName(user?.email || user?.name || "");
 
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      setUserName(user.name || "");
+        // Your localStorage code logic (keep as is)
+        const stored = JSON.parse(localStorage.getItem("fitspot_bookings") || "[]");
+        setCodes(stored);
 
-      const sorted = stored
-        .filter(b => b.date)
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
-      let streak = 1, maxStreakVal = 1;
-      for (let i = 1; i < sorted.length; ++i) {
-        const prev = new Date(sorted[i - 1].date);
-        const curr = new Date(sorted[i].date);
-        const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
-        if (diffDays === 1) {
-          streak++;
-          maxStreakVal = Math.max(maxStreakVal, streak);
-        } else {
-          streak = 1;
+        const sorted = stored
+          .filter(b => b.date)
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+        let streak = 1, maxStreakVal = 1;
+        for (let i = 1; i < sorted.length; ++i) {
+          const prev = new Date(sorted[i - 1].date);
+          const curr = new Date(sorted[i].date);
+          const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
+          if (diffDays === 1) {
+            streak++;
+            maxStreakVal = Math.max(maxStreakVal, streak);
+          } else {
+            streak = 1;
+          }
         }
+        setMaxStreak(maxStreakVal);
+      } catch {
+        setError("Failed to load codes.");
       }
-      setMaxStreak(maxStreakVal);
-    } catch {
-      setError("Failed to load codes.");
+      setLoading(false);
     }
-    setLoading(false);
+    fetchUserAndCodes();
   }, []);
 
   useEffect(() => {
