@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { supabase } from './supabaseClient' // Adjust path if needed
+import { supabase } from './supabaseClient'
 
 export default function AvatarUpload() {
   const [file, setFile] = useState(null)
@@ -33,7 +33,6 @@ export default function AvatarUpload() {
       setLoading(false)
       return
     }
-    // getPublicUrl is synchronous
     const { data: publicUrlData } = supabase.storage
       .from('avatars')
       .getPublicUrl(filename)
