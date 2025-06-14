@@ -1,7 +1,202 @@
-/* src/index.css - global styles */
-body {
-  font-family: 'Montserrat', Arial, sans-serif;
+/* src/index.css - FitSpot Global Styles for Mobile and Desktop */
+
+/* 1. Base Reset & Sizing */
+html, body, #root {
   margin: 0;
   padding: 0;
+  width: 100vw;
+  max-width: 100vw;
+  min-height: 100vh;
+  font-family: 'Montserrat', system-ui, sans-serif;
   background: #f8fafc;
+  color: #222;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* 2. Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+a {
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover, a:focus-visible {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* 3. Inputs and Buttons */
+input, button, select, textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+input:focus, button:focus, select:focus, textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.13);
+}
+button {
+  cursor: pointer;
+  border: none;
+  padding: 0.5em 1.2em;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+button:hover, button:active, button:focus-visible {
+  background: #1746aa;
+}
+
+/* 4. Layout Utilities */
+.container, .main-content {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.2rem;
+}
+
+/* 5. Navbar Tweaks */
+nav {
+  width: 100%;
+  max-width: 100vw;
+  min-height: 64px;
+  z-index: 10;
+  box-sizing: border-box;
+}
+nav input[type="text"] {
+  min-width: 0;
+  width: 80px;
+  max-width: 120px;
+}
+@media (max-width: 480px) {
+  nav input[type="text"] {
+    width: 60px;
+    font-size: 1em;
+  }
+}
+
+.navbar-links-desktop {
+  display: flex;
+  gap: 1.2rem;
+}
+@media (max-width: 700px) {
+  .navbar-links-desktop {
+    display: none !important;
+  }
+  .navbar-links-mobile {
+    display: block !important;
+  }
+}
+@media (min-width: 701px) {
+  .navbar-links-mobile {
+    display: none !important;
+  }
+}
+
+/* 6. Profile Page */
+.profile-container {
+  max-width: 540px;
+  margin: 3.5rem auto;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  padding: 2.2rem 1.4rem 1.7rem 1.4rem;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .profile-container {
+    margin: 1rem 0.2rem;
+    padding: 1rem 0.2rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .profile-container svg {
+    width: 110px !important;
+    height: 140px !important;
+  }
+}
+
+.profile-container input,
+.profile-container textarea,
+.profile-container select {
+  width: 100%;
+  margin-top: 0.3em;
+  margin-bottom: 1em;
+  padding: 10px;
+  font-size: 1.07rem;
+  border-radius: 7px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+}
+
+.profile-container button {
+  font-size: 1.07rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  margin-top: 0.6em;
+  font-weight: 700;
+}
+
+.profile-container h1 {
+  font-size: 1.4rem;
+  margin-bottom: 1.1em;
+}
+
+.profile-container .progress-bar {
+  height: 20px;
+  border-radius: 8px;
+  background: #e0e7ef;
+}
+
+/* 7. Utility Classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+.mt-2 { margin-top: 0.5em; }
+.mb-2 { margin-bottom: 0.5em; }
+.mb-4 { margin-bottom: 1.5em; }
+.p-2 { padding: 0.5em; }
+.p-4 { padding: 1.5em; }
+.rounded { border-radius: 8px; }
+
+/* 8. Hide Scrollbar on Mobile for Navs (optional) */
+@media (max-width: 480px) {
+  ::-webkit-scrollbar { width: 0px; background: transparent; }
+}
+
+/* 9. Dark Mode (if toggled via body class, optional) */
+body.dark, .dark nav, .dark .profile-container {
+  background: #222 !important;
+  color: #f3f3f3 !important;
+}
+body.dark input,
+body.dark textarea,
+body.dark select {
+  background: #333 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+body.dark button {
+  background: #FFD700 !important;
+  color: #222 !important;
+}
+
+/* 10. Responsive Font Size */
+@media (max-width: 480px) {
+  body, html, #root {
+    font-size: 15px;
+  }
+  .container, .main-content, .profile-container {
+    padding: 0.2rem !important;
+  }
 }
