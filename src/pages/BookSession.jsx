@@ -1,16 +1,45 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 
 export default function BookSession() {
+  const { gymId } = useParams();
+  const location = useLocation();
+
+  // Try to get these from state if passed from previous page
+  const initialGymName = location.state?.gymName || "";
+  const initialTeamName = location.state?.teamName || "";
+
+  const [gymName, setGymName] = useState(initialGymName);
+  const [teamName, setTeamName] = useState(initialTeamName);
+
+  // You could fetch real gym data here if not present
+  useEffect(() => {
+    if (!gymName && gymId) {
+      // Simulate fetch. Replace with your real fetch logic!
+      // e.g., fetch(`/api/gyms/${gymId}`).then(...)
+      setTimeout(() => {
+        setGymName("Demo Gym " + gymId);
+        setTeamName("Default Team");
+      }, 400); // Simulate loading
+    }
+  }, [gymId, gymName]);
+
   const [step, setStep] = useState(1);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [oneTimeCode, setOneTimeCode] = useState('');
-  const location = useLocation();
 
-  // Get gym/team from state or query (as per your app's logic)
-  const gymName = (location.state && location.state.gymName) || "Selected Gym";
-  const teamName = (location.state && location.state.teamName) || "Team A";
+  // Handle loading if fetching gym info
+  if (!gymName) {
+    return (
+      <div style={{
+        maxWidth: 500, margin: "40px auto", background: "#fff", borderRadius: 12,
+        boxShadow: "0 2px 16px #6C47FF11", padding: 28, textAlign: "center"
+      }}>
+        <h2 style={{ color: "#6C47FF" }}>Loading gym info...</h2>
+      </div>
+    );
+  }
 
   const handleNext = () => setStep(step + 1);
 
