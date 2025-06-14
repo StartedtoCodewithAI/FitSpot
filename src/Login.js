@@ -18,29 +18,28 @@ export default function Login() {
 
     // If user input is not an email, treat it as username
     if (!email.includes('@')) {
-      // Fetch all users with this username from Supabase Auth's admin API (not available on client side for non-service role)
-      // Workaround: You must keep a 'profiles' table in your DB that links usernames to emails.
+      // Look up email in 'profiles' table by username
       let { data, error } = await supabase
         .from('profiles')
         .select('email')
         .eq('username', email)
         .single();
 
-      if (error || !data) {
-        setMessage('Username not found.');
+      if (error || !data?.email) {
+        setMessage('Your email or password are not correct.');
         setLoading(false);
         return;
       }
       email = data.email;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      setMessage(error.message);
+    if (loginError) {
+      setMessage('Your email or password are not correct.');
     } else {
       localStorage.setItem('user', email);
       navigate('/profile');
@@ -70,7 +69,11 @@ export default function Login() {
           {loading ? 'Logging in...' : 'Log In'}
         </button>
       </form>
-      {message && <div>{message}</div>}
+      {message && (
+        <div style={{ color: 'red', marginTop: '1em' }}>
+          {message}
+        </div>
+      )}
     </div>
   );
 }
