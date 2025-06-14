@@ -1,34 +1,57 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 
-// Dummy authentication and notifications state.
-// In a real app, replace with actual state management/auth logic.
-const isAuthenticatedDefault = true;
+// Dummy data for notifications and profile
+const notifications = [
+  { id: 1, text: "Your session is confirmed!" },
+  { id: 2, text: "New gym added near you." },
+  { id: 3, text: "Profile updated successfully." },
+];
 const userName = "Alex";
-const unreadNotifications = 3;
+const profilePicUrl = ""; // Add a URL for a real image, or leave blank for fallback
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(isAuthenticatedDefault);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  const [notifList, setNotifList] = useState(notifications);
+  const menuRef = useRef(null);
+  const location = useLocation();
 
-  // Example search handler (replace with your search logic)
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const closeMenus = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setProfileOpen(false);
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", closeMenus);
+    return () => document.removeEventListener("mousedown", closeMenus);
+  }, []);
+
+  // Close menus on navigation
+  useEffect(() => {
+    setMenuOpen(false);
+    setProfileOpen(false);
+    setNotifOpen(false);
+  }, [location.pathname]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     alert(`Searching for: ${search}`);
     setSearch("");
   };
 
-  // Dummy logout handler
   const handleLogout = () => {
     setIsAuthenticated(false);
     setProfileOpen(false);
     alert("Logged out!");
   };
 
-  // Dummy login handler
   const handleLogin = () => {
     setIsAuthenticated(true);
     setProfileOpen(false);
@@ -37,19 +60,29 @@ export default function Navbar() {
 
   const handleDarkModeToggle = () => setDarkMode((d) => !d);
 
+  const clearNotifications = () => setNotifList([]);
+
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/gyms", label: "Gyms" },
+    { to: "/about", label: "About" },
+    { to: "/profile", label: "Profile" },
+    { to: "/book-session", label: "Book Session" },
+  ];
+
   return (
     <nav
       style={{
         background: darkMode ? "#222" : "#eee",
         color: darkMode ? "#fff" : "#222",
         padding: "1rem",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "stretch",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         minHeight: "72px",
-        transition: "background 0.3s, color 0.3s"
+        transition: "background 0.3s, color 0.3s",
+        position: "relative",
+        zIndex: 20
       }}
+      aria-label="Main navigation"
     >
       <div
         style={{
@@ -70,10 +103,11 @@ export default function Navbar() {
             marginRight: "1rem",
             minWidth: "44px",
             minHeight: "44px",
-            lineHeight: "1"
+            lineHeight: "1",
+            display: "inline-block"
           }}
           className="navbar-hamburger"
-          aria-label="Open menu"
+          aria-label="Toggle navigation menu"
         >
           ☰
         </button>
@@ -97,6 +131,7 @@ export default function Navbar() {
             marginRight: "1rem",
             padding: "0.2rem 0.5rem"
           }}
+          aria-label="Search gyms"
         >
           <input
             type="text"
@@ -111,6 +146,7 @@ export default function Navbar() {
               padding: "0.2rem 0.3rem",
               fontSize: "1rem"
             }}
+            aria-label="Search gyms"
           />
           <button
             type="submit"
@@ -123,25 +159,32 @@ export default function Navbar() {
               marginLeft: "0.3rem",
               cursor: "pointer"
             }}
+            aria-label="Submit search"
           >
             🔍
           </button>
         </form>
 
         {/* Notifications */}
-        <div style={{ position: "relative", marginRight: "1rem" }}>
+        <div style={{ position: "relative", marginRight: "1rem" }} ref={menuRef}>
           <button
             style={{
               background: "none",
               border: "none",
               cursor: "pointer",
               fontSize: "1.5rem",
-              color: darkMode ? "#fff" : "#333"
+              color: darkMode ? "#fff" : "#333",
+              position: "relative"
             }}
-            aria-label="Notifications"
+            aria-label="Show notifications"
+            onClick={() => {
+              setNotifOpen(!notifOpen);
+              setProfileOpen(false);
+            }}
+            tabIndex={0}
           >
             🔔
-            {unreadNotifications > 0 && (
+            {notifList.length > 0 && (
               <span
                 style={{
                   position: "absolute",
@@ -155,11 +198,61 @@ export default function Navbar() {
                   fontWeight: "bold",
                   border: "2px solid #fff"
                 }}
+                aria-label={`${notifList.length} unread notifications`}
               >
-                {unreadNotifications}
+                {notifList.length}
               </span>
             )}
           </button>
+          {notifOpen && (
+            <div
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "2.2rem",
+                background: darkMode ? "#222" : "#fff",
+                color: darkMode ? "#fff" : "#222",
+                border: `1px solid ${darkMode ? "#444" : "#ccc"}`,
+                borderRadius: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+                minWidth: "220px",
+                padding: "0.8rem 0.4rem",
+                zIndex: 30
+              }}
+              aria-label="Notifications dropdown"
+              tabIndex={0}
+            >
+              <div style={{ fontWeight: "bold", marginBottom: "0.7rem" }}>Notifications</div>
+              {notifList.length === 0 ? (
+                <div style={{ color: "#888", fontSize: "0.95rem" }}>No new notifications.</div>
+              ) : (
+                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                  {notifList.map(n =>
+                    <li key={n.id} style={{ padding: "0.5rem 0" }}>
+                      {n.text}
+                    </li>
+                  )}
+                </ul>
+              )}
+              <button
+                onClick={clearNotifications}
+                style={{
+                  marginTop: "0.7rem",
+                  background: "#FF5252",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "0.35rem 1rem",
+                  cursor: "pointer",
+                  fontSize: "0.95rem",
+                  width: "100%"
+                }}
+                aria-label="Clear all notifications"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Dark mode toggle */}
@@ -179,20 +272,29 @@ export default function Navbar() {
         </button>
 
         {/* Profile/Avatar Dropdown */}
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative" }} ref={menuRef}>
           <button
-            onClick={() => setProfileOpen(!profileOpen)}
+            onClick={() => {
+              setProfileOpen(!profileOpen);
+              setNotifOpen(false);
+            }}
             style={{
               background: "none",
               border: "none",
               cursor: "pointer",
-              fontSize: "1.6rem",
+              fontSize: "1.7rem",
               marginLeft: "0.5rem",
-              color: darkMode ? "#FFD700" : "#111"
+              color: darkMode ? "#FFD700" : "#111",
+              borderRadius: "50%",
+              overflow: "hidden"
             }}
             aria-label="Profile menu"
+            tabIndex={0}
           >
-            👤
+            {profilePicUrl
+              ? <img src={profilePicUrl} alt="profile" style={{ width: 32, height: 32, borderRadius: "50%" }} />
+              : <span role="img" aria-label="Profile">{userName ? userName[0] : "👤"}</span>
+            }
           </button>
           {profileOpen && (
             <div
@@ -201,20 +303,28 @@ export default function Navbar() {
                 right: 0,
                 top: "2.5rem",
                 background: darkMode ? "#222" : "#fff",
+                color: darkMode ? "#FFD700" : "#222",
                 border: `1px solid ${darkMode ? "#444" : "#ccc"}`,
                 borderRadius: "7px",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                minWidth: "150px",
-                zIndex: 10
+                minWidth: "170px",
+                zIndex: 40
               }}
-              onMouseLeave={() => setProfileOpen(false)}
+              aria-label="Profile dropdown"
+              tabIndex={0}
             >
               <div style={{ padding: "0.9rem 1rem", color: darkMode ? "#FFD700" : "#333", fontWeight: 500 }}>
                 {isAuthenticated ? `Hi, ${userName}!` : "Welcome!"}
               </div>
-              <Link to="/profile" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>Profile</Link>
-              <Link to="/my-codes" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>My Codes</Link>
-              <Link to="/book-session" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>Book Session</Link>
+              <Link to="/profile" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>
+                Profile
+              </Link>
+              <Link to="/my-codes" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>
+                My Codes
+              </Link>
+              <Link to="/book-session" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>
+                Book Session
+              </Link>
               {isAuthenticated ? (
                 <button
                   onClick={handleLogout}
@@ -228,6 +338,7 @@ export default function Navbar() {
                     color: "#d32f2f",
                     cursor: "pointer"
                   }}
+                  aria-label="Logout"
                 >
                   Logout
                 </button>
@@ -244,6 +355,7 @@ export default function Navbar() {
                     color: darkMode ? "#FFD700" : "#333",
                     cursor: "pointer"
                   }}
+                  aria-label="Login"
                 >
                   Login
                 </button>
@@ -253,44 +365,79 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Navigation Links */}
+      {/* Animated Mobile Navigation */}
       <div
         style={{
-          display: menuOpen ? "flex" : "none",
-          flexDirection: "column",
-          gap: "1rem",
-          marginTop: "1rem"
+          maxHeight: menuOpen ? "400px" : "0",
+          overflow: "hidden",
+          transition: "max-height 0.4s cubic-bezier(.55,0,.1,1)",
+          background: darkMode ? "#222" : "#f8f8f8",
+          marginTop: "0.7rem",
+          borderRadius: "8px",
+          boxShadow: menuOpen ? "0 2px 8px rgba(0,0,0,0.12)" : "none"
         }}
         className="navbar-links-mobile"
+        aria-label="Mobile navigation"
       >
-        <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-        <Link to="/gyms" onClick={() => setMenuOpen(false)}>Gyms</Link>
-        <Link to="/about" onClick={() => setMenuOpen(false)}>About</Link>
-        <Link to="/profile" onClick={() => setMenuOpen(false)}>Profile</Link>
-        <Link to="/book-session" onClick={() => setMenuOpen(false)}>Book Session</Link>
+        <ul style={{ listStyle: "none", margin: 0, padding: "1rem 0" }}>
+          {navLinks.map(link => (
+            <li key={link.to} style={{ margin: "0.7rem 0", textAlign: "center" }}>
+              <Link
+                to={link.to}
+                style={{
+                  color: location.pathname === link.to ? (darkMode ? "#FFD700" : "#1976d2") : (darkMode ? "#fff" : "#333"),
+                  fontWeight: location.pathname === link.to ? "bold" : "normal",
+                  textDecoration: "none",
+                  fontSize: "1.1rem"
+                }}
+                onClick={() => setMenuOpen(false)}
+                tabIndex={0}
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
+
+      {/* Desktop Navigation */}
       <div
         style={{
           display: "flex",
-          gap: "1rem",
+          gap: "1.3rem",
           marginTop: "1rem",
           justifyContent: "center"
         }}
         className="navbar-links-desktop"
+        aria-label="Desktop navigation"
       >
-        <Link to="/">Home</Link>
-        <Link to="/gyms">Gyms</Link>
-        <Link to="/about">About</Link>
-        <Link to="/profile">Profile</Link>
-        <Link to="/book-session">Book Session</Link>
+        {navLinks.map(link => (
+          <Link
+            key={link.to}
+            to={link.to}
+            style={{
+              color: location.pathname === link.to ? (darkMode ? "#FFD700" : "#1976d2") : (darkMode ? "#fff" : "#333"),
+              fontWeight: location.pathname === link.to ? "bold" : "normal",
+              textDecoration: "none",
+              fontSize: "1.07rem",
+              padding: "0.3rem 0.7rem",
+              borderRadius: "6px",
+              background: location.pathname === link.to ? (darkMode ? "#333" : "#e3eafc") : "none"
+            }}
+            tabIndex={0}
+          >
+            {link.label}
+          </Link>
+        ))}
       </div>
+
       {/* Responsive CSS for Navbar */}
       <style>
         {`
         @media (max-width: 700px) {
           .navbar-links-desktop { display: none !important; }
           .navbar-hamburger { display: inline-block !important; }
-          .navbar-links-mobile { display: flex !important; }
+          .navbar-links-mobile { display: block !important; }
         }
         @media (min-width: 701px) {
           .navbar-links-desktop { display: flex !important; }
