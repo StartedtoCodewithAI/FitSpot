@@ -39,6 +39,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/book-session" element={<BookSession />} />
+          <Route path="/book/:gymId" element={<BookSession />} />  {/* <-- Add this line */}
           <Route path="/my-codes" element={<MyCodes />} />
         </Routes>
       </main>
