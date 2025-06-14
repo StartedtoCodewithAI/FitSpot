@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function Signup() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,9 +13,9 @@ export default function Signup() {
     setLoading(true);
     setMessage('');
 
-    // Restrict signup to only your test user
+    // Restrict signup to only your test user for now
     if (
-      email !== 'a.nikolopoulos1@hotmail.com' ||
+      (username !== 'fitspotuser' && email !== 'a.nikolopoulos1@hotmail.com') ||
       password !== '6981076267aA!'
     ) {
       setMessage('Signup is restricted. Contact admin.');
@@ -22,10 +23,14 @@ export default function Signup() {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { username },
+      },
     });
+
     if (error) {
       setMessage(error.message);
     } else {
@@ -38,6 +43,13 @@ export default function Signup() {
     <div>
       <h2>Sign Up</h2>
       <form onSubmit={handleSignup}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          required
+        />
         <input
           type="email"
           placeholder="Email"
