@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function Signup() {
-  const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,46 +12,22 @@ export default function Signup() {
     setLoading(true);
     setMessage('');
 
-    // Basic validation (English full name)
-    if (
-      !/^[A-Za-z ]+$/.test(fullName.trim()) ||
-      !fullName.trim() ||
-      !email.trim() ||
-      !password
-    ) {
-      setMessage('Please fill all required fields. Full name must be in English.');
+    if (!email.trim() || !password) {
+      setMessage('Please fill all required fields.');
       setLoading(false);
       return;
     }
 
-    // Create user in Supabase Auth
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: {
-        data: {
-          fullName: fullName.trim(),
-          ...(username.trim() && { username: username.trim() }),
-        },
-      },
     });
 
     if (signUpError) {
       setMessage(signUpError.message);
-      setLoading(false);
-      return;
+    } else {
+      setMessage('Signup successful! Please check your email to confirm your account.');
     }
-
-    // Insert into profiles table (you can ignore result/errors for now)
-    await supabase.from('profiles').insert([
-      {
-        email: email.trim(),
-        username: username.trim() || null,
-        full_name: fullName.trim(),
-      },
-    ]);
-
-    setMessage('Signup successful! Please check your email to confirm your account.');
     setLoading(false);
   };
 
@@ -61,19 +35,6 @@ export default function Signup() {
     <div>
       <h2>Sign Up</h2>
       <form onSubmit={handleSignup}>
-        <input
-          type="text"
-          placeholder="Full Name (English only)"
-          value={fullName}
-          onChange={e => setFullName(e.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Username (optional)"
-          value={username}
-          onChange={e => setUsername(e.target.value)}
-        />
         <input
           type="email"
           placeholder="Email"
