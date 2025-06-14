@@ -99,12 +99,11 @@ export default function Navbar() {
 
   const clearNotifications = () => setNotifList([]);
 
+  // Main navigation links
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/gyms", label: "Gyms" },
-    { to: "/about", label: "About" },
-    { to: "/profile", label: "Profile" },
-    { to: "/book-session", label: "Book Session" },
+    { to: "/gyms", label: "Explore" },
+    { to: "/my-sessions", label: "My Sessions" }
   ];
 
   return (
@@ -127,6 +126,7 @@ export default function Navbar() {
         maxWidth: 900,
         margin: "0 auto"
       }}>
+        {/* Hamburger for mobile */}
         <button
           onClick={() => setMenuOpen((o) => !o)}
           style={{
@@ -144,12 +144,14 @@ export default function Navbar() {
           ☰
         </button>
 
+        {/* Brand */}
         <div style={{ fontWeight: "bold", fontSize: "1.3rem", flex: "1 1 auto", minWidth: 0 }}>
           <Link to="/" style={{ textDecoration: "none", color: darkMode ? "#fff" : "#111" }}>
             FitSpot
           </Link>
         </div>
 
+        {/* Main navigation */}
         <div
           style={{
             display: "flex",
@@ -158,7 +160,54 @@ export default function Navbar() {
             gap: "0.2rem"
           }}
         >
-          {/* Notifications */}
+          {/* Nav Links (hidden on mobile, visible on desktop) */}
+          <div className="navbar-links-desktop" style={{
+            display: "flex",
+            gap: "1.2rem"
+          }}>
+            {navLinks.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                style={{
+                  color: darkMode ? "#FFD700" : "#222",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  fontSize: "1rem"
+                }}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Book Session FAB/Link */}
+          <Link
+            to="/book-session"
+            style={{
+              background: "#2563eb",
+              color: "#fff",
+              borderRadius: "50%",
+              width: 45,
+              height: 45,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.8rem",
+              margin: "0 0.8rem",
+              boxShadow: "0 2px 8px #2563eb55",
+              textDecoration: "none",
+              fontWeight: 700,
+              border: "2px solid #fff",
+              transition: "background 0.2s",
+            }}
+            className="book-fab"
+            aria-label="Book a session"
+          >
+            +
+          </Link>
+
+          {/* Notification bell */}
           <div style={{ position: "relative" }} ref={notifRef}>
             <button
               style={{
@@ -322,8 +371,7 @@ export default function Navbar() {
                   border: `1px solid ${darkMode ? "#444" : "#ccc"}`,
                   borderRadius: "7px",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                  minWidth: "140px",
-                  maxWidth: "80vw",
+                  minWidth: "170px",
                   zIndex: 40
                 }}
                 aria-label="Profile dropdown"
@@ -333,13 +381,13 @@ export default function Navbar() {
                   {user ? `Hi, ${user.email}!` : "Welcome!"}
                 </div>
                 <Link to="/profile" style={{ display: "block", padding: "0.6rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none", fontSize: "1rem" }}>
-                  Profile
+                  Account
                 </Link>
                 <Link to="/my-codes" style={{ display: "block", padding: "0.6rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none", fontSize: "1rem" }}>
-                  My Codes
+                  Rewards
                 </Link>
-                <Link to="/book-session" style={{ display: "block", padding: "0.6rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none", fontSize: "1rem" }}>
-                  Book Session
+                <Link to="/about" style={{ display: "block", padding: "0.6rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none", fontSize: "1rem" }}>
+                  About
                 </Link>
                 {user ? (
                   <button
@@ -413,33 +461,26 @@ export default function Navbar() {
             {label}
           </Link>
         ))}
-      </div>
-
-      {/* Desktop Nav Links */}
-      <div
-        className="navbar-links-desktop"
-        style={{
-          display: "flex",
-          gap: "1.2rem",
-          position: "absolute",
-          right: "1.5rem",
-          top: "1rem"
-        }}
-      >
-        {navLinks.map(({ to, label }) => (
-          <Link
-            key={to}
-            to={to}
-            style={{
-              color: darkMode ? "#FFD700" : "#222",
-              textDecoration: "none",
-              fontWeight: 600,
-              fontSize: "1rem"
-            }}
-          >
-            {label}
-          </Link>
-        ))}
+        {/* Book Session as a button in mobile nav */}
+        <Link
+          to="/book-session"
+          style={{
+            display: "block",
+            margin: "1rem auto",
+            width: "80%",
+            background: "#2563eb",
+            color: "#fff",
+            borderRadius: "8px",
+            padding: "0.7rem",
+            textAlign: "center",
+            fontWeight: 700,
+            fontSize: "1.2rem",
+            textDecoration: "none"
+          }}
+          onClick={() => setMenuOpen(false)}
+        >
+          Book Session
+        </Link>
       </div>
     </nav>
   );
