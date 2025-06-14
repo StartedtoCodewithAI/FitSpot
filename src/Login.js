@@ -41,21 +41,8 @@ export default function Login() {
     if (loginError) {
       setMessage('Your email or password are not correct.');
     } else {
-      // Fetch user profile for Navbar
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username, full_name, avatar')
-        .eq('email', email)
-        .single();
-
-      // Build user object for Navbar
-      const userObject = {
-        email,
-        name: profile?.full_name || profile?.username || email,
-        avatar: profile?.avatar || '',
-      };
-
-      localStorage.setItem('user', JSON.stringify(userObject));
+      // Optionally fetch and save user profile here if needed
+      localStorage.setItem('user', email);
       navigate('/profile');
     }
     setLoading(false);
@@ -63,7 +50,7 @@ export default function Login() {
 
   return (
     <div>
-      <h2>Log In</h2>
+      <h2>Login to FitSpot</h2>
       <form onSubmit={handleLogin}>
         <input
           type="text"
