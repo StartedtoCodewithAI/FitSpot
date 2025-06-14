@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [userInput, setUserInput] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -14,14 +14,24 @@ export default function Login() {
     setLoading(true);
     setMessage('');
 
-    // Only allow login for the hardcoded test user
-    if (
-      email !== 'a.nikolopoulos1@hotmail.com' ||
-      password !== '6981076267aA!'
-    ) {
-      setMessage('Invalid credentials. Contact admin.');
-      setLoading(false);
-      return;
+    let email = userInput.trim();
+
+    // If user input is not an email, treat it as username
+    if (!email.includes('@')) {
+      // Fetch all users with this username from Supabase Auth's admin API (not available on client side for non-service role)
+      // Workaround: You must keep a 'profiles' table in your DB that links usernames to emails.
+      let { data, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('username', email)
+        .single();
+
+      if (error || !data) {
+        setMessage('Username not found.');
+        setLoading(false);
+        return;
+      }
+      email = data.email;
     }
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -32,7 +42,6 @@ export default function Login() {
     if (error) {
       setMessage(error.message);
     } else {
-      // Set localStorage ONLY for the allowed user
       localStorage.setItem('user', email);
       navigate('/profile');
     }
@@ -44,10 +53,10 @@ export default function Login() {
       <h2>Log In</h2>
       <form onSubmit={handleLogin}>
         <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
+          type="text"
+          placeholder="Email or Username"
+          value={userInput}
+          onChange={e => setUserInput(e.target.value)}
           required
         />
         <input
