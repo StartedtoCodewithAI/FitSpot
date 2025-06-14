@@ -1,27 +1,42 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-// Dummy data for notifications and profile
+// Dummy notification data
 const notifications = [
   { id: 1, text: "Your session is confirmed!" },
   { id: 2, text: "New gym added near you." },
   { id: 3, text: "Profile updated successfully." },
 ];
-const userName = "Alex";
-const profilePicUrl = ""; // Add a URL for a real image, or leave blank for fallback
+
+// Helper to get initials
+function stringToInitials(name) {
+  if (!name) return "";
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase();
+}
 
 export default function Navbar() {
+  // --- Core state ---
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [notifList, setNotifList] = useState(notifications);
-  const menuRef = useRef(null);
-  const location = useLocation();
+  const [darkMode, setDarkMode] = useState(false);
 
-  // Close dropdowns on click outside
+  // --- Responsive state ---
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 700);
+
+  // --- User/auth state with localStorage persistence ---
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const menuRef = useRef(null);
+
+  // --- Effect: close dropdowns on outside click ---
   useEffect(() => {
     const closeMenus = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -33,13 +48,25 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", closeMenus);
   }, []);
 
-  // Close menus on navigation
+  // --- Effect: close menus on navigation and update user from localStorage ---
   useEffect(() => {
     setMenuOpen(false);
     setProfileOpen(false);
     setNotifOpen(false);
+    const stored = localStorage.getItem("user");
+    setUser(stored ? JSON.parse(stored) : null);
   }, [location.pathname]);
 
+  // --- Effect: window resize for mobile state ---
+  useEffect(() => {
+    function checkMobile() {
+      setIsMobile(window.innerWidth <= 700);
+    }
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // --- Handlers ---
   const handleSearch = (e) => {
     e.preventDefault();
     alert(`Searching for: ${search}`);
@@ -47,21 +74,25 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
+    localStorage.removeItem("user");
+    setUser(null);
     setProfileOpen(false);
-    alert("Logged out!");
+    navigate("/");
   };
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
+    // For demo: set a dummy user (replace with real logic)
+    const dummy = { name: "Alex Sample", avatar: "" };
+    localStorage.setItem("user", JSON.stringify(dummy));
+    setUser(dummy);
     setProfileOpen(false);
-    alert("Logged in!");
+    navigate("/profile");
   };
 
   const handleDarkModeToggle = () => setDarkMode((d) => !d);
-
   const clearNotifications = () => setNotifList([]);
 
+  // --- Menus ---
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/gyms", label: "Gyms" },
@@ -70,6 +101,7 @@ export default function Navbar() {
     { to: "/book-session", label: "Book Session" },
   ];
 
+  // --- Render ---
   return (
     <nav
       style={{
@@ -80,7 +112,7 @@ export default function Navbar() {
         minHeight: "72px",
         transition: "background 0.3s, color 0.3s",
         position: "relative",
-        zIndex: 20
+        zIndex: 20,
       }}
       aria-label="Main navigation"
     >
@@ -88,7 +120,7 @@ export default function Navbar() {
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center"
+          alignItems: "center",
         }}
       >
         {/* Hamburger for mobile */}
@@ -104,7 +136,7 @@ export default function Navbar() {
             minWidth: "44px",
             minHeight: "44px",
             lineHeight: "1",
-            display: "inline-block"
+            display: isMobile ? "inline-block" : "none",
           }}
           className="navbar-hamburger"
           aria-label="Toggle navigation menu"
@@ -129,7 +161,7 @@ export default function Navbar() {
             borderRadius: "4px",
             border: `1px solid ${darkMode ? "#444" : "#ccc"}`,
             marginRight: "1rem",
-            padding: "0.2rem 0.5rem"
+            padding: "0.2rem 0.5rem",
           }}
           aria-label="Search gyms"
         >
@@ -144,7 +176,7 @@ export default function Navbar() {
               background: "transparent",
               color: darkMode ? "#fff" : "#111",
               padding: "0.2rem 0.3rem",
-              fontSize: "1rem"
+              fontSize: "1rem",
             }}
             aria-label="Search gyms"
           />
@@ -157,7 +189,7 @@ export default function Navbar() {
               borderRadius: "4px",
               padding: "0.3rem 0.7rem",
               marginLeft: "0.3rem",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
             aria-label="Submit search"
           >
@@ -174,7 +206,7 @@ export default function Navbar() {
               cursor: "pointer",
               fontSize: "1.5rem",
               color: darkMode ? "#fff" : "#333",
-              position: "relative"
+              position: "relative",
             }}
             aria-label="Show notifications"
             onClick={() => {
@@ -196,7 +228,7 @@ export default function Navbar() {
                   fontSize: "0.8rem",
                   padding: "2px 7px",
                   fontWeight: "bold",
-                  border: "2px solid #fff"
+                  border: "2px solid #fff",
                 }}
                 aria-label={`${notifList.length} unread notifications`}
               >
@@ -217,7 +249,7 @@ export default function Navbar() {
                 boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
                 minWidth: "220px",
                 padding: "0.8rem 0.4rem",
-                zIndex: 30
+                zIndex: 30,
               }}
               aria-label="Notifications dropdown"
               tabIndex={0}
@@ -245,7 +277,7 @@ export default function Navbar() {
                   padding: "0.35rem 1rem",
                   cursor: "pointer",
                   fontSize: "0.95rem",
-                  width: "100%"
+                  width: "100%",
                 }}
                 aria-label="Clear all notifications"
               >
@@ -264,7 +296,7 @@ export default function Navbar() {
             cursor: "pointer",
             fontSize: "1.7rem",
             color: darkMode ? "#FFD700" : "#111",
-            marginRight: "1rem"
+            marginRight: "1rem",
           }}
           aria-label="Toggle dark mode"
         >
@@ -286,15 +318,43 @@ export default function Navbar() {
               marginLeft: "0.5rem",
               color: darkMode ? "#FFD700" : "#111",
               borderRadius: "50%",
-              overflow: "hidden"
+              overflow: "hidden",
+              width: 38,
+              height: 38,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
             aria-label="Profile menu"
             tabIndex={0}
           >
-            {profilePicUrl
-              ? <img src={profilePicUrl} alt="profile" style={{ width: 32, height: 32, borderRadius: "50%" }} />
-              : <span role="img" aria-label="Profile">{userName ? userName[0] : "👤"}</span>
-            }
+            {user && user.avatar ? (
+              <img
+                src={user.avatar}
+                alt="profile"
+                style={{ width: 32, height: 32, borderRadius: "50%" }}
+              />
+            ) : user ? (
+              <span
+                style={{
+                  background: "#f4b400",
+                  color: "#fff",
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                }}
+                aria-label="Profile Avatar"
+              >
+                {stringToInitials(user.name)}
+              </span>
+            ) : (
+              <span role="img" aria-label="Profile">👤</span>
+            )}
           </button>
           {profileOpen && (
             <div
@@ -308,13 +368,13 @@ export default function Navbar() {
                 borderRadius: "7px",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                 minWidth: "170px",
-                zIndex: 40
+                zIndex: 40,
               }}
               aria-label="Profile dropdown"
               tabIndex={0}
             >
               <div style={{ padding: "0.9rem 1rem", color: darkMode ? "#FFD700" : "#333", fontWeight: 500 }}>
-                {isAuthenticated ? `Hi, ${userName}!` : "Welcome!"}
+                {user ? `Hi, ${user.name}!` : "Welcome!"}
               </div>
               <Link to="/profile" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>
                 Profile
@@ -325,7 +385,7 @@ export default function Navbar() {
               <Link to="/book-session" style={{ display: "block", padding: "0.7rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none" }}>
                 Book Session
               </Link>
-              {isAuthenticated ? (
+              {user ? (
                 <button
                   onClick={handleLogout}
                   style={{
@@ -336,7 +396,7 @@ export default function Navbar() {
                     background: "none",
                     border: "none",
                     color: "#d32f2f",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                   aria-label="Logout"
                 >
@@ -353,7 +413,7 @@ export default function Navbar() {
                     background: "none",
                     border: "none",
                     color: darkMode ? "#FFD700" : "#333",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                   aria-label="Login"
                 >
@@ -365,16 +425,17 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Animated Mobile Navigation */}
+      {/* Mobile Navigation */}
       <div
         style={{
-          maxHeight: menuOpen ? "400px" : "0",
+          maxHeight: menuOpen && isMobile ? "400px" : "0",
           overflow: "hidden",
           transition: "max-height 0.4s cubic-bezier(.55,0,.1,1)",
           background: darkMode ? "#222" : "#f8f8f8",
           marginTop: "0.7rem",
           borderRadius: "8px",
-          boxShadow: menuOpen ? "0 2px 8px rgba(0,0,0,0.12)" : "none"
+          boxShadow: menuOpen && isMobile ? "0 2px 8px rgba(0,0,0,0.12)" : "none",
+          display: isMobile ? "block" : "none",
         }}
         className="navbar-links-mobile"
         aria-label="Mobile navigation"
@@ -388,7 +449,7 @@ export default function Navbar() {
                   color: location.pathname === link.to ? (darkMode ? "#FFD700" : "#1976d2") : (darkMode ? "#fff" : "#333"),
                   fontWeight: location.pathname === link.to ? "bold" : "normal",
                   textDecoration: "none",
-                  fontSize: "1.1rem"
+                  fontSize: "1.1rem",
                 }}
                 onClick={() => setMenuOpen(false)}
                 tabIndex={0}
@@ -403,10 +464,10 @@ export default function Navbar() {
       {/* Desktop Navigation */}
       <div
         style={{
-          display: "flex",
+          display: isMobile ? "none" : "flex",
           gap: "1.3rem",
           marginTop: "1rem",
-          justifyContent: "center"
+          justifyContent: "center",
         }}
         className="navbar-links-desktop"
         aria-label="Desktop navigation"
@@ -422,7 +483,7 @@ export default function Navbar() {
               fontSize: "1.07rem",
               padding: "0.3rem 0.7rem",
               borderRadius: "6px",
-              background: location.pathname === link.to ? (darkMode ? "#333" : "#e3eafc") : "none"
+              background: location.pathname === link.to ? (darkMode ? "#333" : "#e3eafc") : "none",
             }}
             tabIndex={0}
           >
