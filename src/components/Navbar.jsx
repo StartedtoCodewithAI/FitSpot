@@ -20,21 +20,16 @@ export default function Navbar() {
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
-
   const location = useLocation();
 
   // Listen for Supabase auth state
   useEffect(() => {
-    // Initial session check
     supabase.auth.getSession().then(({ data }) => {
       setUser(data?.session?.user || null);
     });
-
-    // Listen for login/logout
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
     });
-
     return () => listener?.subscription?.unsubscribe?.();
   }, []);
 
@@ -128,12 +123,12 @@ export default function Navbar() {
           style={{
             background: "none",
             border: "none",
-            fontSize: "2rem",
+            fontSize: "2.2rem",
             cursor: "pointer",
             color: darkMode ? "#fff" : "#333",
             marginRight: "1rem",
-            minWidth: "44px",
-            minHeight: "44px",
+            minWidth: "52px",
+            minHeight: "52px",
             lineHeight: "1",
             display: "inline-block"
           }}
@@ -205,7 +200,9 @@ export default function Navbar() {
               cursor: "pointer",
               fontSize: "1.5rem",
               color: darkMode ? "#fff" : "#333",
-              position: "relative"
+              position: "relative",
+              minWidth: "44px",
+              minHeight: "44px"
             }}
             aria-label="Show notifications"
             onClick={() => {
@@ -248,7 +245,9 @@ export default function Navbar() {
                 boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
                 minWidth: "220px",
                 padding: "0.8rem 0.4rem",
-                zIndex: 30
+                zIndex: 30,
+                maxHeight: "60vh",
+                overflowY: "auto"
               }}
               aria-label="Notifications dropdown"
               tabIndex={0}
@@ -295,7 +294,9 @@ export default function Navbar() {
             cursor: "pointer",
             fontSize: "1.7rem",
             color: darkMode ? "#FFD700" : "#111",
-            marginRight: "1rem"
+            marginRight: "1rem",
+            minWidth: "44px",
+            minHeight: "44px"
           }}
           aria-label="Toggle dark mode"
         >
@@ -317,7 +318,9 @@ export default function Navbar() {
               marginLeft: "0.5rem",
               color: darkMode ? "#FFD700" : "#111",
               borderRadius: "50%",
-              overflow: "hidden"
+              overflow: "hidden",
+              minWidth: "44px",
+              minHeight: "44px"
             }}
             aria-label="Profile menu"
             tabIndex={0}
@@ -406,21 +409,27 @@ export default function Navbar() {
           background: darkMode ? "#222" : "#f8f8f8",
           marginTop: "0.7rem",
           borderRadius: "8px",
-          boxShadow: menuOpen ? "0 2px 8px rgba(0,0,0,0.12)" : "none"
+          boxShadow: menuOpen ? "0 2px 8px rgba(0,0,0,0.12)" : "none",
+          width: "100vw",
+          left: 0,
+          right: 0
         }}
         className="navbar-links-mobile"
         aria-label="Mobile navigation"
       >
         <ul style={{ listStyle: "none", margin: 0, padding: "1rem 0" }}>
           {navLinks.map(link => (
-            <li key={link.to} style={{ margin: "0.7rem 0", textAlign: "center" }}>
+            <li key={link.to} style={{ margin: "0.7rem 0", textAlign: "center", fontSize: "1.22rem" }}>
               <Link
                 to={link.to}
                 style={{
                   color: location.pathname === link.to ? (darkMode ? "#FFD700" : "#1976d2") : (darkMode ? "#fff" : "#333"),
                   fontWeight: location.pathname === link.to ? "bold" : "normal",
                   textDecoration: "none",
-                  fontSize: "1.1rem"
+                  fontSize: "1.18rem",
+                  padding: "0.6rem 1.1rem",
+                  borderRadius: "8px",
+                  display: "block"
                 }}
                 onClick={() => setMenuOpen(false)}
                 tabIndex={0}
@@ -466,6 +475,15 @@ export default function Navbar() {
       {/* Responsive CSS for Navbar */}
       <style>
         {`
+        html, body { max-width: 100vw; overflow-x: hidden; }
+        @media (max-width: 700px) {
+          nav, .navbar-links-mobile { width: 100vw !important; }
+          .navbar-links-mobile ul > li { padding: 10px 0; font-size: 1.18rem; }
+          .navbar-hamburger { font-size: 2.2rem !important; min-width: 52px !important; min-height: 52px !important; }
+        }
+        @media (max-width: 480px) {
+          .navbar-links-mobile ul > li { font-size: 1.21rem; }
+        }
         @media (max-width: 700px) {
           .navbar-links-desktop { display: none !important; }
           .navbar-hamburger { display: inline-block !important; }
