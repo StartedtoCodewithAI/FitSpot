@@ -10,11 +10,10 @@ import About from './pages/About';
 import MyCodes from './pages/MyCodes';
 import PrivateRoute from './components/PrivateRoute';
 import BookSession from './pages/BookSession';
-import { supabase } from './supabaseClient'; // <-- Import Supabase client
+import { supabase } from './supabaseClient';
 
 export default function App() {
   useEffect(() => {
-    // Test the Supabase connection (optional)
     async function testSupabase() {
       const { data, error } = await supabase.auth.getSession();
       if (error) {
@@ -28,7 +27,6 @@ export default function App() {
 
   return (
     <Router>
-      {/* Prevent horizontal overflow and white line on mobile */}
       <style>{`
         html, body, #root {
           width: 100%;
@@ -49,10 +47,10 @@ export default function App() {
             </PrivateRoute>
           }
         />
+        {/* If you want to totally block signup, REMOVE the next line */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
-        {/* NEW ROUTE for the booking flow */}
         <Route path="/book/:gymId" element={<BookSession />} />
       </Routes>
     </Router>
