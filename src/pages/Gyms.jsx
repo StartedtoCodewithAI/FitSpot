@@ -194,47 +194,9 @@ export default function Gyms() {
     );
   }
 
-  // Export gyms as CSV
-  function exportGymsToCSV() {
-    const header = "Name,Address,Distance (km),Phone,Opening Hours\n";
-    const rows = displayedGyms.map(g =>
-      [
-        `"${g.name}"`, 
-        `"${g.address || ""}"`, 
-        g.distance?.toFixed(2) || "",
-        `"${g.phone || ""}"`,
-        `"${g.opening_hours || ""}"`
-      ].join(",")
-    ).join("\n");
-    const blob = new Blob([header + rows], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "fitspot_gyms.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
-
-      <button
-        onClick={exportGymsToCSV}
-        style={{
-          marginBottom: 14,
-          background: "#2563eb",
-          color: "#fff",
-          border: "none",
-          borderRadius: 8,
-          fontWeight: 700,
-          fontSize: "1rem",
-          padding: "0.5rem 1rem",
-          cursor: "pointer"
-        }}
-      >
-        Export gyms as CSV
-      </button>
 
       <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 16 }}>
         <b>Tip:</b> Searching within
