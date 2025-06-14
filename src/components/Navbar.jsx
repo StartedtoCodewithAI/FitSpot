@@ -16,11 +16,14 @@ export default function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
   const [notifList, setNotifList] = useState(notifications);
   const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem("user");
-    return stored ? JSON.parse(stored) : null;
+    try {
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
-  // Separate refs!
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
