@@ -19,16 +19,24 @@ export default function Navbar() {
     const stored = localStorage.getItem("user");
     return stored ? JSON.parse(stored) : null;
   });
-  const menuRef = useRef(null);
+
+  // Separate refs!
+  const notifRef = useRef(null);
+  const profileRef = useRef(null);
+
   const location = useLocation();
 
   // Close dropdowns on click outside
   useEffect(() => {
     const closeMenus = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setProfileOpen(false);
-        setNotifOpen(false);
+      if (
+        (notifRef.current && notifRef.current.contains(e.target)) ||
+        (profileRef.current && profileRef.current.contains(e.target))
+      ) {
+        return;
       }
+      setProfileOpen(false);
+      setNotifOpen(false);
     };
     document.addEventListener("mousedown", closeMenus);
     return () => document.removeEventListener("mousedown", closeMenus);
@@ -170,7 +178,7 @@ export default function Navbar() {
         </form>
 
         {/* Notifications */}
-        <div style={{ position: "relative", marginRight: "1rem" }} ref={menuRef}>
+        <div style={{ position: "relative", marginRight: "1rem" }} ref={notifRef}>
           <button
             style={{
               background: "none",
@@ -276,7 +284,7 @@ export default function Navbar() {
         </button>
 
         {/* Profile/Avatar Dropdown */}
-        <div style={{ position: "relative" }} ref={menuRef}>
+        <div style={{ position: "relative" }} ref={profileRef}>
           <button
             onClick={() => {
               setProfileOpen(!profileOpen);
