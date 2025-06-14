@@ -35,7 +35,6 @@ export default function MyCodes() {
     try {
       const stored = JSON.parse(localStorage.getItem("fitspot_bookings") || "[]");
       setCodes(stored);
-      setLoading(false);
 
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       setUserName(user.name || "");
@@ -43,23 +42,23 @@ export default function MyCodes() {
       const sorted = stored
         .filter(b => b.date)
         .sort((a, b) => new Date(a.date) - new Date(b.date));
-      let streak = 1, maxStreak = 1;
+      let streak = 1, maxStreakVal = 1;
       for (let i = 1; i < sorted.length; ++i) {
         const prev = new Date(sorted[i - 1].date);
         const curr = new Date(sorted[i].date);
         const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
         if (diffDays === 1) {
           streak++;
-          maxStreak = Math.max(maxStreak, streak);
+          maxStreakVal = Math.max(maxStreakVal, streak);
         } else {
           streak = 1;
         }
       }
-      setMaxStreak(maxStreak);
+      setMaxStreak(maxStreakVal);
     } catch {
       setError("Failed to load codes.");
-      setLoading(false);
     }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -69,7 +68,10 @@ export default function MyCodes() {
     }
   }, [copiedCode]);
 
-  // Show a friendly message if not logged in
+  // --- FIX: Show loading first, only check userName after loading is false
+  if (loading) {
+    return <div style={{textAlign:"center",marginTop:40}}>Loading...</div>;
+  }
   if (!userName) {
     return (
       <div style={{ textAlign: "center", marginTop: 40 }}>
@@ -316,28 +318,6 @@ export default function MyCodes() {
         onChange={e => setSearch(e.target.value)}
         placeholder="Search by gym name or code"
       />
-
-      {loading && (
-        <div style={{ textAlign: "center", color: "#2563eb" }} aria-live="polite">
-          <span className="spinner" aria-hidden="true" style={{
-            display: "inline-block",
-            width: 22,
-            height: 22,
-            border: "3px solid #38bdf8",
-            borderTop: "3px solid #2563eb",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-            marginRight: 8,
-            verticalAlign: "middle"
-          }} />
-          Loading your session codes...
-          <style>
-            {`
-              @keyframes spin { 0% {transform:rotate(0deg);} 100% {transform:rotate(360deg);} }
-            `}
-          </style>
-        </div>
-      )}
 
       {error && (
         <div style={{
