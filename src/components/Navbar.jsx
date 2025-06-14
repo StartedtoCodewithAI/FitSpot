@@ -1,12 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-
-const notifications = [
-  { id: 1, text: "Your session is confirmed!" },
-  { id: 2, text: "New gym added near you." },
-  { id: 3, text: "Profile updated successfully." },
-];
+import notifications from "../data/notifications";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -16,18 +11,47 @@ export default function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
   const [notifList, setNotifList] = useState(notifications);
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
   const location = useLocation();
 
+  // Fetch user session and profile
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data?.session?.user || null);
-    });
+    async function fetchUserAndProfile() {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sessionUser = sessionData?.session?.user || null;
+      setUser(sessionUser);
+
+      if (sessionUser) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", sessionUser.id)
+          .single();
+        setProfile(profileData || null);
+      } else {
+        setProfile(null);
+      }
+    }
+
+    fetchUserAndProfile();
+
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
+      if (session?.user) {
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single()
+          .then(({ data }) => setProfile(data || null));
+      } else {
+        setProfile(null);
+      }
     });
+
     return () => listener?.subscription?.unsubscribe?.();
   }, []);
 
@@ -96,37 +120,29 @@ export default function Navbar() {
         background: darkMode ? "#222" : "#eee",
         color: darkMode ? "#fff" : "#222",
         padding: "1rem 0.5rem",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        minHeight: "72px",
-        transition: "background 0.3s, color 0.3s",
-        position: "relative",
-        zIndex: 20,
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
         width: "100%",
+        boxShadow: "0 1px 7px #0002",
       }}
-      aria-label="Main navigation"
     >
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: "100%",
-          gap: "0.5rem",
-        }}
-      >
-        {/* Hamburger for mobile */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        maxWidth: 900,
+        margin: "0 auto"
+      }}>
         <button
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() => setMenuOpen((o) => !o)}
           style={{
             background: "none",
             border: "none",
-            fontSize: "2rem",
             cursor: "pointer",
-            color: darkMode ? "#fff" : "#333",
-            minWidth: "44px",
-            minHeight: "44px",
-            lineHeight: "1",
+            fontSize: "2rem",
+            color: darkMode ? "#FFD700" : "#111",
+            marginRight: "0.7rem",
             display: "inline-block"
           }}
           className="navbar-hamburger"
@@ -135,14 +151,12 @@ export default function Navbar() {
           ☰
         </button>
 
-        {/* Brand / Logo */}
         <div style={{ fontWeight: "bold", fontSize: "1.3rem", flex: "1 1 auto", minWidth: 0 }}>
           <Link to="/" style={{ textDecoration: "none", color: darkMode ? "#fff" : "#111" }}>
             FitSpot
           </Link>
         </div>
 
-        {/* Right-side icons */}
         <div
           style={{
             display: "flex",
@@ -159,43 +173,32 @@ export default function Navbar() {
               alignItems: "center",
               background: darkMode ? "#333" : "#fff",
               borderRadius: "4px",
-              border: `1px solid ${darkMode ? "#444" : "#ccc"}`,
-              marginRight: "0.2rem",
-              padding: "0.2rem 0.3rem",
-              minWidth: "1px"
+              padding: "0.2rem 0.4rem",
             }}
-            aria-label="Search gyms"
           >
             <input
               type="text"
-              placeholder="Search gyms..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search"
+              aria-label="Search"
               style={{
                 border: "none",
                 outline: "none",
                 background: "transparent",
-                color: darkMode ? "#fff" : "#111",
-                padding: "0.2rem 0.3rem",
+                color: darkMode ? "#FFD700" : "#111",
                 fontSize: "1rem",
-                width: "70px",
-                minWidth: "40px",
-                flex: "0 1 70px",
+                minWidth: "60px"
               }}
-              aria-label="Search gyms"
             />
             <button
               type="submit"
               style={{
-                background: darkMode ? "#444" : "#333",
-                color: "#fff",
+                background: "none",
                 border: "none",
-                borderRadius: "4px",
-                padding: "0.3rem 0.5rem",
-                marginLeft: "0.2rem",
                 cursor: "pointer",
-                minWidth: "32px",
-                minHeight: "32px"
+                fontSize: "1.2rem",
+                color: darkMode ? "#FFD700" : "#333"
               }}
               aria-label="Submit search"
             >
@@ -337,9 +340,23 @@ export default function Navbar() {
               aria-label="Profile menu"
               tabIndex={0}
             >
-              {user && user.email
-                ? <span role="img" aria-label="Profile">{user.email[0].toUpperCase()}</span>
-                : <span role="img" aria-label="Profile">👤</span>
+              {user && profile && profile.avatar_url
+                ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt="Avatar"
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: darkMode ? "2px solid #FFD700" : "2px solid #2563eb"
+                      }}
+                    />
+                  )
+                : user && user.email
+                  ? <span role="img" aria-label="Profile">{user.email[0].toUpperCase()}</span>
+                  : <span role="img" aria-label="Profile">👤</span>
               }
             </button>
             {profileOpen && (
@@ -424,87 +441,54 @@ export default function Navbar() {
           background: darkMode ? "#222" : "#f8f8f8",
           marginTop: "0.7rem",
           borderRadius: "8px",
-          boxShadow: menuOpen ? "0 2px 8px rgba(0,0,0,0.12)" : "none",
-          width: "100%",
         }}
         className="navbar-links-mobile"
-        aria-label="Mobile navigation"
       >
-        <ul style={{ listStyle: "none", margin: 0, padding: "1rem 0" }}>
-          {navLinks.map(link => (
-            <li key={link.to} style={{ margin: "0.7rem 0", textAlign: "center", fontSize: "1.22rem" }}>
-              <Link
-                to={link.to}
-                style={{
-                  color: location.pathname === link.to ? (darkMode ? "#FFD700" : "#1976d2") : (darkMode ? "#fff" : "#333"),
-                  fontWeight: location.pathname === link.to ? "bold" : "normal",
-                  textDecoration: "none",
-                  fontSize: "1.18rem",
-                  padding: "0.6rem 1.1rem",
-                  borderRadius: "8px",
-                  display: "block"
-                }}
-                onClick={() => setMenuOpen(false)}
-                tabIndex={0}
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Desktop Navigation */}
-      <div
-        style={{
-          display: "flex",
-          gap: "1.3rem",
-          marginTop: "1rem",
-          justifyContent: "center"
-        }}
-        className="navbar-links-desktop"
-        aria-label="Desktop navigation"
-      >
-        {navLinks.map(link => (
+        {navLinks.map(({ to, label }) => (
           <Link
-            key={link.to}
-            to={link.to}
+            key={to}
+            to={to}
             style={{
-              color: location.pathname === link.to ? (darkMode ? "#FFD700" : "#1976d2") : (darkMode ? "#fff" : "#333"),
-              fontWeight: location.pathname === link.to ? "bold" : "normal",
+              display: "block",
+              padding: "1rem",
+              color: darkMode ? "#FFD700" : "#222",
               textDecoration: "none",
-              fontSize: "1.07rem",
-              padding: "0.3rem 0.7rem",
-              borderRadius: "6px",
-              background: location.pathname === link.to ? (darkMode ? "#333" : "#e3eafc") : "none"
+              fontWeight: 600,
+              borderBottom: "1px solid #ddd"
             }}
-            tabIndex={0}
+            onClick={() => setMenuOpen(false)}
           >
-            {link.label}
+            {label}
           </Link>
         ))}
       </div>
 
-      {/* Responsive CSS for Navbar */}
-      <style>
-        {`
-        html, body { max-width: 100vw; overflow-x: hidden; }
-        @media (max-width: 700px) {
-          nav, .navbar-links-mobile { width: 100% !important; }
-          .navbar-links-desktop { display: none !important; }
-          .navbar-hamburger { display: inline-block !important; }
-          .navbar-links-mobile { display: block !important; }
-        }
-        @media (max-width: 480px) {
-          .navbar-links-mobile ul > li { font-size: 1.13rem; }
-        }
-        @media (min-width: 701px) {
-          .navbar-links-desktop { display: flex !important; }
-          .navbar-hamburger { display: none !important; }
-          .navbar-links-mobile { display: none !important; }
-        }
-        `}
-      </style>
+      {/* Desktop Nav Links */}
+      <div
+        className="navbar-links-desktop"
+        style={{
+          display: "flex",
+          gap: "1.2rem",
+          position: "absolute",
+          right: "1.5rem",
+          top: "1rem"
+        }}
+      >
+        {navLinks.map(({ to, label }) => (
+          <Link
+            key={to}
+            to={to}
+            style={{
+              color: darkMode ? "#FFD700" : "#222",
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: "1rem"
+            }}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
     </nav>
   );
 }
