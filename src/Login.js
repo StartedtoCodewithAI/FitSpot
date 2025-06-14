@@ -41,7 +41,21 @@ export default function Login() {
     if (loginError) {
       setMessage('Your email or password are not correct.');
     } else {
-      localStorage.setItem('user', email);
+      // Fetch user profile for Navbar
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, full_name, avatar')
+        .eq('email', email)
+        .single();
+
+      // Build user object for Navbar
+      const userObject = {
+        email,
+        name: profile?.full_name || profile?.username || email,
+        avatar: profile?.avatar || '',
+      };
+
+      localStorage.setItem('user', JSON.stringify(userObject));
       navigate('/profile');
     }
     setLoading(false);
