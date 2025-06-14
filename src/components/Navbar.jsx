@@ -3,6 +3,22 @@ import { Link, useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import notifications from "../data/notifications";
 
+// CSS variables for purple palette (add these to your global CSS for best results)
+/*
+:root {
+  --color-primary: #6C47FF;
+  --color-primary-dark: #4B1FA4;
+  --color-accent: #E76BF3;
+  --color-bg-light: #FAF9FF;
+  --color-bg-dark: #181528;
+  --color-text-light: #222;
+  --color-text-dark: #fff;
+  --color-success: #27ae60;
+  --color-danger: #ff5252;
+  --color-border: #E6E0F8;
+}
+*/
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -16,7 +32,6 @@ export default function Navbar() {
   const profileRef = useRef(null);
   const location = useLocation();
 
-  // Fetch user session and profile
   useEffect(() => {
     async function fetchUserAndProfile() {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -106,17 +121,39 @@ export default function Navbar() {
     { to: "/my-sessions", label: "My Sessions" }
   ];
 
+  // Determine color variables based on mode
+  const colorVars = darkMode
+    ? {
+        navBg: "var(--color-bg-dark, #181528)",
+        text: "var(--color-text-dark, #fff)",
+        primary: "var(--color-primary, #6C47FF)",
+        primaryDark: "var(--color-primary-dark, #4B1FA4)",
+        accent: "var(--color-accent, #E76BF3)",
+        border: "var(--color-border, #4B1FA4)",
+        fabTxt: "#fff"
+      }
+    : {
+        navBg: "var(--color-bg-light, #FAF9FF)",
+        text: "var(--color-text-light, #222)",
+        primary: "var(--color-primary, #6C47FF)",
+        primaryDark: "var(--color-primary-dark, #4B1FA4)",
+        accent: "var(--color-accent, #E76BF3)",
+        border: "var(--color-border, #E6E0F8)",
+        fabTxt: "#fff"
+      };
+
   return (
     <nav
       style={{
-        background: darkMode ? "#222" : "#eee",
-        color: darkMode ? "#fff" : "#222",
+        background: colorVars.navBg,
+        color: colorVars.text,
         padding: "1rem 0.5rem",
         position: "sticky",
         top: 0,
         zIndex: 100,
         width: "100%",
         boxShadow: "0 1px 7px #0002",
+        borderBottom: `1.5px solid ${colorVars.border}`
       }}
     >
       <div style={{
@@ -134,7 +171,7 @@ export default function Navbar() {
             border: "none",
             cursor: "pointer",
             fontSize: "2rem",
-            color: darkMode ? "#FFD700" : "#111",
+            color: colorVars.primary,
             marginRight: "0.7rem",
             display: "inline-block"
           }}
@@ -146,7 +183,7 @@ export default function Navbar() {
 
         {/* Brand */}
         <div style={{ fontWeight: "bold", fontSize: "1.3rem", flex: "1 1 auto", minWidth: 0 }}>
-          <Link to="/" style={{ textDecoration: "none", color: darkMode ? "#fff" : "#111" }}>
+          <Link to="/" style={{ textDecoration: "none", color: colorVars.primaryDark }}>
             FitSpot
           </Link>
         </div>
@@ -170,7 +207,7 @@ export default function Navbar() {
                 key={to}
                 to={to}
                 style={{
-                  color: darkMode ? "#FFD700" : "#222",
+                  color: colorVars.primaryDark,
                   textDecoration: "none",
                   fontWeight: 600,
                   fontSize: "1rem"
@@ -185,8 +222,8 @@ export default function Navbar() {
           <Link
             to="/book-session"
             style={{
-              background: "#2563eb",
-              color: "#fff",
+              background: colorVars.primary,
+              color: colorVars.fabTxt,
               borderRadius: "50%",
               width: 45,
               height: 45,
@@ -195,10 +232,10 @@ export default function Navbar() {
               justifyContent: "center",
               fontSize: "1.8rem",
               margin: "0 0.8rem",
-              boxShadow: "0 2px 8px #2563eb55",
+              boxShadow: `0 2px 8px ${colorVars.primary}55`,
               textDecoration: "none",
               fontWeight: 700,
-              border: "2px solid #fff",
+              border: `2px solid ${colorVars.navBg}`,
               transition: "background 0.2s",
             }}
             className="book-fab"
@@ -215,7 +252,7 @@ export default function Navbar() {
                 border: "none",
                 cursor: "pointer",
                 fontSize: "1.5rem",
-                color: darkMode ? "#fff" : "#333",
+                color: colorVars.primaryDark,
                 position: "relative",
                 minWidth: "44px",
                 minHeight: "44px",
@@ -227,20 +264,20 @@ export default function Navbar() {
               }}
               tabIndex={0}
             >
-              🔔
+              <span role="img" aria-label="Notifications">🔔</span>
               {notifList.length > 0 && (
                 <span
                   style={{
                     position: "absolute",
                     top: "-5px",
                     right: "-8px",
-                    background: "#FF5252",
+                    background: colorVars.accent,
                     color: "#fff",
                     borderRadius: "50%",
                     fontSize: "0.8rem",
                     padding: "2px 7px",
                     fontWeight: "bold",
-                    border: "2px solid #fff"
+                    border: `2px solid ${colorVars.navBg}`
                   }}
                   aria-label={`${notifList.length} unread notifications`}
                 >
@@ -254,9 +291,9 @@ export default function Navbar() {
                   position: "absolute",
                   right: 0,
                   top: "2.2rem",
-                  background: darkMode ? "#222" : "#fff",
-                  color: darkMode ? "#fff" : "#222",
-                  border: `1px solid ${darkMode ? "#444" : "#ccc"}`,
+                  background: colorVars.navBg,
+                  color: colorVars.text,
+                  border: `1px solid ${colorVars.border}`,
                   borderRadius: "8px",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
                   minWidth: "180px",
@@ -285,7 +322,7 @@ export default function Navbar() {
                   onClick={clearNotifications}
                   style={{
                     marginTop: "0.7rem",
-                    background: "#FF5252",
+                    background: colorVars.accent,
                     color: "#fff",
                     border: "none",
                     borderRadius: "4px",
@@ -310,7 +347,7 @@ export default function Navbar() {
               border: "none",
               cursor: "pointer",
               fontSize: "1.7rem",
-              color: darkMode ? "#FFD700" : "#111",
+              color: colorVars.primaryDark,
               minWidth: "44px",
               minHeight: "44px"
             }}
@@ -332,7 +369,7 @@ export default function Navbar() {
                 cursor: "pointer",
                 fontSize: "1.7rem",
                 marginLeft: "0.1rem",
-                color: darkMode ? "#FFD700" : "#111",
+                color: colorVars.primaryDark,
                 borderRadius: "50%",
                 overflow: "hidden",
                 minWidth: "44px",
@@ -351,7 +388,7 @@ export default function Navbar() {
                         height: 38,
                         borderRadius: "50%",
                         objectFit: "cover",
-                        border: darkMode ? "2px solid #FFD700" : "2px solid #2563eb"
+                        border: `2px solid ${colorVars.primary}`
                       }}
                     />
                   )
@@ -366,9 +403,9 @@ export default function Navbar() {
                   position: "absolute",
                   right: 0,
                   top: "2.5rem",
-                  background: darkMode ? "#222" : "#fff",
-                  color: darkMode ? "#FFD700" : "#222",
-                  border: `1px solid ${darkMode ? "#444" : "#ccc"}`,
+                  background: colorVars.navBg,
+                  color: colorVars.primaryDark,
+                  border: `1px solid ${colorVars.border}`,
                   borderRadius: "7px",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                   minWidth: "170px",
@@ -377,16 +414,16 @@ export default function Navbar() {
                 aria-label="Profile dropdown"
                 tabIndex={0}
               >
-                <div style={{ padding: "0.7rem 1rem", color: darkMode ? "#FFD700" : "#333", fontWeight: 500, fontSize: "1rem" }}>
+                <div style={{ padding: "0.7rem 1rem", color: colorVars.primaryDark, fontWeight: 500, fontSize: "1rem" }}>
                   {user ? `Hi, ${user.email}!` : "Welcome!"}
                 </div>
-                <Link to="/profile" style={{ display: "block", padding: "0.6rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none", fontSize: "1rem" }}>
+                <Link to="/profile" style={{ display: "block", padding: "0.6rem 1rem", color: colorVars.text, textDecoration: "none", fontSize: "1rem" }}>
                   Account
                 </Link>
-                <Link to="/my-codes" style={{ display: "block", padding: "0.6rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none", fontSize: "1rem" }}>
+                <Link to="/my-codes" style={{ display: "block", padding: "0.6rem 1rem", color: colorVars.text, textDecoration: "none", fontSize: "1rem" }}>
                   Rewards
                 </Link>
-                <Link to="/about" style={{ display: "block", padding: "0.6rem 1rem", color: darkMode ? "#fff" : "#333", textDecoration: "none", fontSize: "1rem" }}>
+                <Link to="/about" style={{ display: "block", padding: "0.6rem 1rem", color: colorVars.text, textDecoration: "none", fontSize: "1rem" }}>
                   About
                 </Link>
                 {user ? (
@@ -399,7 +436,7 @@ export default function Navbar() {
                       padding: "0.6rem 1rem",
                       background: "none",
                       border: "none",
-                      color: "#d32f2f",
+                      color: "var(--color-danger, #ff5252)",
                       cursor: "pointer",
                       fontSize: "1rem"
                     }}
@@ -417,7 +454,7 @@ export default function Navbar() {
                       padding: "0.6rem 1rem",
                       background: "none",
                       border: "none",
-                      color: darkMode ? "#FFD700" : "#333",
+                      color: colorVars.primaryDark,
                       cursor: "pointer",
                       fontSize: "1rem"
                     }}
@@ -438,7 +475,7 @@ export default function Navbar() {
           maxHeight: menuOpen ? "400px" : "0",
           overflow: "hidden",
           transition: "max-height 0.4s cubic-bezier(.55,0,.1,1)",
-          background: darkMode ? "#222" : "#f8f8f8",
+          background: colorVars.navBg,
           marginTop: "0.7rem",
           borderRadius: "8px",
         }}
@@ -451,10 +488,10 @@ export default function Navbar() {
             style={{
               display: "block",
               padding: "1rem",
-              color: darkMode ? "#FFD700" : "#222",
+              color: colorVars.primaryDark,
               textDecoration: "none",
               fontWeight: 600,
-              borderBottom: "1px solid #ddd"
+              borderBottom: `1px solid ${colorVars.border}`
             }}
             onClick={() => setMenuOpen(false)}
           >
@@ -468,7 +505,7 @@ export default function Navbar() {
             display: "block",
             margin: "1rem auto",
             width: "80%",
-            background: "#2563eb",
+            background: colorVars.primary,
             color: "#fff",
             borderRadius: "8px",
             padding: "0.7rem",
