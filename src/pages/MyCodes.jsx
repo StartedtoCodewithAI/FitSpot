@@ -69,6 +69,15 @@ export default function MyCodes() {
     }
   }, [copiedCode]);
 
+  // Show a friendly message if not logged in
+  if (!userName) {
+    return (
+      <div style={{ textAlign: "center", marginTop: 40 }}>
+        Please log in to see your codes.
+      </div>
+    );
+  }
+
   function handleDelete(code) {
     if (window.confirm("Delete this code?")) {
       const updated = codes.filter(b => b.code !== code);
