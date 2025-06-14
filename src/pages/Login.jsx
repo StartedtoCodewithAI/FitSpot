@@ -30,12 +30,21 @@ export default function Login() {
 
     if (error) {
       setMessage(error.message);
-    } else {
-      setMessage('Login successful! Redirecting...');
-      setTimeout(() => {
-        navigate('/mycodes'); // redirect to a relevant page after login
-      }, 900);
+      setLoading(false);
+      return;
     }
+
+    // Fetch user details and save to localStorage for use in MyCodes
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+
+    setMessage('Login successful! Redirecting...');
+    setTimeout(() => {
+      navigate('/mycodes'); // redirect to codes page after login
+    }, 900);
+
     setLoading(false);
   };
 
