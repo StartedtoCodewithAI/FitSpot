@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+// src/App.jsx
+import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -10,21 +11,8 @@ import About from './pages/About';
 import MyCodes from './pages/MyCodes';
 import PrivateRoute from './components/PrivateRoute';
 import BookSession from './pages/BookSession';
-import { supabase } from './supabaseClient';
 
 export default function App() {
-  useEffect(() => {
-    async function testSupabase() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Supabase connection failed:', error);
-      } else {
-        console.log('Supabase is connected! Session data:', data);
-      }
-    }
-    testSupabase();
-  }, []);
-
   return (
     <Router>
       <style>{`
@@ -47,7 +35,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        {/* If you want to totally block signup, REMOVE the next line */}
+        {/* Remove or keep Signup/Login/About as needed for your app */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
