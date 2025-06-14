@@ -14,9 +14,9 @@ export default function Signup() {
     setLoading(true);
     setMessage('');
 
-    // Adjust this restriction as desired, or remove for production
+    // Basic validation (English full name)
     if (
-      !/^[A-Za-z ]+$/.test(fullName.trim()) || // Ensure English letters only
+      !/^[A-Za-z ]+$/.test(fullName.trim()) ||
       !fullName.trim() ||
       !email.trim() ||
       !password
@@ -26,7 +26,8 @@ export default function Signup() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
+    // Create user in Supabase Auth
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -37,11 +38,22 @@ export default function Signup() {
       },
     });
 
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setMessage('Signup successful! Please check your email to confirm your account.');
+    if (signUpError) {
+      setMessage(signUpError.message);
+      setLoading(false);
+      return;
     }
+
+    // Insert into profiles table (you can ignore result/errors for now)
+    await supabase.from('profiles').insert([
+      {
+        email: email.trim(),
+        username: username.trim() || null,
+        full_name: fullName.trim(),
+      },
+    ]);
+
+    setMessage('Signup successful! Please check your email to confirm your account.');
     setLoading(false);
   };
 
