@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function Signup() {
+  const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,28 +14,33 @@ export default function Signup() {
     setLoading(true);
     setMessage('');
 
-    // Restrict signup to only your test user for now
+    // Adjust this restriction as desired, or remove for production
     if (
-      (username !== 'fitspotuser' && email !== 'a.nikolopoulos1@hotmail.com') ||
-      password !== '6981076267aA!'
+      !/^[A-Za-z ]+$/.test(fullName.trim()) || // Ensure English letters only
+      !fullName.trim() ||
+      !email.trim() ||
+      !password
     ) {
-      setMessage('Signup is restricted. Contact admin.');
+      setMessage('Please fill all required fields. Full name must be in English.');
       setLoading(false);
       return;
     }
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
-        data: { username },
+        data: {
+          fullName: fullName.trim(),
+          ...(username.trim() && { username: username.trim() }),
+        },
       },
     });
 
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage('Signup successful! Check your email for confirmation.');
+      setMessage('Signup successful! Please check your email to confirm your account.');
     }
     setLoading(false);
   };
@@ -45,10 +51,16 @@ export default function Signup() {
       <form onSubmit={handleSignup}>
         <input
           type="text"
-          placeholder="Username"
+          placeholder="Full Name (English only)"
+          value={fullName}
+          onChange={e => setFullName(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Username (optional)"
           value={username}
           onChange={e => setUsername(e.target.value)}
-          required
         />
         <input
           type="email"
