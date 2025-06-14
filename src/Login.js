@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { supabase } from './supabaseClient' // Adjust path if needed
+import { supabase } from './supabaseClient'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -11,14 +11,29 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setMessage('')
-    const { error } = await supabase.auth.signInWithPassword({
+
+    // Only allow login for your specific user
+    if (
+      email !== 'a.nikolopoulos1@hotmail.com' ||
+      password !== '6981076267aA!'
+    ) {
+      setMessage('Invalid email or password.')
+      setLoading(false)
+      return
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
+
     if (error) {
       setMessage(error.message)
+    } else if (!data || !data.session || !data.user) {
+      setMessage('Login failed: No user/session returned.')
     } else {
       setMessage('Logged in!')
+      // Optionally redirect here
     }
     setLoading(false)
   }
@@ -30,14 +45,14 @@ export default function Login() {
         type="email"
         placeholder="Email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={e => setEmail(e.target.value)}
         required
       />
       <input
         type="password"
         placeholder="Password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={e => setPassword(e.target.value)}
         required
       />
       <button type="submit" disabled={loading}>
