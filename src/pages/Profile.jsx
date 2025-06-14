@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient"; // <-- Make sure this is the correct path
 
 // --- SVG Avatar Component ---
 function AvatarSVG({ hair, eyes, nose, body, color }) {
@@ -97,28 +98,63 @@ export default function Profile() {
   const [profile, setProfile] = useState(defaultProfile);
   const [editMode, setEditMode] = useState(false);
   const [progressInput, setProgressInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [authUser, setAuthUser] = useState(null);
 
+  // Fetch user from Supabase Auth and, if present, from "profiles" table
   useEffect(() => {
-    const stored = localStorage.getItem("fitspot_profile_v2");
-    if (stored) setProfile(JSON.parse(stored));
+    async function getUserProfile() {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      setAuthUser(user);
+      if (!user) {
+        setProfile(defaultProfile);
+        setLoading(false);
+        return;
+      }
+      // If you have a "profiles" table, fetch extra profile data:
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      if (data) {
+        setProfile(prev => ({
+          ...prev,
+          ...data,
+          email: user.email, // Always trust Auth for email
+        }));
+      } else {
+        setProfile(prev => ({
+          ...prev,
+          name: user.user_metadata?.full_name || "",
+          email: user.email,
+        }));
+      }
+      setLoading(false);
+    }
+    getUserProfile();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("fitspot_profile_v2", JSON.stringify(profile));
-  }, [profile]);
+  // Save profile changes to Supabase on Save (if you have a "profiles" table)
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setEditMode(false);
+    if (!authUser) return;
+    // Save to Supabase "profiles" table:
+    await supabase.from("profiles").upsert({
+      id: authUser.id,
+      ...profile,
+      email: authUser.email // Always trust Auth for email
+    });
+  };
 
-  // --- Profile editing
   const handleChange = e => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = e => {
-    e.preventDefault();
-    setEditMode(false);
-  };
-
-  // --- Progress tracker actions
+  // Progress tracker logic remains the same
   const targetTotalNum = Number(profile.targetTotal) > 0 ? Number(profile.targetTotal) : 0;
   const pct = targetTotalNum
     ? Math.min(100, Math.round((profile.currentProgress / targetTotalNum) * 100))
@@ -140,10 +176,7 @@ export default function Profile() {
   };
 
   const handleProgressReset = () => {
-    if (
-      // eslint-disable-next-line no-restricted-globals
-      window.confirm("Reset progress for this target?")
-    ) {
+    if (window.confirm("Reset progress for this target?")) {
       setProfile(prev => ({
         ...prev,
         currentProgress: 0,
@@ -151,6 +184,9 @@ export default function Profile() {
       }));
     }
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (!authUser) return <div>Please log in to view your profile.</div>;
 
   return (
     <div style={{
@@ -308,9 +344,8 @@ export default function Profile() {
             <input
               name="email"
               value={profile.email}
-              onChange={handleChange}
-              type="email"
-              style={{ width: "100%", padding: 8, borderRadius: 7, border: "1px solid #cbd5e1", marginTop: 4 }}
+              disabled
+              style={{ width: "100%", padding: 8, borderRadius: 7, border: "1px solid #cbd5e1", marginTop: 4, background: "#f1f5f9" }}
               required
             />
           </div>
