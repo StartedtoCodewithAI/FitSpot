@@ -1,26 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import BookingSuccessModal from '../components/BookingSuccessModal';
 
 export default function BookSession() {
   const { gymId } = useParams();
   const location = useLocation();
 
-  // Try to get these from state if passed from previous page
   const initialGymName = location.state?.gymName || "";
   const initialTeamName = location.state?.teamName || "";
 
   const [gymName, setGymName] = useState(initialGymName);
   const [teamName, setTeamName] = useState(initialTeamName);
 
-  // You could fetch real gym data here if not present
   useEffect(() => {
     if (!gymName && gymId) {
-      // Simulate fetch. Replace with your real fetch logic!
-      // e.g., fetch(`/api/gyms/${gymId}`).then(...)
       setTimeout(() => {
         setGymName("Demo Gym " + gymId);
         setTeamName("Default Team");
-      }, 400); // Simulate loading
+      }, 400);
     }
   }, [gymId, gymName]);
 
@@ -28,8 +25,8 @@ export default function BookSession() {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [oneTimeCode, setOneTimeCode] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // Handle loading if fetching gym info
   if (!gymName) {
     return (
       <div style={{
@@ -45,7 +42,9 @@ export default function BookSession() {
 
   const handlePayment = () => {
     setTimeout(() => {
-      setOneTimeCode(Math.random().toString(36).slice(2, 8).toUpperCase());
+      const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+      setOneTimeCode(code);
+      setModalOpen(true);
       setStep(4);
     }, 1200);
   };
@@ -124,21 +123,19 @@ export default function BookSession() {
       )}
       {step === 4 && (
         <>
-          <h4>Success!</h4>
-          <div>Your one-time entry code:</div>
-          <div style={{
-            fontWeight: "bold",
-            fontSize: 36,
-            margin: "20px 0",
-            background: "#E6E0F8",
-            color: "#6C47FF",
-            borderRadius: 10,
-            padding: "10px 20px",
-            letterSpacing: 2
-          }}>{oneTimeCode}</div>
-          <div>Show this code at the gym.<br />We’ll handle the rest!</div>
+          <h4>Booking Complete!</h4>
+          <div>Your code will also be shown in a popup.</div>
         </>
       )}
+      <BookingSuccessModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        bookingCode={oneTimeCode}
+        gymName={gymName}
+        date={date}
+        time={time}
+        message="You're all set! Show this code at reception."
+      />
     </div>
   );
 }
