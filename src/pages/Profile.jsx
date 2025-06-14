@@ -1,5 +1,7 @@
+// src/pages/Profile.jsx
+
 import React, { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient"; // <-- Make sure this is the correct path
+import { supabase } from "../supabaseClient";
 
 // --- SVG Avatar Component ---
 function AvatarSVG({ hair, eyes, nose, body, color }) {
@@ -71,7 +73,6 @@ const defaultProfile = {
   body: "average",
   color: "#4B3E2A",
   goals: "",
-  // Progress tracker fields
   targetLabel: "",
   targetTotal: "",
   currentProgress: 0,
@@ -101,7 +102,6 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
 
-  // Fetch user from Supabase Auth and, if present, from "profiles" table
   useEffect(() => {
     async function getUserProfile() {
       setLoading(true);
@@ -112,7 +112,6 @@ export default function Profile() {
         setLoading(false);
         return;
       }
-      // If you have a "profiles" table, fetch extra profile data:
       const { data } = await supabase
         .from("profiles")
         .select("*")
@@ -122,7 +121,7 @@ export default function Profile() {
         setProfile(prev => ({
           ...prev,
           ...data,
-          email: user.email, // Always trust Auth for email
+          email: user.email,
         }));
       } else {
         setProfile(prev => ({
@@ -136,16 +135,14 @@ export default function Profile() {
     getUserProfile();
   }, []);
 
-  // Save profile changes to Supabase on Save (if you have a "profiles" table)
   const handleSave = async (e) => {
     e.preventDefault();
     setEditMode(false);
     if (!authUser) return;
-    // Save to Supabase "profiles" table:
     await supabase.from("profiles").upsert({
       id: authUser.id,
       ...profile,
-      email: authUser.email // Always trust Auth for email
+      email: authUser.email
     });
   };
 
@@ -154,7 +151,6 @@ export default function Profile() {
     setProfile(prev => ({ ...prev, [name]: value }));
   };
 
-  // Progress tracker logic remains the same
   const targetTotalNum = Number(profile.targetTotal) > 0 ? Number(profile.targetTotal) : 0;
   const pct = targetTotalNum
     ? Math.min(100, Math.round((profile.currentProgress / targetTotalNum) * 100))
@@ -189,7 +185,7 @@ export default function Profile() {
   if (!authUser) return <div>Please log in to view your profile.</div>;
 
   return (
-    <div style={{
+    <div className="profile-container" style={{
       maxWidth: 540,
       margin: "3.5rem auto",
       background: "#fff",
@@ -463,6 +459,35 @@ export default function Profile() {
           </div>
         </form>
       )}
+      <style>
+        {`
+        @media (max-width: 480px) {
+          .profile-container {
+            padding: 1rem 0.5rem !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+          .profile-container input,
+          .profile-container textarea,
+          .profile-container select {
+            font-size: 1.1rem;
+            padding: 10px;
+          }
+          .profile-container h1 {
+            font-size: 1.4rem !important;
+          }
+          .profile-container button {
+            font-size: 1.08rem !important;
+            padding: 0.8rem 1.2rem;
+          }
+          .profile-container svg {
+            width: 120px !important;
+            height: 150px !important;
+          }
+        }
+        html, body { max-width: 100vw; overflow-x: hidden; }
+        `}
+      </style>
     </div>
   );
 }
