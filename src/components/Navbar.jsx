@@ -7,7 +7,6 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [search, setSearch] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [notifList, setNotifList] = useState(notifications);
   const [user, setUser] = useState(null);
@@ -75,12 +74,6 @@ export default function Navbar() {
     setProfileOpen(false);
     setNotifOpen(false);
   }, [location.pathname]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    alert(`Searching for: ${search}`);
-    setSearch("");
-  };
 
   const handleLogin = async () => {
     const email = prompt("Enter your email:");
@@ -165,47 +158,6 @@ export default function Navbar() {
             gap: "0.2rem"
           }}
         >
-          {/* Search Bar */}
-          <form
-            onSubmit={handleSearch}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              background: darkMode ? "#333" : "#fff",
-              borderRadius: "4px",
-              padding: "0.2rem 0.4rem",
-            }}
-          >
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search"
-              aria-label="Search"
-              style={{
-                border: "none",
-                outline: "none",
-                background: "transparent",
-                color: darkMode ? "#FFD700" : "#111",
-                fontSize: "1rem",
-                minWidth: "60px"
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "1.2rem",
-                color: darkMode ? "#FFD700" : "#333"
-              }}
-              aria-label="Submit search"
-            >
-              🔍
-            </button>
-          </form>
-
           {/* Notifications */}
           <div style={{ position: "relative" }} ref={notifRef}>
             <button
