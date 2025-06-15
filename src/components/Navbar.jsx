@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
 import ThemeToggle from "./ThemeToggle";
 
+// ---- CONFIG ----
 const NAV_LABELS = {
   brand: "FitSpot",
   gyms: "Gyms",
@@ -24,19 +25,21 @@ const USER_LINKS = [
   { to: "/my-codes", label: NAV_LABELS.myCodes },
 ];
 
+// ---- COMPONENT ----
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Lock background scroll when menu is open
+  // Lock body scroll when menu is open
   useEffect(() => {
     if (menuOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
+  // Auth state
   useEffect(() => {
     supabase.auth.getSession().then(({ data: sessionData }) => {
       setUser(sessionData?.session?.user || null);
@@ -47,14 +50,7 @@ export default function Navbar() {
     return () => listener?.unsubscribe?.();
   }, []);
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    setUser(null);
-    setMenuOpen(false);
-    navigate("/login");
-  }
-
-  // Close menu on navigation (route change)
+  // Close menu on navigation
   useEffect(() => {
     setMenuOpen(false);
   }, [location]);
@@ -69,7 +65,7 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [menuOpen]);
 
-  // Overlay click (outside nav) closes menu
+  // Click outside overlay closes menu
   const overlayRef = useCallback(node => {
     if (!node) return;
     function handleClick(e) {
@@ -79,13 +75,32 @@ export default function Navbar() {
     return () => node.removeEventListener("mousedown", handleClick);
   }, []);
 
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setMenuOpen(false);
+    navigate("/login");
+  }
+
+  // User Initials (for avatar placeholder)
+  function getInitials(user) {
+    if (!user) return "";
+    if (user.user_metadata?.full_name) {
+      return user.user_metadata.full_name.split(" ").map(s=>s[0]).join("").slice(0,2).toUpperCase();
+    }
+    if (user.email) {
+      return user.email.slice(0,2).toUpperCase();
+    }
+    return "U";
+  }
+
   return (
     <>
       <style>{`
         .nav-root {
           width: 100%;
           background: #fff;
-          box-shadow: 0 2px 8px rgba(24, 40, 68, 0.08);
+          box-shadow: 0 2px 8px rgba(24,40,68,0.08);
           border-bottom: 1px solid #e5e8ef;
           position: sticky;
           top: 0;
@@ -140,6 +155,17 @@ export default function Navbar() {
           background: #f3f6ff;
           color: #2563eb;
           box-shadow: 0 1px 4px #2563eb15;
+        }
+        .navbar-link.active::after {
+          content: '';
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #2563eb;
         }
         .navbar-link-disabled {
           pointer-events: none;
@@ -217,6 +243,20 @@ export default function Navbar() {
           background: #174bbd;
           color: #fff;
           box-shadow: 0 2px 12px #2563eb33;
+        }
+        .nav-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: #2563eb22;
+          color: #2563eb;
+          font-size: 1.15rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid #2563eb55;
+          margin-left: 0.6rem;
         }
         /* Hamburger menu overlay */
         .navbar-overlay {
@@ -413,6 +453,7 @@ export default function Navbar() {
                 <button className="nav-btn" onClick={handleLogout}>
                   {NAV_LABELS.logout}
                 </button>
+                <span className="nav-avatar" title={user.email}>{getInitials(user)}</span>
               </>
             )}
           </div>
@@ -485,6 +526,9 @@ export default function Navbar() {
                   >
                     {NAV_LABELS.logout}
                   </button>
+                )}
+                {user && (
+                  <span className="nav-avatar" style={{ marginTop: 16, marginLeft: 0 }}>{getInitials(user)}</span>
                 )}
               </div>
             </div>
