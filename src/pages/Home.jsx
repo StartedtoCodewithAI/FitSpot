@@ -8,12 +8,10 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Supabase login state effect
   useEffect(() => {
     supabase.auth.getSession().then(({ data: sessionData }) => {
       setUser(sessionData?.session?.user || null);
     });
-
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
     });
@@ -40,16 +38,17 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
-        html, body, #root, .page-wrapper {
+        html, body, #root {
+          width: 100vw !important;
+          max-width: 100vw !important;
           overflow-x: hidden !important;
-          width: 100%;
-          max-width: 100vw;
+          position: relative;
+          box-sizing: border-box;
+        }
+        * {
           box-sizing: border-box;
         }
         body {
-          font-family: 'Montserrat', Arial, sans-serif;
-        }
-        .page-wrapper, .container, .hero, .features, .callToAction, footer {
           font-family: 'Montserrat', Arial, sans-serif;
         }
         .page-wrapper {
@@ -57,6 +56,7 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
+          width: 100%;
           overflow-x: hidden;
         }
         .container {
@@ -65,7 +65,6 @@ export default function Home() {
           padding: 2rem 1rem 0 1rem;
           flex: 1;
           width: 100%;
-          box-sizing: border-box;
           overflow-x: hidden;
         }
         .hero {
@@ -107,7 +106,6 @@ export default function Home() {
           font-weight: 600;
           transition: background 0.2s, box-shadow 0.2s;
           box-shadow: 0 4px 10px rgba(0,86,179,0.18);
-          font-family: 'Montserrat', Arial, sans-serif;
         }
         .cta:hover {
           background: #003d80;
@@ -126,7 +124,6 @@ export default function Home() {
           margin: 0 auto;
           max-width: 900px;
           width: 100%;
-          box-sizing: border-box;
           overflow-x: hidden;
         }
         .feature-card {
@@ -141,7 +138,6 @@ export default function Home() {
           margin-bottom: 1.2rem;
           transition: box-shadow .14s, transform .13s;
           min-width: 0;
-          box-sizing: border-box;
           overflow-x: hidden;
         }
         .feature-card:hover {
@@ -155,7 +151,6 @@ export default function Home() {
           border-radius: 15px;
           text-align: center;
           width: 100%;
-          display: block;
         }
         .callToAction .center-btn-row {
           width: 100%;
@@ -176,7 +171,6 @@ export default function Home() {
           background: #fff;
           flex-shrink: 0;
         }
-        /* Modal buttons same width and centered */
         .modal-content .cta {
           margin: 0.7rem 0;
           width: 220px;
@@ -187,11 +181,6 @@ export default function Home() {
           margin-right: auto;
         }
         @media (max-width: 600px) {
-          .hero {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-          }
           .hero-logo {
             margin-bottom: 1rem;
             width: 90%;
@@ -206,14 +195,12 @@ export default function Home() {
             gap: 1rem;
             max-width: 100%;
             width: 100%;
-            box-sizing: border-box;
             overflow-x: hidden;
           }
           .feature-card {
             max-width: 100%;
             min-width: 0;
             width: 100%;
-            box-sizing: border-box;
             overflow-x: hidden;
           }
         }
