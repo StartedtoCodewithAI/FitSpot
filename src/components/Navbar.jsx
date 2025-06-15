@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
-import ThemeToggle from "./ThemeToggle"; // <-- import the toggle!
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,119 +22,121 @@ export default function Navbar() {
   async function handleLogout() {
     await supabase.auth.signOut();
     setUser(null);
+    setMenuOpen(false);
     navigate("/login");
   }
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    const closeMenu = () => setMenuOpen(false);
+    window.addEventListener("hashchange", closeMenu);
+    return () => window.removeEventListener("hashchange", closeMenu);
+  }, []);
+
   return (
-    <nav
-      style={{
-        background: "var(--color-bg-light)",
-        borderBottom: "1px solid var(--color-border)",
-        padding: "0.7rem 2.2rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        position: "sticky",
-        top: 0,
-        zIndex: 1000
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-        <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img src={fitspotLogo} alt="FitSpot Logo" style={{ height: 38, marginRight: 12, borderRadius: 8 }} />
-          <span style={{
-            color: "var(--color-primary)",
-            fontWeight: 800,
-            fontSize: "1.25rem",
-            letterSpacing: ".5px"
-          }}>
-            FitSpot
-          </span>
-        </Link>
-        <Link to="/gyms" style={{
-          color: "var(--color-primary-dark)",
-          textDecoration: "none",
-          marginLeft: 24,
-          fontWeight: 600
-        }}>
-          Gyms
-        </Link>
-        <Link to="/about" style={{
-          color: "var(--color-primary-dark)",
-          textDecoration: "none",
-          marginLeft: 24,
-          fontWeight: 600
-        }}>
-          About
-        </Link>
-        {user && (
-          <>
-            <Link to="/profile" style={{
-              color: "var(--color-primary-dark)",
-              textDecoration: "none",
-              marginLeft: 24,
-              fontWeight: 600
-            }}>
-              Profile
-            </Link>
-            <Link to="/my-codes" style={{
-              color: "var(--color-primary-dark)",
-              textDecoration: "none",
-              marginLeft: 24,
-              fontWeight: 600
-            }}>
-              My Codes
-            </Link>
-          </>
-        )}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-        <ThemeToggle /> {/* <-- add the theme toggle here */}
-        {!user ? (
-          <>
-            <Link
-              to="/login"
+    <nav className="nav-root">
+      <div className="nav-inner">
+        <div className="nav-brand">
+          <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+            <img
+              src={fitspotLogo}
+              alt="FitSpot Logo"
+              style={{ height: 38, marginRight: 12, borderRadius: 8 }}
+            />
+            <span
               style={{
                 color: "var(--color-primary)",
-                textDecoration: "none",
-                fontWeight: 600,
-                marginRight: 18
+                fontWeight: 800,
+                fontSize: "1.25rem",
+                letterSpacing: ".5px"
               }}
             >
-              Login
-            </Link>
-            <Link
-              to="/signup"
-              style={{
-                background: "var(--color-primary)",
-                color: "#fff",
-                borderRadius: 6,
-                padding: "0.5rem 1.2rem",
-                fontWeight: 600,
-                textDecoration: "none"
-              }}
-            >
-              Sign Up
-            </Link>
-          </>
-        ) : (
-          <button
-            onClick={handleLogout}
-            style={{
-              background: "var(--color-text-dark)",
-              color: "var(--color-danger)",
-              border: "none",
-              borderRadius: 7,
-              padding: "0.48rem 1.2rem",
-              fontWeight: 600,
-              fontSize: ".98rem",
-              cursor: "pointer"
-            }}
-          >
-            Logout
-          </button>
-        )}
+              FitSpot
+            </span>
+          </Link>
+        </div>
+
+        {/* Hamburger for mobile */}
+        <button
+          className="navbar-hamburger"
+          aria-label="Menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? "✖" : "☰"}
+        </button>
+
+        {/* Desktop links */}
+        <div className="navbar-links-desktop">
+          <Link to="/gyms">Gyms</Link>
+          <Link to="/about">About</Link>
+          {user && (
+            <>
+              <Link to="/profile">Profile</Link>
+              <Link to="/my-codes">My Codes</Link>
+            </>
+          )}
+        </div>
+
+        {/* Right icons (Theme + Auth) */}
+        <div className="nav-icons">
+          <ThemeToggle />
+          {!user ? (
+            <>
+              <Link to="/login" className="nav-profile-login">
+                Login
+              </Link>
+              <Link to="/signup" className="nav-fab">
+                Sign Up
+              </Link>
+            </>
+          ) : (
+            <button className="nav-profile-logout" onClick={handleLogout}>
+              Logout
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <div className="navbar-links-mobile">
+          <Link to="/gyms" onClick={() => setMenuOpen(false)}>
+            Gyms
+          </Link>
+          <Link to="/about" onClick={() => setMenuOpen(false)}>
+            About
+          </Link>
+          {user && (
+            <>
+              <Link to="/profile" onClick={() => setMenuOpen(false)}>
+                Profile
+              </Link>
+              <Link to="/my-codes" onClick={() => setMenuOpen(false)}>
+                My Codes
+              </Link>
+            </>
+          )}
+          {!user ? (
+            <>
+              <Link to="/login" onClick={() => setMenuOpen(false)} className="nav-profile-login">
+                Login
+              </Link>
+              <Link to="/signup" onClick={() => setMenuOpen(false)} className="nav-mobile-book">
+                Sign Up
+              </Link>
+            </>
+          ) : (
+            <button
+              className="nav-profile-logout"
+              style={{ width: "100%", textAlign: "left" }}
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
