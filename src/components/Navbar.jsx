@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
@@ -58,6 +58,26 @@ export default function Navbar() {
   useEffect(() => {
     setMenuOpen(false);
   }, [location]);
+
+  // Keyboard accessibility: close menu on Esc
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = e => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
+  // Overlay click (outside nav) closes menu
+  const overlayRef = useCallback(node => {
+    if (!node) return;
+    function handleClick(e) {
+      if (e.target === node) setMenuOpen(false);
+    }
+    node.addEventListener("mousedown", handleClick);
+    return () => node.removeEventListener("mousedown", handleClick);
+  }, []);
 
   return (
     <>
@@ -199,25 +219,37 @@ export default function Navbar() {
           box-shadow: 0 2px 12px #2563eb33;
         }
         /* Hamburger menu overlay */
-        .navbar-links-mobile {
+        .navbar-overlay {
           display: none;
         }
-        .navbar-links-mobile.open {
+        .navbar-overlay.open {
           display: flex;
-          flex-direction: column;
           position: fixed;
-          left: 0;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(255,255,255,0.97);
-          backdrop-filter: blur(2px);
+          inset: 0;
+          background: rgba(24,30,40,0.17);
           z-index: 3000;
-          padding: 2.5rem 1.2rem 2.5rem 1.2rem;
+          justify-content: center;
+          align-items: flex-start;
+          animation: overlayFadeIn .18s;
+        }
+        @keyframes overlayFadeIn {
+          from { opacity: 0;}
+          to { opacity: 1;}
+        }
+        .navbar-links-mobile {
+          background: #fff;
+          border-radius: 22px;
+          margin-top: 3.2rem;
+          box-shadow: 0 8px 40px #2224;
+          min-width: 90vw;
+          max-width: 400px;
+          width: 98vw;
+          padding: 2.1rem 1.5rem 2rem 1.5rem;
           box-sizing: border-box;
           overflow-y: auto;
           animation: fadeInNavMenu .18s;
-          box-shadow: 0 8px 40px #2223;
+          display: flex;
+          flex-direction: column;
         }
         @keyframes fadeInNavMenu {
           from { opacity: 0; transform: translateY(-18px);}
@@ -388,13 +420,12 @@ export default function Navbar() {
 
         {/* Hamburger menu overlay */}
         <div
-          className={`navbar-links-mobile${menuOpen ? " open" : ""}`}
-          id="mobile-nav"
-          aria-label="Mobile navigation"
+          className={`navbar-overlay${menuOpen ? " open" : ""}`}
+          ref={overlayRef}
           style={{ pointerEvents: menuOpen ? "auto" : "none" }}
         >
           {menuOpen && (
-            <>
+            <div className="navbar-links-mobile" id="mobile-nav" aria-label="Mobile navigation">
               <div className="nav-menu-header">
                 <div className="nav-menu-title">Menu</div>
                 <button
@@ -456,7 +487,7 @@ export default function Navbar() {
                   </button>
                 )}
               </div>
-            </>
+            </div>
           )}
         </div>
       </nav>
