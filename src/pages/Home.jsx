@@ -38,7 +38,6 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
-        /* --- BULLETPROOF ANTI-WIGGLE/OVERFLOW FIXES --- */
         html, body, #root,
         .page-wrapper,
         .container,
@@ -47,14 +46,13 @@ export default function Home() {
         footer,
         .modal-content {
           width: 100% !important;
-          max-width: 100vw !important;
           min-width: 0 !important;
           box-sizing: border-box !important;
           overflow-x: hidden !important;
+          max-width: none !important;
         }
         * {
           box-sizing: border-box;
-          outline: 1px solid red !important; /* REMOVE this line after debugging! */
         }
         body {
           font-family: 'Montserrat', Arial, sans-serif;
@@ -201,7 +199,6 @@ export default function Home() {
             width: 100%;
           }
         }
-        /* Prevent long content from overflowing */
         .feature-card, p, pre, code {
           word-break: break-word;
           overflow-wrap: break-word;
