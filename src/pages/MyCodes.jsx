@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "../supabaseClient"; // Make sure this import is correct
+import { supabase } from "../supabaseClient";
 import SearchBar from "../components/SearchBar";
 
 // Helper: format date to "YYYY-MM-DD"
@@ -26,24 +26,34 @@ export default function MyCodes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
   const [maxStreak, setMaxStreak] = useState(0);
   const [copiedCode, setCopiedCode] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalSession, setModalSession] = useState(null);
 
+  // Fetch codes from Supabase
   useEffect(() => {
     setLoading(true);
     async function fetchUserAndCodes() {
       try {
-        // Get Supabase user
-        const { data: { user } } = await supabase.auth.getUser();
-        setUserName(user?.email || user?.name || "");
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) throw new Error("User not found");
+        setUserId(user.id);
+        setUserName(user.email || user.name || "");
 
-        // Your localStorage code logic (keep as is)
-        const stored = JSON.parse(localStorage.getItem("fitspot_bookings") || "[]");
-        setCodes(stored);
+        // Fetch codes from Supabase (filtered to this user)
+        const { data, error } = await supabase
+          .from("codes")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("date", { ascending: true });
 
-        const sorted = stored
+        if (error) throw error;
+        setCodes(data);
+
+        // Streak logic
+        const sorted = (data || [])
           .filter(b => b.date)
           .sort((a, b) => new Date(a.date) - new Date(b.date));
         let streak = 1, maxStreakVal = 1;
@@ -59,13 +69,29 @@ export default function MyCodes() {
           }
         }
         setMaxStreak(maxStreakVal);
-      } catch {
-        setError("Failed to load codes.");
+      } catch (e) {
+        setError("Failed to load codes. " + e.message);
       }
       setLoading(false);
     }
     fetchUserAndCodes();
+    // eslint-disable-next-line
   }, []);
+
+  // Reload codes after update/delete
+  const refetchCodes = async () => {
+    setLoading(true);
+    setError("");
+    if (!userId) return;
+    const { data, error } = await supabase
+      .from("codes")
+      .select("*")
+      .eq("user_id", userId)
+      .order("date", { ascending: true });
+    if (error) setError("Failed to reload codes: " + error.message);
+    else setCodes(data);
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (copiedCode) {
@@ -74,7 +100,6 @@ export default function MyCodes() {
     }
   }, [copiedCode]);
 
-  // --- FIX: Show loading first, only check userName after loading is false
   if (loading) {
     return <div style={{textAlign:"center",marginTop:40}}>Loading...</div>;
   }
@@ -86,11 +111,17 @@ export default function MyCodes() {
     );
   }
 
-  function handleDelete(code) {
-    if (window.confirm("Delete this code?")) {
-      const updated = codes.filter(b => b.code !== code);
-      setCodes(updated);
-      localStorage.setItem("fitspot_bookings", JSON.stringify(updated));
+  async function handleDelete(code) {
+    if (!window.confirm("Delete this code?")) return;
+    const { error } = await supabase
+      .from("codes")
+      .delete()
+      .eq("code", code)
+      .eq("user_id", userId);
+    if (error) {
+      setError("Failed to delete code: " + error.message);
+    } else {
+      refetchCodes();
     }
   }
 
@@ -113,13 +144,18 @@ export default function MyCodes() {
     URL.revokeObjectURL(url);
   }
 
-  function handleMarkAsUsed(code) {
+  async function handleMarkAsUsed(code) {
     if (!window.confirm("Mark this session as used?")) return;
-    const updated = codes.map(b =>
-      b.code === code ? { ...b, used: true } : b
-    );
-    setCodes(updated);
-    localStorage.setItem("fitspot_bookings", JSON.stringify(updated));
+    const { error } = await supabase
+      .from("codes")
+      .update({ used: true })
+      .eq("code", code)
+      .eq("user_id", userId);
+    if (error) {
+      setError("Failed to mark code as used: " + error.message);
+    } else {
+      refetchCodes();
+    }
   }
 
   function openModal(session) {
