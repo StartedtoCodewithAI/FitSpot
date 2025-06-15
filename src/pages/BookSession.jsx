@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import BookingSuccessModal from '../components/BookingSuccessModal';
+import { supabase } from '../supabaseClient';
 
 export default function BookSession() {
   const { gymId } = useParams();
@@ -26,6 +27,7 @@ export default function BookSession() {
   const [time, setTime] = useState('');
   const [oneTimeCode, setOneTimeCode] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [error, setError] = useState("");
 
   if (!gymName) {
     return (
@@ -40,18 +42,60 @@ export default function BookSession() {
 
   const handleNext = () => setStep(step + 1);
 
-  const handlePayment = () => {
-    setTimeout(() => {
-      const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-      setOneTimeCode(code);
-      setModalOpen(true);
-      setStep(4);
-    }, 1200);
+  // Supabase code insert here!
+  const handlePayment = async () => {
+    setError("");
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+
+    // Get user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (!user || userError) {
+      setError("Not logged in! Please sign in to book a session.");
+      return;
+    }
+
+    // Prepare gym object if needed
+    // If your codes table expects a gym object, use this:
+    const gymObj = { name: gymName };
+
+    // Insert booking into Supabase
+    const { error: insertError } = await supabase
+      .from("codes")
+      .insert([{
+        user_id: user.id,
+        code,
+        gym: gymObj, // or gym: gymName, depending on your table's structure
+        date,
+        time,
+        used: false,
+        // team: teamName, // Uncomment if you have this field in your table
+      }]);
+
+    if (insertError) {
+      setError("Failed to save booking: " + insertError.message);
+      return;
+    }
+
+    setOneTimeCode(code);
+    setModalOpen(true);
+    setStep(4);
   };
 
   return (
     <div style={{ maxWidth: 500, margin: "40px auto", background: "#fff", borderRadius: 12, boxShadow: "0 2px 16px #6C47FF11", padding: 28 }}>
       <h2 style={{ color: "#6C47FF" }}>Book a Session</h2>
+      {error && (
+        <div style={{
+          background: "#fee2e2",
+          color: "#dc2626",
+          padding: "0.8rem",
+          borderRadius: 7,
+          marginBottom: 16,
+          textAlign: "center"
+        }}>
+          {error}
+        </div>
+      )}
       {step === 1 && (
         <>
           <div><b>Gym:</b> {gymName}</div>
