@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import BookingSuccessModal from '../components/BookingSuccessModal';
 import { supabase } from '../supabaseClient';
+import FSButton from "../components/FSButton";
 
 export default function BookSession() {
   const { gymId } = useParams();
@@ -29,7 +30,6 @@ export default function BookSession() {
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
 
-  // Debug: Show user info in console on load
   useEffect(() => {
     (async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -50,39 +50,30 @@ export default function BookSession() {
 
   const handleNext = () => setStep(step + 1);
 
-  // Supabase code insert here!
   const handlePayment = async () => {
     setError("");
     const code = Math.random().toString(36).slice(2, 8).toUpperCase();
 
-    // Get user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    console.log("User before insert:", user, userError);
-
     if (!user || userError) {
       setError("Not logged in! Please sign in to book a session.");
       return;
     }
 
-    // Prepare gym object if needed
     const gymObj = { name: gymName };
-
-    // Insert booking into Supabase
     const { error: insertError } = await supabase
       .from("codes")
       .insert([{
         user_id: user.id,
         code,
-        gym: gymObj, // Or gym: gymName, depending on your schema
+        gym: gymObj,
         date,
         time,
         used: false,
-        // team: teamName, // Uncomment if you have this field in your table
       }]);
 
     if (insertError) {
       setError("Failed to save booking: " + insertError.message);
-      console.error("Supabase Insert Error:", insertError);
       return;
     }
 
@@ -114,22 +105,17 @@ export default function BookSession() {
           <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ fontSize: 16, padding: 6, borderRadius: 5, border: "1px solid #6C47FF" }} />
           <label style={{ display: "block", marginTop: 12 }}>Choose Time:</label>
           <input type="time" value={time} onChange={e => setTime(e.target.value)} style={{ fontSize: 16, padding: 6, borderRadius: 5, border: "1px solid #6C47FF" }} />
-          <button
+          <FSButton
             disabled={!date || !time}
             onClick={handleNext}
             style={{
-              background: "#6C47FF",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "0.6rem 1.4rem",
               marginTop: 24,
               fontWeight: 600,
               fontSize: 17,
               cursor: (!date || !time) ? "not-allowed" : "pointer"
             }}>
             Next
-          </button>
+          </FSButton>
         </>
       )}
       {step === 2 && (
@@ -139,40 +125,30 @@ export default function BookSession() {
           <div>Team: <b>{teamName}</b></div>
           <div>Date: <b>{date}</b></div>
           <div>Time: <b>{time}</b></div>
-          <button
+          <FSButton
             onClick={handleNext}
             style={{
-              background: "#6C47FF",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "0.6rem 1.4rem",
               marginTop: 24,
               fontWeight: 600,
               fontSize: 17
             }}>
             Proceed to Payment
-          </button>
+          </FSButton>
         </>
       )}
       {step === 3 && (
         <>
           <h4>Payment</h4>
           <div style={{ marginBottom: 20 }}>Payment integration coming soon.<br />Click below to simulate payment.</div>
-          <button
+          <FSButton
             onClick={handlePayment}
             style={{
-              background: "#6C47FF",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "0.6rem 1.4rem",
               marginTop: 8,
               fontWeight: 600,
               fontSize: 17
             }}>
             Pay &amp; Generate Code
-          </button>
+          </FSButton>
         </>
       )}
       {step === 4 && (
