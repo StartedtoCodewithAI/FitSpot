@@ -38,9 +38,11 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
+        /* Bulletproof anti-overflow for all containers */
         html, body, #root {
-          width: 100vw !important;
+          width: 100% !important;
           max-width: 100vw !important;
+          min-width: 0 !important;
           overflow-x: hidden !important;
           position: relative;
           box-sizing: border-box;
@@ -57,7 +59,9 @@ export default function Home() {
           flex-direction: column;
           background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
           width: 100%;
+          max-width: 100vw;
           overflow-x: hidden;
+          box-sizing: border-box;
         }
         .container {
           max-width: 1200px;
@@ -65,7 +69,9 @@ export default function Home() {
           padding: 2rem 1rem 0 1rem;
           flex: 1;
           width: 100%;
+          max-width: 100vw;
           overflow-x: hidden;
+          box-sizing: border-box;
         }
         .hero {
           display: flex;
@@ -75,6 +81,7 @@ export default function Home() {
           margin-bottom: 3rem;
           text-align: center;
           width: 100%;
+          max-width: 100vw;
         }
         .hero-logo {
           width: 185px;
@@ -83,6 +90,7 @@ export default function Home() {
           object-fit: cover;
           background: #e0e7ef;
           max-width: 100%;
+          display: block;
         }
         .hero-text h1 {
           font-size: 2.5rem;
@@ -115,6 +123,7 @@ export default function Home() {
           width: 100%;
           margin: 0 auto 3rem auto;
           padding: 0;
+          max-width: 100vw;
         }
         .features-row {
           display: flex;
@@ -151,6 +160,7 @@ export default function Home() {
           border-radius: 15px;
           text-align: center;
           width: 100%;
+          max-width: 100vw;
         }
         .callToAction .center-btn-row {
           width: 100%;
@@ -170,6 +180,9 @@ export default function Home() {
           border-top: 1px solid #ddd;
           background: #fff;
           flex-shrink: 0;
+          width: 100%;
+          max-width: 100vw;
+          box-sizing: border-box;
         }
         .modal-content .cta {
           margin: 0.7rem 0;
@@ -203,6 +216,11 @@ export default function Home() {
             width: 100%;
             overflow-x: hidden;
           }
+        }
+        /* Prevent long content from overflowing */
+        .feature-card, p, pre, code {
+          word-break: break-word;
+          overflow-wrap: break-word;
         }
         .modal-backdrop {
           position: fixed;
