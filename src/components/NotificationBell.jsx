@@ -5,7 +5,13 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div style={{ position: "relative", display: "inline-block", zIndex: 6000 }}>
+    <div
+      style={{
+        position: "relative",
+        display: "inline-block",
+        zIndex: 9999, // highest
+      }}
+    >
       <button
         onClick={() => setOpen((o) => !o)}
         style={{
@@ -52,7 +58,7 @@ export default function NotificationBell() {
             borderRadius: 10,
             minWidth: 220,
             boxShadow: "0 4px 24px #0002",
-            zIndex: 6000, // Make this HIGH so it's always on top!
+            zIndex: 9999, // highest
             pointerEvents: "auto",
             padding: "0.7rem 0.5rem",
           }}
