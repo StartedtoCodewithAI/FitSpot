@@ -34,7 +34,7 @@ export default function Login() {
       return;
     }
 
-    // Fetch user details and save to localStorage for use in MyCodes
+    // Fetch user details and save to localStorage for use elsewhere if needed
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
@@ -42,7 +42,7 @@ export default function Login() {
 
     setMessage('Login successful! Redirecting...');
     setTimeout(() => {
-      navigate('/my-codes'); // redirect to codes page after login
+      navigate('/gyms'); // redirect to gyms page after login
     }, 900);
 
     setLoading(false);
