@@ -89,9 +89,8 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Right section: Hamburger, Theme, Auth, Avatar, Notifications */}
+        {/* Right section: Hamburger, Theme, Auth */}
         <div className="nav-icons">
-          {/* Hamburger for mobile */}
           <button
             className="navbar-hamburger"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
