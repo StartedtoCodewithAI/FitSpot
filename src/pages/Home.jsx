@@ -38,6 +38,7 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
+        /* FULL-BLEED PATCH */
         html, body, #root,
         .page-wrapper,
         .container,
@@ -45,11 +46,33 @@ export default function Home() {
         .callToAction,
         footer,
         .modal-content {
-          width: 100% !important;
-          min-width: 0 !important;
           box-sizing: border-box !important;
           overflow-x: hidden !important;
-          max-width: none !important;
+        }
+        .page-wrapper,
+        .callToAction,
+        footer,
+        section {
+          width: 100vw !important;
+          position: relative;
+          left: 50%;
+          right: 50%;
+          margin-left: -50vw;
+          margin-right: -50vw;
+        }
+        .container {
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 2rem 1rem 0 1rem;
+          box-sizing: border-box;
+        }
+        .callToAction {
+          max-width: 900px;
+          margin-left: auto;
+          margin-right: auto;
+          padding-left: 1rem;
+          padding-right: 1rem;
         }
         * {
           box-sizing: border-box;
@@ -62,12 +85,6 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
-        }
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 2rem 1rem 0 1rem;
-          flex: 1;
         }
         .hero {
           display: flex;
