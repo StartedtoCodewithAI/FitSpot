@@ -107,9 +107,10 @@ export default function Home() {
           width: 100%;
           margin: 0 auto 3rem auto;
           padding: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
+          /* REMOVE flex + align-items for correct centering */
+          /* display: flex;
+             flex-direction: column;
+             align-items: center; */
         }
         section.callToAction {
           margin-bottom: 3rem;
