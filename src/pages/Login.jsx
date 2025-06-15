@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import SearchBar from '../components/SearchBar';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -50,7 +50,7 @@ export default function Login() {
 
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", padding: "2.5rem 1rem" }}>
-      {/* Fancy Search Bar at the top, just like in other pages */}
+      {/* Search Bar at the top */}
       <div style={{ margin: "18px 0 18px 0", maxWidth: 420 }}>
         <SearchBar
           value={searchTerm}
@@ -68,12 +68,12 @@ export default function Login() {
         margin: "0 auto",
         maxWidth: 380
       }}>
-        <h2 style={{ 
-          textAlign: "center", 
-          fontSize: "2rem", 
-          fontWeight: 800, 
-          marginBottom: "1.6rem", 
-          color: "#2563eb" 
+        <h2 style={{
+          textAlign: "center",
+          fontSize: "2rem",
+          fontWeight: 800,
+          marginBottom: "1.6rem",
+          color: "#2563eb"
         }}>
           Log In
         </h2>
@@ -132,6 +132,11 @@ export default function Login() {
             {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
+        <div style={{ textAlign: "center", marginTop: "-0.5rem" }}>
+          <Link to="/reset-password" style={{ color: '#2563eb', textDecoration: 'underline', fontSize: "0.97rem" }}>
+            Forgot Password?
+          </Link>
+        </div>
         {message && (
           <div style={{
             textAlign: "center",
