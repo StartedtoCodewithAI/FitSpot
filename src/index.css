@@ -255,37 +255,3 @@ body {
 .nav-inner, .nav-brand, .nav-icons {
   min-width: 0;
 }
-html, body, #root {
-  overflow-x: hidden !important;
-}
-
-* {
-  max-width: 100vw !important;
-  box-sizing: border-box !important;
-}
-
-img, video, iframe {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-* {
-  outline: 1px solid red !important;
-}
-
-pre, code {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-/* Bulletproof: Prevent overflow for key sections */
-.nav-root,
-footer,
-.callToAction {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  overflow-x: hidden !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
