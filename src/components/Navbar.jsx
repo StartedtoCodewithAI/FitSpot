@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
+import ThemeToggle from "./ThemeToggle"; // <-- import the toggle!
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -26,8 +27,8 @@ export default function Navbar() {
   return (
     <nav
       style={{
-        background: "#fff",
-        borderBottom: "1px solid #e0e7ef",
+        background: "var(--color-bg-light)",
+        borderBottom: "1px solid var(--color-border)",
         padding: "0.7rem 2.2rem",
         display: "flex",
         alignItems: "center",
@@ -40,34 +41,60 @@ export default function Navbar() {
       <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
         <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img src={fitspotLogo} alt="FitSpot Logo" style={{ height: 38, marginRight: 12, borderRadius: 8 }} />
-          <span style={{ color: "#2563eb", fontWeight: 800, fontSize: "1.25rem", letterSpacing: ".5px" }}>
+          <span style={{
+            color: "var(--color-primary)",
+            fontWeight: 800,
+            fontSize: "1.25rem",
+            letterSpacing: ".5px"
+          }}>
             FitSpot
           </span>
         </Link>
-        <Link to="/gyms" style={{ color: "#334155", textDecoration: "none", marginLeft: 24, fontWeight: 600 }}>
+        <Link to="/gyms" style={{
+          color: "var(--color-primary-dark)",
+          textDecoration: "none",
+          marginLeft: 24,
+          fontWeight: 600
+        }}>
           Gyms
         </Link>
-        <Link to="/about" style={{ color: "#334155", textDecoration: "none", marginLeft: 24, fontWeight: 600 }}>
+        <Link to="/about" style={{
+          color: "var(--color-primary-dark)",
+          textDecoration: "none",
+          marginLeft: 24,
+          fontWeight: 600
+        }}>
           About
         </Link>
         {user && (
           <>
-            <Link to="/profile" style={{ color: "#334155", textDecoration: "none", marginLeft: 24, fontWeight: 600 }}>
+            <Link to="/profile" style={{
+              color: "var(--color-primary-dark)",
+              textDecoration: "none",
+              marginLeft: 24,
+              fontWeight: 600
+            }}>
               Profile
             </Link>
-            <Link to="/my-codes" style={{ color: "#334155", textDecoration: "none", marginLeft: 24, fontWeight: 600 }}>
+            <Link to="/my-codes" style={{
+              color: "var(--color-primary-dark)",
+              textDecoration: "none",
+              marginLeft: 24,
+              fontWeight: 600
+            }}>
               My Codes
             </Link>
           </>
         )}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        <ThemeToggle /> {/* <-- add the theme toggle here */}
         {!user ? (
           <>
             <Link
               to="/login"
               style={{
-                color: "#2563eb",
+                color: "var(--color-primary)",
                 textDecoration: "none",
                 fontWeight: 600,
                 marginRight: 18
@@ -78,7 +105,7 @@ export default function Navbar() {
             <Link
               to="/signup"
               style={{
-                background: "#2563eb",
+                background: "var(--color-primary)",
                 color: "#fff",
                 borderRadius: 6,
                 padding: "0.5rem 1.2rem",
@@ -93,8 +120,8 @@ export default function Navbar() {
           <button
             onClick={handleLogout}
             style={{
-              background: "#f1f5f9",
-              color: "#dc2626",
+              background: "var(--color-text-dark)",
+              color: "var(--color-danger)",
               border: "none",
               borderRadius: 7,
               padding: "0.48rem 1.2rem",
