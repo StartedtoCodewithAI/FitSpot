@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import fitspotLogo from "../assets/FitSpot.png";
 import { supabase } from "../supabaseClient";
+import FSButton from "../components/FSButton";
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
@@ -31,6 +32,15 @@ export default function Home() {
     }
   }
 
+  async function handleFacebookLogin() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "facebook",
+    });
+    if (error) {
+      alert("Facebook login failed: " + error.message);
+    }
+  }
+
   return (
     <>
       <link
@@ -38,7 +48,6 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
-        /* FULL-BLEED PATCH */
         html, body, #root,
         .page-wrapper,
         .container,
@@ -61,11 +70,11 @@ export default function Home() {
           margin-right: -50vw;
         }
         .container {
-        html, body, #root {
-          width: 100%;
           max-width: 1200px;
           margin: 0 auto;
           padding: 2rem 1rem 0 1rem;
+          flex: 1;
+          width: 100%;
           box-sizing: border-box;
         }
         .callToAction {
@@ -82,24 +91,18 @@ export default function Home() {
         }
         body {
           font-family: 'Montserrat', Arial, sans-serif;
-@@ -85,6 +52,16 @@
+        }
+        .page-wrapper {
           display: flex;
           flex-direction: column;
           background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
           width: 100%;
           box-sizing: border-box;
         }
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 2rem 1rem 0 1rem;
-          flex: 1;
-          width: 100%;
-          box-sizing: border-box;
-        }
         .hero {
           display: flex;
-@@ -165,6 +142,11 @@
+        }
+        .features {
           padding: 3rem 1rem;
           border-radius: 15px;
           text-align: center;
@@ -111,14 +114,15 @@ export default function Home() {
         }
         .callToAction .center-btn-row {
           width: 100%;
-@@ -184,161 +166,163 @@
+        }
+        footer {
           border-top: 1px solid #ddd;
           background: #fff;
           flex-shrink: 0;
           width: 100%;
           box-sizing: border-box;
         }
-        .modal-content .cta {
+        .modal-content .cta, .modal-content .fb-btn {
           margin: 0.7rem 0;
           width: 220px;
           max-width: 90vw;
@@ -126,6 +130,20 @@ export default function Home() {
           display: block;
           margin-left: auto;
           margin-right: auto;
+        }
+        .modal-content .fb-btn {
+          background: #4267B2 !important;
+          color: #fff !important;
+          border: none;
+          border-radius: 5px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 0.6rem 1rem;
+          transition: background 0.2s;
+        }
+        .modal-content .fb-btn:hover {
+          background: #35508a !important;
         }
         @media (max-width: 600px) {
           .hero-logo {
@@ -200,15 +218,15 @@ export default function Home() {
                 Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
               </p>
               {!user ? (
-                <button className="cta" onClick={handleGetStarted}>Get Started</button>
+                <FSButton className="cta" onClick={handleGetStarted}>Get Started</FSButton>
               ) : (
                 <>
                   <p style={{ fontWeight: 500, margin: "1.2rem 0 1.5rem 0" }}>
                     Welcome back, <span style={{ color: "#6C47FF" }}>{user.email}</span>!
                   </p>
-                  <button className="cta" onClick={() => navigate("/gyms")}>
+                  <FSButton className="cta" onClick={() => navigate("/gyms")}>
                     Explore Gyms
-                  </button>
+                  </FSButton>
                 </>
               )}
             </div>
@@ -234,9 +252,9 @@ export default function Home() {
           <section className="callToAction">
             <h2>Ready to start your fitness journey?</h2>
             <div className="center-btn-row">
-              <button className="nav-btn" onClick={() => navigate("/signup")}>
+              <FSButton className="nav-btn" onClick={() => navigate("/signup")}>
                 Sign Up
-              </button>
+              </FSButton>
             </div>
           </section>
         )}
@@ -249,7 +267,7 @@ export default function Home() {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="close-modal" onClick={handleCloseModal} title="Close">&times;</button>
             <h2>Get Started</h2>
-            <button
+            <FSButton
               className="cta"
               onClick={() => {
                 setShowModal(false);
@@ -257,9 +275,20 @@ export default function Home() {
               }}
             >
               Login to your account
-            </button>
+            </FSButton>
+            <FSButton
+              className="fb-btn"
+              style={{
+                background: "#4267B2",
+                color: "#fff",
+                marginTop: "10px",
+              }}
+              onClick={handleFacebookLogin}
+            >
+              Continue with Facebook
+            </FSButton>
             <br />
-            <button
+            <FSButton
               className="cta"
               style={{ background: "#008000" }}
               onClick={() => {
@@ -268,7 +297,7 @@ export default function Home() {
               }}
             >
               Sign up if there is no account
-            </button>
+            </FSButton>
           </div>
         </div>
       )}
