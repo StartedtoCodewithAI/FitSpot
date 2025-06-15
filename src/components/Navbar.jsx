@@ -16,10 +16,9 @@ const NAV_LABELS = {
 };
 
 const NAV_LINKS = [
-  { to: "/gyms", label: NAV_LABELS.gyms },
+  { to: "/gyms", label: NAV_LABELS.gyms, protected: true },
   { to: "/about", label: NAV_LABELS.about },
 ];
-
 const USER_LINKS = [
   { to: "/profile", label: NAV_LABELS.profile },
   { to: "/my-codes", label: NAV_LABELS.myCodes },
@@ -121,6 +120,13 @@ export default function Navbar() {
           background: #f3f6ff;
           color: #2563eb;
           box-shadow: 0 1px 4px #2563eb15;
+        }
+        .navbar-link-disabled {
+          pointer-events: none;
+          opacity: 0.6;
+          background: none !important;
+          color: #aaa !important;
+          cursor: not-allowed;
         }
         .nav-icons {
           display: flex;
@@ -247,7 +253,8 @@ export default function Navbar() {
           margin-bottom: 1.7rem;
         }
         .navbar-links-mobile a,
-        .navbar-links-mobile button {
+        .navbar-links-mobile button,
+        .navbar-links-mobile .navbar-link-disabled {
           display: block;
           width: 100%;
           padding: 1rem 1.1rem;
@@ -281,6 +288,13 @@ export default function Navbar() {
           border-radius: 50%;
           background: #2563eb;
         }
+        .navbar-links-mobile .navbar-link-disabled {
+          pointer-events: none;
+          opacity: 0.6;
+          background: none !important;
+          color: #aaa !important;
+          cursor: not-allowed;
+        }
         .navbar-links-mobile .nav-btn {
           margin: 0.7rem 0 0 0;
           border-radius: 14px;
@@ -312,15 +326,25 @@ export default function Navbar() {
           </div>
 
           <div className="navbar-links-desktop">
-            {NAV_LINKS.map(link => (
-              <NavLink
-                to={link.to}
-                key={link.to}
-                className={({ isActive }) => "navbar-link" + (isActive ? " active" : "")}
-              >
-                {link.label}
-              </NavLink>
-            ))}
+            {NAV_LINKS.map(link =>
+              link.protected && !user ? (
+                <span
+                  className="navbar-link navbar-link-disabled"
+                  key={link.to}
+                  title="Please log in first"
+                >
+                  {link.label} <span style={{ fontSize: "0.95em" }}>(login required)</span>
+                </span>
+              ) : (
+                <NavLink
+                  to={link.to}
+                  key={link.to}
+                  className={({ isActive }) => "navbar-link" + (isActive ? " active" : "")}
+                >
+                  {link.label}
+                </NavLink>
+              )
+            )}
             {user && USER_LINKS.map(link => (
               <NavLink
                 to={link.to}
@@ -383,15 +407,25 @@ export default function Navbar() {
                 </button>
               </div>
               <div className="nav-section">
-                {NAV_LINKS.map(link => (
-                  <NavLink
-                    to={link.to}
-                    key={link.to}
-                    className={({ isActive }) => (isActive ? "active" : "")}
-                  >
-                    {link.label}
-                  </NavLink>
-                ))}
+                {NAV_LINKS.map(link =>
+                  link.protected && !user ? (
+                    <span
+                      className="navbar-link-disabled"
+                      key={link.to}
+                      title="Please log in first"
+                    >
+                      {link.label} (login required)
+                    </span>
+                  ) : (
+                    <NavLink
+                      to={link.to}
+                      key={link.to}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      {link.label}
+                    </NavLink>
+                  )
+                )}
                 {user && USER_LINKS.map(link => (
                   <NavLink
                     to={link.to}
