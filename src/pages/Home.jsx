@@ -126,7 +126,7 @@ export default function Home() {
           justify-content: center;
           align-items: center;
         }
-        .callToAction .center-btn-row .cta {
+        .callToAction .center-btn-row .nav-btn {
           margin: 0 auto;
           display: block;
         }
@@ -236,7 +236,7 @@ export default function Home() {
           <section className="callToAction">
             <h2>Ready to start your fitness journey?</h2>
             <div className="center-btn-row">
-              <button className="cta" onClick={() => navigate("/signup")}>
+              <button className="nav-btn" onClick={() => navigate("/signup")}>
                 Sign Up
               </button>
             </div>
