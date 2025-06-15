@@ -91,12 +91,6 @@ export default function Navbar() {
 
         {/* Right section: Hamburger, Theme, Auth, Avatar, Notifications */}
         <div className="nav-icons">
-          {/* Notification bell example, only shown if you have notifications logic */}
-          {/* <button className="nav-notif" aria-label="Notifications">
-            <span role="img" aria-label="bell">🔔</span>
-            <span className="nav-notif-badge">3</span>
-          </button> */}
-
           {/* Hamburger for mobile */}
           <button
             className="navbar-hamburger"
@@ -119,11 +113,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {/* Avatar and dropdown (optional, if user has avatar) */}
-              {/* <button className="nav-profile-btn" aria-label="Open profile menu">
-                <img className="nav-avatar" src={user.avatar_url} alt="Profile" />
-              </button> */}
-              <button className="nav-profile-logout" onClick={handleLogout}>
+              <button className="nav-btn" onClick={handleLogout}>
                 {NAV_LABELS.logout}
               </button>
             </>
@@ -165,7 +155,7 @@ export default function Navbar() {
           </>
         ) : (
           <button
-            className="nav-profile-logout"
+            className="nav-btn"
             style={{ width: "100%", textAlign: "left" }}
             onClick={handleLogout}
           >
