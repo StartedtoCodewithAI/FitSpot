@@ -1,7 +1,6 @@
-// src/pages/Profile.jsx
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
+import toast from "react-hot-toast"; // Optional: Use window.alert if you prefer
 
 // --- SVG Avatar Component ---
 function AvatarSVG({ hair, eyes, nose, body, color }) {
@@ -77,6 +76,7 @@ const defaultProfile = {
   targetTotal: "",
   currentProgress: 0,
   progressLog: [],
+  avatar_url: "",
 };
 
 const MOTIVATION = [
@@ -101,6 +101,8 @@ export default function Profile() {
   const [progressInput, setProgressInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef();
 
   useEffect(() => {
     async function getUserProfile() {
@@ -144,12 +146,61 @@ export default function Profile() {
       ...profile,
       email: authUser.email
     });
+    toast.success("Profile updated!");
   };
 
   const handleChange = e => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
   };
+
+  // Avatar upload logic
+  async function handleAvatarUpload(e) {
+    const file = e.target.files[0];
+    if (!file || !authUser) return;
+    setAvatarUploading(true);
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${authUser.id}_${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase
+      .storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast.error("Upload failed. Try again.");
+      setAvatarUploading(false);
+      return;
+    }
+    // Get public URL
+    const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    if (data?.publicUrl) {
+      // Save to profile
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: data.publicUrl })
+        .eq("id", authUser.id);
+      if (updateError) {
+        toast.error("Failed to update avatar.");
+      } else {
+        setProfile(prev => ({ ...prev, avatar_url: data.publicUrl }));
+        toast.success("Avatar updated!");
+      }
+    }
+    setAvatarUploading(false);
+  }
+
+  async function handleAvatarRemove() {
+    if (!authUser) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ avatar_url: null })
+      .eq("id", authUser.id);
+    if (!error) {
+      setProfile(prev => ({ ...prev, avatar_url: null }));
+      toast.success("Avatar removed!");
+    } else {
+      toast.error("Failed to remove avatar.");
+    }
+  }
 
   const targetTotalNum = Number(profile.targetTotal) > 0 ? Number(profile.targetTotal) : 0;
   const pct = targetTotalNum
@@ -195,9 +246,71 @@ export default function Profile() {
       textAlign: "center"
     }}>
       <h1 style={{ color: "#2563eb", marginBottom: 20 }}>Your Profile</h1>
-      <div style={{ marginBottom: 22 }}>
-        <AvatarSVG {...profile} />
+      <div style={{ marginBottom: 22, position: "relative" }}>
+        {profile.avatar_url ? (
+          <>
+            <img
+              src={profile.avatar_url}
+              alt="Your avatar"
+              style={{
+                width: 130, height: 130, objectFit: "cover",
+                borderRadius: "50%", border: "3px solid #2563eb", marginBottom: 8
+              }}
+            />
+            <br />
+          </>
+        ) : (
+          <AvatarSVG {...profile} />
+        )}
+        {editMode && (
+          <div style={{ marginTop: 12 }}>
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              ref={fileInputRef}
+              onChange={handleAvatarUpload}
+              disabled={avatarUploading}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              style={{
+                background: "#2563eb",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: "1.02rem",
+                padding: "0.42rem 1.1rem",
+                cursor: avatarUploading ? "not-allowed" : "pointer",
+                opacity: avatarUploading ? 0.6 : 1
+              }}
+              disabled={avatarUploading}
+            >
+              {avatarUploading ? "Uploading..." : profile.avatar_url ? "Change Avatar" : "Upload Avatar"}
+            </button>
+            {profile.avatar_url && (
+              <button
+                type="button"
+                onClick={handleAvatarRemove}
+                style={{
+                  background: "#f1f5f9",
+                  color: "#dc2626",
+                  border: "1px solid #dc2626",
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: ".97rem",
+                  padding: "0.38rem 1.1rem",
+                  marginLeft: 8,
+                  cursor: "pointer"
+                }}
+              >Remove Avatar</button>
+            )}
+          </div>
+        )}
       </div>
+      {/* --- rest of your profile page (unchanged) --- */}
       {!editMode ? (
         <div>
           <h2 style={{ margin: 0 }}>{profile.name || "No Name"}</h2>
