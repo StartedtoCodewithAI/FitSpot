@@ -37,7 +37,6 @@ export default function Navbar() {
     navigate("/login");
   }
 
-  // Close mobile menu when route changes
   useEffect(() => {
     const closeMenu = () => setMenuOpen(false);
     window.addEventListener("hashchange", closeMenu);
@@ -50,16 +49,18 @@ export default function Navbar() {
         .nav-root,
         .nav-inner,
         .navbar-links-mobile {
-          width: 100% !important;
-          min-width: 0 !important;
           box-sizing: border-box !important;
           overflow-x: hidden !important;
-          max-width: none !important;
         }
         .nav-root {
+          width: 100vw !important;
+          position: relative;
+          left: 50%;
+          right: 50%;
+          margin-left: -50vw;
+          margin-right: -50vw;
           background: #fff;
           border-bottom: 1px solid #e5e5e5;
-          position: relative;
           z-index: 2000;
         }
         .nav-inner {
@@ -70,6 +71,7 @@ export default function Navbar() {
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
+          width: 100%;
         }
         .nav-brand {
           display: flex;
@@ -169,9 +171,12 @@ export default function Navbar() {
             background: #fff;
             border-bottom: 1px solid #e5e5e5;
             box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-            width: 100% !important;
+            width: 100vw !important;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
             min-width: 0 !important;
-            max-width: none !important;
             z-index: 3000;
             padding: 1.2rem 0.5rem 1.7rem 0.5rem;
             box-sizing: border-box !important;
