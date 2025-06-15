@@ -54,7 +54,6 @@ export default function Navbar() {
           position: relative;
           z-index: 2000;
           box-sizing: border-box;
-          max-width: 100%;
         }
         .nav-inner {
           max-width: 1200px;
@@ -66,7 +65,6 @@ export default function Navbar() {
           flex-wrap: wrap;
           width: 100%;
           box-sizing: border-box;
-          max-width: 100%;
         }
         .nav-brand {
           display: flex;
@@ -166,8 +164,7 @@ export default function Navbar() {
             background: #fff;
             border-bottom: 1px solid #e5e5e5;
             box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-            width: 100% !important;
-            max-width: 100% !important;
+            width: 100%;
             min-width: 0;
             z-index: 3000;
             padding: 1.2rem 0.5rem 1.7rem 0.5rem;
