@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import fitspotLogo from "../assets/FitSpot.png";
-import { supabase } from "../supabaseClient"; // Adjust this import if needed
+import { supabase } from "../supabaseClient";
 
 export default function Home() {
   const [showModal, setShowModal] = useState(false);
@@ -40,10 +40,11 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
-        html, body {
+        html, body, #root, .page-wrapper {
           overflow-x: hidden !important;
-          width: 100% !important;
-          max-width: 100vw !important;
+          width: 100%;
+          max-width: 100vw;
+          box-sizing: border-box;
         }
         body {
           font-family: 'Montserrat', Arial, sans-serif;
@@ -193,7 +194,7 @@ export default function Home() {
           }
           .hero-logo {
             margin-bottom: 1rem;
-            width: 90vw;
+            width: 90%;
             height: auto;
             max-width: 180px;
           }
