@@ -35,7 +35,10 @@ export default function Home() {
 
   return (
     <>
-      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
+        rel="stylesheet"
+      />
       <style>{`
         body {
           font-family: 'Montserrat', Arial, sans-serif;
@@ -100,7 +103,6 @@ export default function Home() {
           background: #003d80;
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
-        /* Updated features section */
         section.features {
           width: 100%;
           margin: 0 auto 3rem auto;
@@ -108,42 +110,6 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           align-items: center;
-        }
-        .features-row {
-          display: flex;
-          justify-content: center;
-          align-items: stretch;
-          gap: 2rem;
-          max-width: 980px;
-          margin: 0 auto 0 auto;
-          width: 100%;
-          flex-wrap: wrap;
-        }
-        .feature-card {
-          background: white;
-          padding: 1.5rem;
-          border-radius: 15px;
-          box-shadow: 0 6px 15px rgba(0,0,0,0.05);
-          text-align: center;
-          min-width: 220px;
-          max-width: 320px;
-          flex: 1 1 220px;
-          margin-bottom: 0;
-          transition: transform 0.3s;
-        }
-        .feature-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        @media (max-width: 900px) {
-          .features-row {
-            flex-direction: column;
-            gap: 1.5rem;
-          }
-          .feature-card {
-            margin: 0 auto;
-            max-width: 98vw;
-          }
         }
         section.callToAction {
           margin-bottom: 3rem;
