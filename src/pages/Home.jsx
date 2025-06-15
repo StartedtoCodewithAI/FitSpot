@@ -42,6 +42,7 @@ export default function Home() {
       <style>{`
         body {
           font-family: 'Montserrat', Arial, sans-serif;
+          overflow-x: hidden !important;
         }
         .page-wrapper, .container, .hero, .features, .callToAction, footer {
           font-family: 'Montserrat', Arial, sans-serif;
@@ -51,12 +52,15 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
+          overflow-x: hidden;
         }
         .container {
           max-width: 1200px;
           margin: 0 auto;
           padding: 2rem 1rem 0 1rem;
           flex: 1;
+          width: 100%;
+          box-sizing: border-box;
         }
         .hero {
           display: flex;
@@ -73,6 +77,8 @@ export default function Home() {
           border-radius: 50%;
           object-fit: cover;
           background: #e0e7ef;
+          max-width: 100%;
+          height: auto;
         }
         .hero-text h1 {
           font-size: 2.5rem;
@@ -114,6 +120,8 @@ export default function Home() {
           flex-wrap: wrap;
           margin: 0 auto;
           max-width: 900px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .feature-card {
           background: #fff;
@@ -126,6 +134,8 @@ export default function Home() {
           flex: 1 1 220px;
           margin-bottom: 1.2rem;
           transition: box-shadow .14s, transform .13s;
+          min-width: 0;
+          box-sizing: border-box;
         }
         .feature-card:hover {
           box-shadow: 0 8px 30px #2563eb33;
@@ -167,6 +177,9 @@ export default function Home() {
           }
           .hero-logo {
             margin-bottom: 1rem;
+            width: 90vw;
+            height: auto;
+            max-width: 180px;
           }
           .hero-text h1 {
             font-size: 2.2rem;
@@ -174,11 +187,17 @@ export default function Home() {
           .features-row {
             flex-direction: column;
             gap: 1rem;
-            max-width: 100%;
+            max-width: 100vw;
+            width: 100vw;
+            box-sizing: border-box;
+            overflow-x: hidden;
           }
           .feature-card {
-            max-width: 100%;
+            max-width: 100vw;
             min-width: 0;
+            width: 100vw;
+            box-sizing: border-box;
+            overflow-x: hidden;
           }
         }
         .modal-backdrop {
