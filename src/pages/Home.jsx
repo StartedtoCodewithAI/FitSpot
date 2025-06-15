@@ -48,133 +48,80 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
-        html, body, #root,
-        .page-wrapper,
-        .container,
-        section,
-        .callToAction,
-        footer,
-        .modal-content {
-          box-sizing: border-box !important;
-          overflow-x: hidden !important;
+        html, body, #root {
+          margin: 0;
+          padding: 0;
+          font-family: 'Montserrat', Arial, sans-serif;
+          background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
+          min-height: 100vh;
         }
-        .page-wrapper,
-        .callToAction,
-        footer,
-        section {
-          width: 100vw !important;
-          position: relative;
-          left: 50%;
-          right: 50%;
-          margin-left: -50vw;
-          margin-right: -50vw;
+        .page-wrapper {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
         }
         .container {
           max-width: 1200px;
           margin: 0 auto;
           padding: 2rem 1rem 0 1rem;
           flex: 1;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .callToAction {
-          max-width: 900px;
-          margin-left: auto;
-          margin-right: auto;
-          padding-left: 1rem;
-          padding-right: 1rem;
-        }
-        * {
-          min-width: 0;
-          box-sizing: border-box;
-          overflow-x: hidden;
-        }
-        body {
-          font-family: 'Montserrat', Arial, sans-serif;
-        }
-        .page-wrapper {
-          display: flex;
-          flex-direction: column;
-          background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
-          width: 100%;
-          box-sizing: border-box;
         }
         .hero {
           display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+        .hero-logo {
+          width: 160px;
+          height: 160px;
+          margin-bottom: 1.5rem;
+          border-radius: 50%;
+          object-fit: cover;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+          background: #fff;
+        }
+        .hero-text h1 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 1rem;
+        }
+        .lead {
+          font-size: 1.2rem;
+          margin-bottom: 1.5rem;
         }
         .features {
-          padding: 3rem 1rem;
-          border-radius: 15px;
-          text-align: center;
-          width: 100%;
-          max-width: 900px;
-          margin-left: auto;
-          margin-right: auto;
-          box-sizing: border-box;
+          margin-bottom: 3rem;
         }
-        .callToAction .center-btn-row {
-          width: 100%;
+        .features-row {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 2rem;
         }
-        footer {
-          border-top: 1px solid #ddd;
+        .feature-card {
           background: #fff;
-          flex-shrink: 0;
-          width: 100%;
-          box-sizing: border-box;
+          border-radius: 18px;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+          padding: 2rem 1.5rem;
+          min-width: 220px;
+          max-width: 320px;
+          text-align: center;
+          flex: 1 1 250px;
         }
-        .modal-content .cta, .modal-content .fb-btn {
-          margin: 0.7rem 0;
-          width: 220px;
-          max-width: 90vw;
-          min-width: 120px;
-          display: block;
-          margin-left: auto;
-          margin-right: auto;
+        .callToAction {
+          text-align: center;
+          margin: 2rem 0;
         }
-        .modal-content .fb-btn {
-          background: #4267B2 !important;
-          color: #fff !important;
-          border: none;
-          border-radius: 5px;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          padding: 0.6rem 1rem;
-          transition: background 0.2s;
-        }
-        .modal-content .fb-btn:hover {
-          background: #35508a !important;
-        }
-        @media (max-width: 600px) {
-          .hero-logo {
-            margin-bottom: 1rem;
-            width: 90%;
-            height: auto;
-            max-width: 180px;
-          }
-          .hero-text h1 {
-            font-size: 2.2rem;
-          }
-          .features-row {
-            flex-direction: column;
-            gap: 1rem;
-            max-width: 100%;
-            width: 100%;
-          }
-          .feature-card {
-            max-width: 100%;
-            min-width: 0;
-            width: 100%;
-          }
-        }
-        .feature-card, p, pre, code {
-          word-break: break-word;
-          overflow-wrap: break-word;
+        .center-btn-row {
+          display: flex;
+          justify-content: center;
         }
         .modal-backdrop {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.35);
+          background: rgba(0,0,0,0.4);
           z-index: 9999;
           display: flex;
           align-items: center;
@@ -183,7 +130,7 @@ export default function Home() {
         .modal-content {
           background: #fff;
           border-radius: 18px;
-          padding: 2rem 2.2rem 1.6rem 2.2rem;
+          padding: 2rem 1.5rem;
           box-shadow: 0 8px 32px rgba(0,0,0,0.18);
           min-width: 300px;
           text-align: center;
@@ -191,7 +138,7 @@ export default function Home() {
           max-width: 95vw;
         }
         .modal-content h2 {
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.2rem;
           font-size: 1.3rem;
         }
         .close-modal {
@@ -204,8 +151,33 @@ export default function Home() {
           color: #888;
           cursor: pointer;
         }
-        .close-modal:hover {
-          color: #0056b3;
+        .fb-btn {
+          background: #4267B2 !important;
+          color: #fff !important;
+          margin-top: 8px;
+        }
+        @media (max-width: 800px) {
+          .features-row {
+            flex-direction: column;
+            gap: 1rem;
+          }
+          .feature-card {
+            max-width: 100%;
+          }
+          .hero-text h1 {
+            font-size: 2rem;
+          }
+          .hero-logo {
+            width: 110px;
+            height: 110px;
+          }
+        }
+        footer {
+          border-top: 1px solid #ddd;
+          background: #fff;
+          text-align: center;
+          padding: 1rem 0;
+          margin-top: auto;
         }
       `}</style>
       <div className="page-wrapper">
@@ -278,19 +250,13 @@ export default function Home() {
             </FSButton>
             <FSButton
               className="fb-btn"
-              style={{
-                background: "#4267B2",
-                color: "#fff",
-                marginTop: "10px",
-              }}
               onClick={handleFacebookLogin}
             >
               Continue with Facebook
             </FSButton>
-            <br />
             <FSButton
               className="cta"
-              style={{ background: "#008000" }}
+              style={{ background: "#008000", color: "#fff" }}
               onClick={() => {
                 setShowModal(false);
                 navigate("/signup");
