@@ -4,7 +4,6 @@ import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
 import ThemeToggle from "./ThemeToggle";
 
-// i18n-ready labels
 const NAV_LABELS = {
   brand: "FitSpot",
   gyms: "Gyms",
@@ -48,15 +47,14 @@ export default function Navbar() {
   return (
     <>
       <style>{`
-        /* --- BULLETPROOF NAVBAR/OVERFLOW FIXES --- */
         .nav-root,
         .nav-inner,
         .navbar-links-mobile {
           width: 100% !important;
-          max-width: 100vw !important;
           min-width: 0 !important;
           box-sizing: border-box !important;
           overflow-x: hidden !important;
+          max-width: none !important;
         }
         .nav-root {
           background: #fff;
@@ -146,7 +144,6 @@ export default function Navbar() {
           background: #174bbd;
           color: #fff;
         }
-        /* Mobile styles */
         @media (max-width: 900px) {
           .nav-inner {
             padding-left: 0.4rem;
@@ -173,10 +170,10 @@ export default function Navbar() {
             border-bottom: 1px solid #e5e5e5;
             box-shadow: 0 4px 24px rgba(0,0,0,0.05);
             width: 100% !important;
-            max-width: 100vw !important;
             min-width: 0 !important;
+            max-width: none !important;
             z-index: 3000;
-            padding: 1.2rem 1.2rem 1.7rem 1.2rem;
+            padding: 1.2rem 0.5rem 1.7rem 0.5rem;
             box-sizing: border-box !important;
             overflow-x: hidden !important;
             animation: fadeInNavMenu .18s;
@@ -208,14 +205,9 @@ export default function Navbar() {
         .nav-brand, .navbar-links-desktop, .nav-icons {
           min-width: 0;
         }
-        /* DEBUG: RED OUTLINE for overflow debug (remove after debugging) */
-        * {
-          outline: 1px solid red !important;
-        }
       `}</style>
       <nav className="nav-root" role="navigation" aria-label="Main navigation">
         <div className="nav-inner">
-          {/* Brand/Logo */}
           <div className="nav-brand">
             <NavLink to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
               <img
@@ -228,7 +220,6 @@ export default function Navbar() {
             </NavLink>
           </div>
 
-          {/* Desktop links */}
           <div className="navbar-links-desktop">
             <NavLink to="/gyms" className={({ isActive }) => (isActive ? "active" : "")}>
               {NAV_LABELS.gyms}
@@ -248,7 +239,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Right section: Hamburger, Theme, Auth */}
           <div className="nav-icons">
             <button
               className="navbar-hamburger"
@@ -279,7 +269,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile dropdown menu */}
         <div
           className="navbar-links-mobile"
           id="mobile-nav"
