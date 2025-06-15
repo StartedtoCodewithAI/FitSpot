@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 import SearchBar from "../components/SearchBar";
 
 // Utility: Distance in km between two lat/lng
@@ -31,6 +32,7 @@ function saveFavorites(favorites) {
 
 export default function Gyms() {
   const navigate = useNavigate();
+  const [user, setUser] = useState(undefined); // undefined = loading, null = not logged in, object = logged in
   const [userLocation, setUserLocation] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,6 +45,23 @@ export default function Gyms() {
   const [sortOption, setSortOption] = useState("distance");
 
   useEffect(() => saveFavorites(favorites), [favorites]);
+
+  // Route protection: check user status before doing anything else
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: sessionData }) => {
+      if (sessionData?.session?.user) {
+        setUser(sessionData.session.user);
+      } else {
+        setUser(null);
+        navigate("/login?redirect=gyms");
+      }
+    });
+    // Optionally, you can subscribe to auth changes here too
+    // (not strictly necessary for this page)
+  }, [navigate]);
+
+  // Early out: if loading user status, show nothing
+  if (user === undefined) return <div style={{ padding: 32 }}>Loading...</div>;
 
   // Geolocation
   const handleAllowLocation = () => {
@@ -157,7 +176,7 @@ export default function Gyms() {
   function GymCardSkeleton() {
     return (
       <div style={{
-        flex: "0 1 320px", // <-- updated here
+        flex: "0 1 320px",
         minWidth: 280,
         maxWidth: 370,
         background: "#f1f5f9",
@@ -398,7 +417,7 @@ export default function Gyms() {
                 tabIndex={0}
                 aria-label={`Gym: ${gym.name}`}
                 style={{
-                  flex: "0 1 320px", // <-- updated here
+                  flex: "0 1 320px",
                   minWidth: 280,
                   maxWidth: 370,
                   background: isFav ? "rgba(255,215,0,0.14)" : "rgba(37,99,235,0.08)",
