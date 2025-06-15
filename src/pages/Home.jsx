@@ -169,6 +169,16 @@ export default function Home() {
           background: #fff;
           flex-shrink: 0;
         }
+        /* Modal buttons same width and centered */
+        .modal-content .cta {
+          margin: 0.7rem 0;
+          width: 220px;
+          max-width: 90vw;
+          min-width: 120px;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        }
         @media (max-width: 600px) {
           .hero {
             flex-direction: column;
@@ -221,10 +231,6 @@ export default function Home() {
         .modal-content h2 {
           margin-bottom: 1.5rem;
           font-size: 1.3rem;
-        }
-        .modal-content .cta {
-          margin: 0.7rem 0;
-          width: 90%;
         }
         .close-modal {
           position: absolute;
