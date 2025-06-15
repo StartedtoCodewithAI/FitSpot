@@ -48,18 +48,23 @@ export default function Navbar() {
   return (
     <>
       <style>{`
+        /* --- BULLETPROOF NAVBAR/OVERFLOW FIXES --- */
+        .nav-root,
+        .nav-inner,
+        .navbar-links-mobile {
+          width: 100% !important;
+          max-width: 100vw !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
+        }
         .nav-root {
-          width: 100%;
-          max-width: 100vw;
-          overflow-x: hidden;
-          box-sizing: border-box;
           background: #fff;
           border-bottom: 1px solid #e5e5e5;
           position: relative;
           z-index: 2000;
         }
         .nav-inner {
-          width: 100%;
           max-width: 1200px;
           margin: 0 auto;
           padding: 0.6rem 1rem;
@@ -67,7 +72,6 @@ export default function Navbar() {
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
-          box-sizing: border-box;
         }
         .nav-brand {
           display: flex;
@@ -168,12 +172,13 @@ export default function Navbar() {
             background: #fff;
             border-bottom: 1px solid #e5e5e5;
             box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-            width: 100%;
-            max-width: 100vw;
+            width: 100% !important;
+            max-width: 100vw !important;
+            min-width: 0 !important;
             z-index: 3000;
             padding: 1.2rem 1.2rem 1.7rem 1.2rem;
-            box-sizing: border-box;
-            overflow-x: hidden;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
             animation: fadeInNavMenu .18s;
           }
           @keyframes fadeInNavMenu {
@@ -200,18 +205,10 @@ export default function Navbar() {
             color: #2563eb;
           }
         }
-        /* Prevent overflow everywhere! */
-        .nav-root, .nav-inner, .navbar-links-mobile {
-          width: 100%;
-          max-width: 100vw;
-          overflow-x: hidden;
-          box-sizing: border-box;
-        }
         .nav-brand, .navbar-links-desktop, .nav-icons {
           min-width: 0;
         }
-
-        /* DEBUG: RED OUTLINE for overflow debug */
+        /* DEBUG: RED OUTLINE for overflow debug (remove after debugging) */
         * {
           outline: 1px solid red !important;
         }
