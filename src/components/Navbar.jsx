@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
 import ThemeToggle from "./ThemeToggle";
+
+// Example i18n-ready labels (replace with a translation function if needed)
+const NAV_LABELS = {
+  brand: "FitSpot",
+  gyms: "Gyms",
+  about: "About",
+  profile: "Profile",
+  myCodes: "My Codes",
+  login: "Login",
+  signup: "Sign Up",
+  logout: "Logout",
+};
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -34,14 +46,14 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="nav-root">
+    <nav className="nav-root" role="navigation" aria-label="Main navigation">
       <div className="nav-inner">
         {/* Brand/Logo */}
         <div className="nav-brand" style={{ display: "flex", alignItems: "center" }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <NavLink to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <img
               src={fitspotLogo}
-              alt="FitSpot Logo"
+              alt={`${NAV_LABELS.brand} Logo`}
               style={{ height: 38, marginRight: 12, borderRadius: 8 }}
             />
             <span
@@ -52,91 +64,115 @@ export default function Navbar() {
                 letterSpacing: ".5px"
               }}
             >
-              FitSpot
+              {NAV_LABELS.brand}
             </span>
-          </Link>
+          </NavLink>
         </div>
 
         {/* Desktop links */}
         <div className="navbar-links-desktop">
-          <Link to="/gyms">Gyms</Link>
-          <Link to="/about">About</Link>
+          <NavLink to="/gyms" className={({ isActive }) => (isActive ? "active" : "")}>
+            {NAV_LABELS.gyms}
+          </NavLink>
+          <NavLink to="/about" className={({ isActive }) => (isActive ? "active" : "")}>
+            {NAV_LABELS.about}
+          </NavLink>
           {user && (
             <>
-              <Link to="/profile">Profile</Link>
-              <Link to="/my-codes">My Codes</Link>
+              <NavLink to="/profile" className={({ isActive }) => (isActive ? "active" : "")}>
+                {NAV_LABELS.profile}
+              </NavLink>
+              <NavLink to="/my-codes" className={({ isActive }) => (isActive ? "active" : "")}>
+                {NAV_LABELS.myCodes}
+              </NavLink>
             </>
           )}
         </div>
 
-        {/* Right section: Hamburger, Theme, Auth */}
+        {/* Right section: Hamburger, Theme, Auth, Avatar, Notifications */}
         <div className="nav-icons">
+          {/* Notification bell example, only shown if you have notifications logic */}
+          {/* <button className="nav-notif" aria-label="Notifications">
+            <span role="img" aria-label="bell">🔔</span>
+            <span className="nav-notif-badge">3</span>
+          </button> */}
+
           {/* Hamburger for mobile */}
           <button
             className="navbar-hamburger"
-            aria-label="Menu"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
             onClick={() => setMenuOpen(open => !open)}
           >
             {menuOpen ? "✖" : "☰"}
           </button>
-          <ThemeToggle />
+          <ThemeToggle aria-label="Toggle dark mode" />
           {!user ? (
             <>
-              <Link to="/login" className="nav-btn">
-                Login
-              </Link>
-              <Link to="/signup" className="nav-btn">
-                Sign Up
-              </Link>
+              <NavLink to="/login" className="nav-btn">
+                {NAV_LABELS.login}
+              </NavLink>
+              <NavLink to="/signup" className="nav-btn">
+                {NAV_LABELS.signup}
+              </NavLink>
             </>
           ) : (
-            <button className="nav-profile-logout" onClick={handleLogout}>
-              Logout
-            </button>
+            <>
+              {/* Avatar and dropdown (optional, if user has avatar) */}
+              {/* <button className="nav-profile-btn" aria-label="Open profile menu">
+                <img className="nav-avatar" src={user.avatar_url} alt="Profile" />
+              </button> */}
+              <button className="nav-profile-logout" onClick={handleLogout}>
+                {NAV_LABELS.logout}
+              </button>
+            </>
           )}
         </div>
       </div>
 
       {/* Mobile dropdown menu */}
-      {menuOpen && (
-        <div className="navbar-links-mobile">
-          <Link to="/gyms" onClick={() => setMenuOpen(false)}>
-            Gyms
-          </Link>
-          <Link to="/about" onClick={() => setMenuOpen(false)}>
-            About
-          </Link>
-          {user && (
-            <>
-              <Link to="/profile" onClick={() => setMenuOpen(false)}>
-                Profile
-              </Link>
-              <Link to="/my-codes" onClick={() => setMenuOpen(false)}>
-                My Codes
-              </Link>
-            </>
-          )}
-          {!user ? (
-            <>
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="nav-profile-login">
-                Login
-              </Link>
-              <Link to="/signup" onClick={() => setMenuOpen(false)} className="nav-mobile-book">
-                Sign Up
-              </Link>
-            </>
-          ) : (
-            <button
-              className="nav-profile-logout"
-              style={{ width: "100%", textAlign: "left" }}
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-          )}
-        </div>
-      )}
+      <div
+        className="navbar-links-mobile"
+        id="mobile-nav"
+        hidden={!menuOpen}
+        aria-label="Mobile navigation"
+      >
+        <NavLink to="/gyms" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+          {NAV_LABELS.gyms}
+        </NavLink>
+        <NavLink to="/about" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+          {NAV_LABELS.about}
+        </NavLink>
+        {user && (
+          <>
+            <NavLink to="/profile" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+              {NAV_LABELS.profile}
+            </NavLink>
+            <NavLink to="/my-codes" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+              {NAV_LABELS.myCodes}
+            </NavLink>
+          </>
+        )}
+        {!user ? (
+          <>
+            <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-profile-login">
+              {NAV_LABELS.login}
+            </NavLink>
+            <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-mobile-book">
+              {NAV_LABELS.signup}
+            </NavLink>
+          </>
+        ) : (
+          <button
+            className="nav-profile-logout"
+            style={{ width: "100%", textAlign: "left" }}
+            onClick={handleLogout}
+          >
+            {NAV_LABELS.logout}
+          </button>
+        )}
+      </div>
     </nav>
   );
 }
