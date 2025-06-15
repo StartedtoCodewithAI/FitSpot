@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 
@@ -17,7 +17,6 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// Storage helpers
 const FAVORITES_KEY = "fitspot_favorite_gyms";
 function loadFavorites() {
   try {
@@ -43,7 +42,6 @@ export default function Gyms() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("distance");
 
-  // Save favorites persistently
   useEffect(() => saveFavorites(favorites), [favorites]);
 
   // Geolocation
@@ -185,7 +183,6 @@ export default function Gyms() {
     );
   }
 
-  // Favorite star as emoji
   function FavStar({ filled }) {
     return (
       <span role="img" aria-label={filled ? "Favorited" : "Not favorited"} style={{ fontSize: "1.2em" }}>
