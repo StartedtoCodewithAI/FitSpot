@@ -156,10 +156,10 @@ export default function Navbar() {
         )}
         {!user ? (
           <>
-            <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-mobile-book">
+            <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-btn">
               {NAV_LABELS.login}
             </NavLink>
-            <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-mobile-book">
+            <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-btn">
               {NAV_LABELS.signup}
             </NavLink>
           </>
