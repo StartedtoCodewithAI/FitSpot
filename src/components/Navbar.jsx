@@ -160,7 +160,7 @@ export default function Navbar() {
         }
         @media (max-width: 900px) {
           .navbar-links-mobile {
-            display: ${/* menuOpen is not directly available in CSS, but the component will set 'hidden' prop */ ''} block;
+            display: block;
             position: absolute;
             left: 0;
             right: 0;
@@ -168,7 +168,7 @@ export default function Navbar() {
             background: #fff;
             border-bottom: 1px solid #e5e5e5;
             box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-            width: 100vw;
+            width: 100%;
             max-width: 100vw;
             z-index: 3000;
             padding: 1.2rem 1.2rem 1.7rem 1.2rem;
