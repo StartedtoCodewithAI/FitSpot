@@ -37,11 +37,18 @@ export default function Navbar() {
     navigate("/login");
   }
 
-  // Close mobile menu when route changes
+  // Close mobile menu when route changes or on larger screens
   useEffect(() => {
     const closeMenu = () => setMenuOpen(false);
     window.addEventListener("hashchange", closeMenu);
-    return () => window.removeEventListener("hashchange", closeMenu);
+    const handleResize = () => {
+      if (window.innerWidth > 900) setMenuOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("hashchange", closeMenu);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   return (
@@ -69,7 +76,6 @@ export default function Navbar() {
         .nav-brand {
           display: flex;
           align-items: center;
-          min-width: 0;
         }
         .nav-brand img {
           max-width: 100%;
@@ -89,7 +95,6 @@ export default function Navbar() {
           display: flex;
           gap: 1.3rem;
           align-items: center;
-          min-width: 0;
         }
         .navbar-links-desktop a {
           color: #222;
@@ -114,7 +119,7 @@ export default function Navbar() {
         }
         .navbar-hamburger {
           display: none;
-          font-size: 1.7rem;
+          font-size: 2rem;
           background: none;
           border: none;
           color: #444;
@@ -151,25 +156,24 @@ export default function Navbar() {
             display: inline-block;
           }
         }
+        /* Hamburger menu overlay */
         .navbar-links-mobile {
           display: none;
         }
         @media (max-width: 900px) {
           .navbar-links-mobile {
-            display: ${menuOpen ? "block" : "none"};
-            position: absolute;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
             left: 0;
+            top: 0;
             right: 0;
-            top: 100%;
-            background: #fff;
-            border-bottom: 1px solid #e5e5e5;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-            width: 100%;
-            min-width: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.98);
             z-index: 3000;
-            padding: 1.2rem 0.5rem 1.7rem 0.5rem;
+            padding: 2rem 1.2rem 2.5rem 1.2rem;
             box-sizing: border-box;
-            overflow-x: hidden;
+            overflow-y: auto;
             animation: fadeInNavMenu .18s;
           }
           @keyframes fadeInNavMenu {
@@ -180,14 +184,14 @@ export default function Navbar() {
           .navbar-links-mobile button {
             display: block;
             width: 100%;
-            padding: 0.7rem 0.8rem;
-            font-size: 1.07rem;
+            padding: 0.9rem 0.8rem;
+            font-size: 1.13rem;
             color: #222;
             background: none;
             border: none;
             border-radius: 7px;
             text-align: left;
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.7rem;
             font-weight: 600;
             text-decoration: none;
             transition: background .13s;
@@ -198,9 +202,6 @@ export default function Navbar() {
             background: #e0edff;
             color: #2563eb;
           }
-        }
-        .nav-brand, .navbar-links-desktop, .nav-icons {
-          min-width: 0;
         }
       `}</style>
       <nav className="nav-root" role="navigation" aria-label="Main navigation">
@@ -266,46 +267,49 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div
-          className="navbar-links-mobile"
-          id="mobile-nav"
-          aria-label="Mobile navigation"
-        >
-          <NavLink to="/gyms" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-            {NAV_LABELS.gyms}
-          </NavLink>
-          <NavLink to="/about" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-            {NAV_LABELS.about}
-          </NavLink>
-          {user && (
-            <>
-              <NavLink to="/profile" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-                {NAV_LABELS.profile}
-              </NavLink>
-              <NavLink to="/my-codes" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-                {NAV_LABELS.myCodes}
-              </NavLink>
-            </>
-          )}
-          {!user ? (
-            <>
-              <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-btn">
-                {NAV_LABELS.login}
-              </NavLink>
-              <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-btn">
-                {NAV_LABELS.signup}
-              </NavLink>
-            </>
-          ) : (
-            <button
-              className="nav-btn"
-              style={{ width: "100%", textAlign: "left" }}
-              onClick={handleLogout}
-            >
-              {NAV_LABELS.logout}
-            </button>
-          )}
-        </div>
+        {/* Hamburger menu overlay */}
+        {menuOpen && (
+          <div
+            className="navbar-links-mobile"
+            id="mobile-nav"
+            aria-label="Mobile navigation"
+          >
+            <NavLink to="/gyms" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+              {NAV_LABELS.gyms}
+            </NavLink>
+            <NavLink to="/about" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+              {NAV_LABELS.about}
+            </NavLink>
+            {user && (
+              <>
+                <NavLink to="/profile" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+                  {NAV_LABELS.profile}
+                </NavLink>
+                <NavLink to="/my-codes" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
+                  {NAV_LABELS.myCodes}
+                </NavLink>
+              </>
+            )}
+            {!user ? (
+              <>
+                <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-btn">
+                  {NAV_LABELS.login}
+                </NavLink>
+                <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-btn">
+                  {NAV_LABELS.signup}
+                </NavLink>
+              </>
+            ) : (
+              <button
+                className="nav-btn"
+                style={{ width: "100%", textAlign: "left" }}
+                onClick={handleLogout}
+              >
+                {NAV_LABELS.logout}
+              </button>
+            )}
+          </div>
+        )}
       </nav>
     </>
   );
