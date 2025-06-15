@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
 import ThemeToggle from "./ThemeToggle";
+import NotificationBell from "./NotificationBell";
 
 // ---- CONFIG ----
 const NAV_LABELS = {
@@ -11,7 +12,7 @@ const NAV_LABELS = {
   about: "About",
   profile: "Profile",
   myCodes: "My Codes",
-  myBookings: "My Bookings", // Added label
+  myBookings: "My Bookings",
   login: "Login",
   signup: "Sign Up",
   logout: "Logout",
@@ -24,7 +25,7 @@ const NAV_LINKS = [
 const USER_LINKS = [
   { to: "/profile", label: NAV_LABELS.profile },
   { to: "/my-codes", label: NAV_LABELS.myCodes },
-  { to: "/my-bookings", label: NAV_LABELS.myBookings }, // Added here!
+  { to: "/my-bookings", label: NAV_LABELS.myBookings },
 ];
 
 // ---- COMPONENT ----
@@ -434,6 +435,7 @@ export default function Navbar() {
           </div>
 
           <div className="nav-icons">
+            <NotificationBell />
             <button
               className="navbar-hamburger"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
