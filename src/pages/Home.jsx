@@ -38,17 +38,23 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
-        /* Bulletproof anti-overflow for all containers */
-        html, body, #root {
+        /* --- BULLETPROOF ANTI-WIGGLE/OVERFLOW FIXES --- */
+        html, body, #root,
+        .page-wrapper,
+        .container,
+        section,
+        .callToAction,
+        footer,
+        .modal-content {
           width: 100% !important;
           max-width: 100vw !important;
           min-width: 0 !important;
+          box-sizing: border-box !important;
           overflow-x: hidden !important;
-          position: relative;
-          box-sizing: border-box;
         }
         * {
           box-sizing: border-box;
+          outline: 1px solid red !important; /* REMOVE this line after debugging! */
         }
         body {
           font-family: 'Montserrat', Arial, sans-serif;
@@ -58,20 +64,12 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
-          width: 100%;
-          max-width: 100vw;
-          overflow-x: hidden;
-          box-sizing: border-box;
         }
         .container {
           max-width: 1200px;
           margin: 0 auto;
           padding: 2rem 1rem 0 1rem;
           flex: 1;
-          width: 100%;
-          max-width: 100vw;
-          overflow-x: hidden;
-          box-sizing: border-box;
         }
         .hero {
           display: flex;
@@ -80,8 +78,6 @@ export default function Home() {
           gap: 2rem;
           margin-bottom: 3rem;
           text-align: center;
-          width: 100%;
-          max-width: 100vw;
         }
         .hero-logo {
           width: 185px;
@@ -120,10 +116,8 @@ export default function Home() {
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
         section.features {
-          width: 100%;
           margin: 0 auto 3rem auto;
           padding: 0;
-          max-width: 100vw;
         }
         .features-row {
           display: flex;
@@ -132,8 +126,6 @@ export default function Home() {
           flex-wrap: wrap;
           margin: 0 auto;
           max-width: 900px;
-          width: 100%;
-          overflow-x: hidden;
         }
         .feature-card {
           background: #fff;
@@ -147,7 +139,6 @@ export default function Home() {
           margin-bottom: 1.2rem;
           transition: box-shadow .14s, transform .13s;
           min-width: 0;
-          overflow-x: hidden;
         }
         .feature-card:hover {
           box-shadow: 0 8px 30px #2563eb33;
@@ -159,8 +150,6 @@ export default function Home() {
           padding: 3rem 1rem;
           border-radius: 15px;
           text-align: center;
-          width: 100%;
-          max-width: 100vw;
         }
         .callToAction .center-btn-row {
           width: 100%;
@@ -180,9 +169,6 @@ export default function Home() {
           border-top: 1px solid #ddd;
           background: #fff;
           flex-shrink: 0;
-          width: 100%;
-          max-width: 100vw;
-          box-sizing: border-box;
         }
         .modal-content .cta {
           margin: 0.7rem 0;
@@ -208,13 +194,11 @@ export default function Home() {
             gap: 1rem;
             max-width: 100%;
             width: 100%;
-            overflow-x: hidden;
           }
           .feature-card {
             max-width: 100%;
             min-width: 0;
             width: 100%;
-            overflow-x: hidden;
           }
         }
         /* Prevent long content from overflowing */
@@ -240,7 +224,6 @@ export default function Home() {
           text-align: center;
           position: relative;
           max-width: 95vw;
-          overflow-x: hidden;
         }
         .modal-content h2 {
           margin-bottom: 1.5rem;
