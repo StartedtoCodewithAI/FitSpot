@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import BookSession from './pages/BookSession';
 import MyCodes from './pages/MyCodes';
+import MyBookings from './pages/MyBookings'; // <-- Add this line
 
 // Optional: Prevents scroll-stuck on route change (improves mobile feel)
 function ScrollToTop() {
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/book-session" element={<BookSession />} />
           <Route path="/book/:gymId" element={<BookSession />} />
           <Route path="/my-codes" element={<MyCodes />} />
+          <Route path="/my-bookings" element={<MyBookings />} /> {/* <-- Add this line */}
         </Routes>
       </main>
     </Router>
