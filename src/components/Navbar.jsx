@@ -28,7 +28,8 @@ export default function Navbar() {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
     });
-    return () => listener?.subscription?.unsubscribe?.();
+    // FIX: Correct cleanup for Supabase subscription
+    return () => listener?.unsubscribe?.();
   }, []);
 
   async function handleLogout() {
