@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import FSButton from "../components/FSButton";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
@@ -84,13 +85,13 @@ export default function MyBookings() {
         <div style={{ textAlign: "center", color: "#dc2626", margin: "2rem 0" }}>
           {fetchError}
           <br />
-          <button
+          <FSButton
             className="cta"
             style={{ marginTop: 12 }}
             onClick={() => navigate("/login")}
           >
             Login
-          </button>
+          </FSButton>
         </div>
       )}
 
