@@ -181,6 +181,8 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           gap: 0.8rem;
+          z-index: 5001; /* HIGHER than overlays */
+          position: relative;
         }
         .navbar-hamburger {
           display: inline-flex;
@@ -274,6 +276,7 @@ export default function Navbar() {
           justify-content: center;
           align-items: flex-start;
           animation: overlayFadeIn .18s;
+          pointer-events: auto;
         }
         @keyframes overlayFadeIn {
           from { opacity: 0;}
@@ -293,6 +296,8 @@ export default function Navbar() {
           overflow-y: auto;
           animation: fadeInNavMenu .18s;
           flex-direction: column;
+          z-index: 3500;
+          pointer-events: auto;
         }
         .navbar-links-mobile.open {
           display: flex;
@@ -470,7 +475,6 @@ export default function Navbar() {
         <div
           className={`navbar-overlay${menuOpen ? " open" : ""}`}
           ref={overlayRef}
-          style={{ pointerEvents: menuOpen ? "auto" : "none" }}
         >
           {menuOpen && (
             <div className={`navbar-links-mobile open`} id="mobile-nav" aria-label="Mobile navigation">
