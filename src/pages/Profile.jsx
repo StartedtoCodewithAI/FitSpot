@@ -1,8 +1,6 @@
-// src/pages/Profile.jsx
-
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
-import toast from "react-hot-toast"; // Or use window.alert if you don't use toast
+import toast from "react-hot-toast"; // Make sure to have react-hot-toast installed
 
 const defaultProfile = {
   name: "",
@@ -31,7 +29,6 @@ function getMotivationalMsg(pct) {
   return MOTIVATION[0].msg;
 }
 
-// Returns the initials of a name, or "?" if not available
 function getInitials(name, email) {
   if (name) {
     const parts = name.trim().split(" ");
@@ -116,10 +113,8 @@ export default function Profile() {
       setAvatarUploading(false);
       return;
     }
-    // Get public URL
     const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
     if (data?.publicUrl) {
-      // Save to profile
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ avatar_url: data.publicUrl })
@@ -264,7 +259,7 @@ export default function Profile() {
           </div>
         )}
       </div>
-      {/* --- rest of your profile page (goals, progress, etc.) --- */}
+
       {!editMode ? (
         <div>
           <h2 style={{ margin: 0 }}>{profile.name || "No Name"}</h2>
@@ -275,7 +270,7 @@ export default function Profile() {
               {profile.goals ? profile.goals : <span style={{ color: "#aaa" }}>No goals set yet</span>}
             </div>
           </div>
-          {/* --- Progress Tracker Section --- */}
+          {/* Progress Tracker Section */}
           <div style={{ background: "#f1f5f9", padding: "1.1rem 1rem", borderRadius: 12, marginBottom: 18 }}>
             <strong>Your Main Target:</strong>
             <div style={{ fontWeight: 600, color: "#22c55e", fontSize: "1.05rem", margin: "8px 0 4px 0" }}>
@@ -284,7 +279,6 @@ export default function Profile() {
                 : <span style={{ color: "#aaa" }}>Not set</span>
               }
             </div>
-            {/* Progress bar */}
             {profile.targetLabel && profile.targetTotal ? (
               <>
                 <div style={{
@@ -309,7 +303,6 @@ export default function Profile() {
                 <div style={{ margin: "12px 0 0 0", color: "#64748b", fontSize: ".98rem" }}>
                   {getMotivationalMsg(pct)}
                 </div>
-                {/* Add Progress */}
                 {pct < 100 && (
                   <form style={{ marginTop: 10, display: "flex", gap: 7, justifyContent: "center" }} onSubmit={handleProgressAdd}>
                     <input
@@ -355,7 +348,6 @@ export default function Profile() {
                     Reset Progress
                   </button>
                 )}
-                {/* Log of progress */}
                 {profile.progressLog && profile.progressLog.length > 0 && (
                   <div style={{ marginTop: 10, textAlign: "left", fontSize: ".97rem", color: "#64748b" }}>
                     <strong>Progress Log:</strong>
@@ -422,7 +414,6 @@ export default function Profile() {
               placeholder="e.g. Lose 10kg, run a marathon, build muscle..."
             />
           </div>
-          {/* --- Target tracker fields --- */}
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 600 }}>Main Target (label)</label>
             <input
