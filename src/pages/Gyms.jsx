@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import SearchBar from "../components/SearchBar";
+import FSButton from "../components/FSButton";
 
 // Utility: Distance in km between two lat/lng
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -324,7 +325,7 @@ export default function Gyms() {
       </div>
 
       {!userLocation && !permissionDenied && !loading && (
-        <button
+        <FSButton
           onClick={handleAllowLocation}
           style={{
             padding: "0.9rem 2.2rem",
@@ -340,7 +341,7 @@ export default function Gyms() {
           }}
         >
           Allow Location
-        </button>
+        </FSButton>
       )}
 
       {loading && (
@@ -467,7 +468,7 @@ export default function Gyms() {
                     display: "flex",
                     alignItems: "center",
                   }}>
-                    <button
+                    <FSButton
                       title={isFav ? "Remove from favorites" : "Add to favorites"}
                       onClick={() => setFavorites((prevFavs) =>
                         prevFavs.includes(gym.id)
@@ -487,7 +488,7 @@ export default function Gyms() {
                       }}
                     >
                       <FavStar filled={isFav} />
-                    </button>
+                    </FSButton>
                     {gym.name}
                   </div>
                   {gym.address && (
@@ -546,7 +547,7 @@ export default function Gyms() {
                   >Google Maps <span style={{ marginLeft: 5, fontSize: 13 }}>↗️</span></a>
                 </div>
                 {/* BOLD BOOK SESSION BUTTON */}
-                <button
+                <FSButton
                   style={{
                     background: 'linear-gradient(90deg, #38bdf8, #2563eb)',
                     color: '#fff',
@@ -572,7 +573,7 @@ export default function Gyms() {
                   aria-label={`Book session at ${gym.name}`}
                 >
                   💪 BOOK Session
-                </button>
+                </FSButton>
               </div>
             );
           })}
