@@ -1,3 +1,33 @@
+/* --- DARK MODE ROOT VARIABLES --- */
+:root {
+  --color-bg-light: #f9fafb;
+  --color-bg-dark: #181a1b;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1e293b;
+  --color-text: #222;
+  --color-text-dark: #f1f5f9;
+  --color-border: #e0e7ef;
+  --color-accent: #38bdf8;
+  --color-danger: #dc2626;
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] {
+  --color-bg-light: #181a1b;
+  --color-primary-dark: #f1f5f9;
+  --color-text: #f1f5f9;
+  --color-border: #273245;
+  --color-accent: #0ea5e9;
+  --color-danger: #f87171;
+}
+
+/* Set background and text for body */
+body {
+  background: var(--color-bg-light);
+  color: var(--color-text);
+}
+
+/* --- EXISTING NAVBAR CSS --- */
 .nav-root {
   background: var(--color-bg-light);
   color: var(--color-primary-dark);
