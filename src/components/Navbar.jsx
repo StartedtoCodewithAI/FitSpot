@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
 import ThemeToggle from "./ThemeToggle";
@@ -15,21 +15,27 @@ const NAV_LABELS = {
   logout: "Logout",
 };
 
+const NAV_LINKS = [
+  { to: "/gyms", label: NAV_LABELS.gyms },
+  { to: "/about", label: NAV_LABELS.about },
+];
+
+const USER_LINKS = [
+  { to: "/profile", label: NAV_LABELS.profile },
+  { to: "/my-codes", label: NAV_LABELS.myCodes },
+];
+
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Lock scrolling when menu is open
+  // Lock background scroll when menu is open
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    if (menuOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
   useEffect(() => {
@@ -49,12 +55,10 @@ export default function Navbar() {
     navigate("/login");
   }
 
-  // Close menu on navigation
+  // Close menu on navigation (route change)
   useEffect(() => {
-    const closeMenu = () => setMenuOpen(false);
-    window.addEventListener("hashchange", closeMenu);
-    return () => window.removeEventListener("hashchange", closeMenu);
-  }, []);
+    setMenuOpen(false);
+  }, [location]);
 
   return (
     <>
@@ -213,12 +217,34 @@ export default function Navbar() {
           from { opacity: 0; transform: translateY(-18px);}
           to { opacity: 1; transform: none;}
         }
+        .navbar-links-mobile .nav-menu-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 2rem;
+        }
         .navbar-links-mobile .nav-menu-title {
           font-weight: 700;
-          font-size: 1.22rem;
-          margin-bottom: 1.2rem;
+          font-size: 1.25rem;
           color: #2563eb;
           letter-spacing: .7px;
+        }
+        .navbar-links-mobile .menu-close-btn {
+          background: none;
+          border: none;
+          font-size: 2.1rem;
+          color: #222;
+          cursor: pointer;
+          border-radius: 8px;
+          transition: background 0.12s;
+          padding: 0.2rem 0.7rem;
+        }
+        .navbar-links-mobile .menu-close-btn:hover {
+          background: #e0edff;
+          color: #2563eb;
+        }
+        .navbar-links-mobile .nav-section {
+          margin-bottom: 1.7rem;
         }
         .navbar-links-mobile a,
         .navbar-links-mobile button {
@@ -236,12 +262,24 @@ export default function Navbar() {
           text-decoration: none;
           transition: background .15s, color .14s;
           box-shadow: 0 0.5px 1.5px #0001;
+          position: relative;
         }
         .navbar-links-mobile a.active,
         .navbar-links-mobile a:hover,
         .navbar-links-mobile button:hover {
           background: #e9f1ff;
           color: #2563eb;
+        }
+        .navbar-links-mobile a.active::after {
+          content: '';
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #2563eb;
         }
         .navbar-links-mobile .nav-btn {
           margin: 0.7rem 0 0 0;
@@ -274,22 +312,24 @@ export default function Navbar() {
           </div>
 
           <div className="navbar-links-desktop">
-            <NavLink to="/gyms" className="navbar-link">
-              {NAV_LABELS.gyms}
-            </NavLink>
-            <NavLink to="/about" className="navbar-link">
-              {NAV_LABELS.about}
-            </NavLink>
-            {user && (
-              <>
-                <NavLink to="/profile" className="navbar-link">
-                  {NAV_LABELS.profile}
-                </NavLink>
-                <NavLink to="/my-codes" className="navbar-link">
-                  {NAV_LABELS.myCodes}
-                </NavLink>
-              </>
-            )}
+            {NAV_LINKS.map(link => (
+              <NavLink
+                to={link.to}
+                key={link.to}
+                className={({ isActive }) => "navbar-link" + (isActive ? " active" : "")}
+              >
+                {link.label}
+              </NavLink>
+            ))}
+            {user && USER_LINKS.map(link => (
+              <NavLink
+                to={link.to}
+                key={link.to}
+                className={({ isActive }) => "navbar-link" + (isActive ? " active" : "")}
+              >
+                {link.label}
+              </NavLink>
+            ))}
           </div>
 
           <div className="nav-icons">
@@ -322,6 +362,7 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* Hamburger menu overlay */}
         <div
           className={`navbar-links-mobile${menuOpen ? " open" : ""}`}
           id="mobile-nav"
@@ -330,41 +371,57 @@ export default function Navbar() {
         >
           {menuOpen && (
             <>
-              <div className="nav-menu-title">Menu</div>
-              <NavLink to="/gyms" onClick={() => setMenuOpen(false)}>
-                {NAV_LABELS.gyms}
-              </NavLink>
-              <NavLink to="/about" onClick={() => setMenuOpen(false)}>
-                {NAV_LABELS.about}
-              </NavLink>
-              {user && (
-                <>
-                  <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
-                    {NAV_LABELS.profile}
-                  </NavLink>
-                  <NavLink to="/my-codes" onClick={() => setMenuOpen(false)}>
-                    {NAV_LABELS.myCodes}
-                  </NavLink>
-                </>
-              )}
-              {!user ? (
-                <>
-                  <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-btn">
-                    {NAV_LABELS.login}
-                  </NavLink>
-                  <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-btn">
-                    {NAV_LABELS.signup}
-                  </NavLink>
-                </>
-              ) : (
+              <div className="nav-menu-header">
+                <div className="nav-menu-title">Menu</div>
                 <button
-                  className="nav-btn"
-                  style={{ width: "100%", textAlign: "left" }}
-                  onClick={handleLogout}
+                  className="menu-close-btn"
+                  aria-label="Close menu"
+                  onClick={() => setMenuOpen(false)}
+                  tabIndex={0}
                 >
-                  {NAV_LABELS.logout}
+                  &times;
                 </button>
-              )}
+              </div>
+              <div className="nav-section">
+                {NAV_LINKS.map(link => (
+                  <NavLink
+                    to={link.to}
+                    key={link.to}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                  >
+                    {link.label}
+                  </NavLink>
+                ))}
+                {user && USER_LINKS.map(link => (
+                  <NavLink
+                    to={link.to}
+                    key={link.to}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                  >
+                    {link.label}
+                  </NavLink>
+                ))}
+              </div>
+              <div className="nav-section">
+                {!user ? (
+                  <>
+                    <NavLink to="/login" className="nav-btn">
+                      {NAV_LABELS.login}
+                    </NavLink>
+                    <NavLink to="/signup" className="nav-btn">
+                      {NAV_LABELS.signup}
+                    </NavLink>
+                  </>
+                ) : (
+                  <button
+                    className="nav-btn"
+                    style={{ width: "100%", textAlign: "left" }}
+                    onClick={handleLogout}
+                  >
+                    {NAV_LABELS.logout}
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>
