@@ -20,6 +20,18 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Lock scrolling when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: sessionData }) => {
       setUser(sessionData?.session?.user || null);
@@ -37,18 +49,11 @@ export default function Navbar() {
     navigate("/login");
   }
 
-  // Close mobile menu when route changes or on larger screens
+  // Close menu on navigation
   useEffect(() => {
     const closeMenu = () => setMenuOpen(false);
     window.addEventListener("hashchange", closeMenu);
-    const handleResize = () => {
-      if (window.innerWidth > 900) setMenuOpen(false);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("hashchange", closeMenu);
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("hashchange", closeMenu);
   }, []);
 
   return (
@@ -57,60 +62,61 @@ export default function Navbar() {
         .nav-root {
           width: 100%;
           background: #fff;
-          border-bottom: 1px solid #e5e5e5;
-          position: relative;
+          box-shadow: 0 2px 8px rgba(24, 40, 68, 0.08);
+          border-bottom: 1px solid #e5e8ef;
+          position: sticky;
+          top: 0;
           z-index: 2000;
           box-sizing: border-box;
         }
         .nav-inner {
           max-width: 1200px;
           margin: 0 auto;
-          padding: 0.6rem 1rem;
+          padding: 0.7rem 2rem 0.7rem 1.5rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          flex-wrap: wrap;
           width: 100%;
           box-sizing: border-box;
         }
         .nav-brand {
           display: flex;
           align-items: center;
+          gap: 0.75rem;
         }
         .nav-brand img {
-          max-width: 100%;
-          width: auto;
-          height: 38px;
-          border-radius: 8px;
-          display: block;
+          height: 40px;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(24,40,68,0.06);
         }
         .nav-brand span {
-          color: var(--color-primary, #2563eb);
+          color: #2563eb;
           font-weight: 800;
-          font-size: 1.25rem;
+          font-size: 1.4rem;
           letter-spacing: .5px;
           white-space: nowrap;
+          text-shadow: 0 1px 2px #00000010;
         }
         .navbar-links-desktop {
           display: flex;
-          gap: 1.3rem;
+          gap: 1.8rem;
           align-items: center;
         }
-        .navbar-links-desktop a {
-          color: #222;
+        .navbar-link {
+          color: #202942;
           text-decoration: none;
           font-weight: 600;
-          font-size: 1.04rem;
-          padding: .3rem 0.6rem;
-          border-radius: 5px;
-          transition: background .11s;
+          font-size: 1.06rem;
+          padding: .45rem 1.05rem;
+          border-radius: 6px;
+          transition: background .15s, color .15s;
           white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          position: relative;
         }
-        .navbar-links-desktop a.active, .navbar-links-desktop a:hover {
-          background: #e0edff;
+        .navbar-link.active, .navbar-link:hover {
+          background: #f3f6ff;
           color: #2563eb;
+          box-shadow: 0 1px 4px #2563eb15;
         }
         .nav-icons {
           display: flex;
@@ -118,89 +124,138 @@ export default function Navbar() {
           gap: 0.8rem;
         }
         .navbar-hamburger {
-          display: none;
-          font-size: 2rem;
-          background: none;
+          display: inline-flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          width: 42px;
+          height: 42px;
           border: none;
-          color: #444;
+          background: none;
+          border-radius: 10px;
+          margin-left: 0.4rem;
           cursor: pointer;
-          padding: 0 0.3rem;
+          transition: background 0.13s;
+        }
+        .navbar-hamburger:hover {
+          background: #f3f6ff;
+        }
+        .hamburger-icon, .hamburger-icon::before, .hamburger-icon::after {
+          display: block;
+          background: #222;
+          height: 3.3px;
+          border-radius: 2px;
+          width: 28px;
+          transition: all .21s cubic-bezier(.4,1,.3,1);
+          content: '';
+          position: relative;
+        }
+        .hamburger-icon::before, .hamburger-icon::after {
+          content: '';
+          position: absolute;
+          left: 0; width: 28px; height: 3.3px; background: #222; border-radius: 2px;
+        }
+        .hamburger-icon::before {
+          top: -9px;
+        }
+        .hamburger-icon::after {
+          top: 9px;
+        }
+        .navbar-hamburger[aria-expanded="true"] .hamburger-icon {
+          background: transparent;
+        }
+        .navbar-hamburger[aria-expanded="true"] .hamburger-icon::before {
+          transform: translateY(9px) rotate(45deg);
+        }
+        .navbar-hamburger[aria-expanded="true"] .hamburger-icon::after {
+          transform: translateY(-9px) rotate(-45deg);
         }
         .nav-btn {
           margin-left: 0.2rem;
           background: #2563eb;
           color: #fff;
           border: none;
-          border-radius: 14px;
-          padding: 0.39rem 1.1rem;
+          border-radius: 16px;
+          padding: 0.39rem 1.3rem;
           font-size: 1rem;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
-          transition: background .16s;
-          text-decoration: none;
-          display: inline-block;
+          transition: background .16s, box-shadow .16s;
+          box-shadow: 0 2px 6px #2563eb22;
         }
         .nav-btn:hover {
           background: #174bbd;
           color: #fff;
-        }
-        @media (max-width: 900px) {
-          .nav-inner {
-            padding-left: 0.4rem;
-            padding-right: 0.4rem;
-          }
-          .navbar-links-desktop {
-            display: none;
-          }
-          .navbar-hamburger {
-            display: inline-block;
-          }
+          box-shadow: 0 2px 12px #2563eb33;
         }
         /* Hamburger menu overlay */
         .navbar-links-mobile {
           display: none;
         }
+        .navbar-links-mobile.open {
+          display: flex;
+          flex-direction: column;
+          position: fixed;
+          left: 0;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(255,255,255,0.97);
+          backdrop-filter: blur(2px);
+          z-index: 3000;
+          padding: 2.5rem 1.2rem 2.5rem 1.2rem;
+          box-sizing: border-box;
+          overflow-y: auto;
+          animation: fadeInNavMenu .18s;
+          box-shadow: 0 8px 40px #2223;
+        }
+        @keyframes fadeInNavMenu {
+          from { opacity: 0; transform: translateY(-18px);}
+          to { opacity: 1; transform: none;}
+        }
+        .navbar-links-mobile .nav-menu-title {
+          font-weight: 700;
+          font-size: 1.22rem;
+          margin-bottom: 1.2rem;
+          color: #2563eb;
+          letter-spacing: .7px;
+        }
+        .navbar-links-mobile a,
+        .navbar-links-mobile button {
+          display: block;
+          width: 100%;
+          padding: 1rem 1.1rem;
+          font-size: 1.14rem;
+          color: #202942;
+          background: none;
+          border: none;
+          border-radius: 7px;
+          text-align: left;
+          margin-bottom: 0.6rem;
+          font-weight: 700;
+          text-decoration: none;
+          transition: background .15s, color .14s;
+          box-shadow: 0 0.5px 1.5px #0001;
+        }
+        .navbar-links-mobile a.active,
+        .navbar-links-mobile a:hover,
+        .navbar-links-mobile button:hover {
+          background: #e9f1ff;
+          color: #2563eb;
+        }
+        .navbar-links-mobile .nav-btn {
+          margin: 0.7rem 0 0 0;
+          border-radius: 14px;
+          width: 100%;
+          font-size: 1.08rem;
+        }
         @media (max-width: 900px) {
-          .navbar-links-mobile {
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            left: 0;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.98);
-            z-index: 3000;
-            padding: 2rem 1.2rem 2.5rem 1.2rem;
-            box-sizing: border-box;
-            overflow-y: auto;
-            animation: fadeInNavMenu .18s;
+          .nav-inner {
+            padding-left: 0.8rem;
+            padding-right: 0.8rem;
           }
-          @keyframes fadeInNavMenu {
-            from { opacity: 0; transform: translateY(-12px);}
-            to { opacity: 1; transform: none;}
-          }
-          .navbar-links-mobile a,
-          .navbar-links-mobile button {
-            display: block;
-            width: 100%;
-            padding: 0.9rem 0.8rem;
-            font-size: 1.13rem;
-            color: #222;
-            background: none;
-            border: none;
-            border-radius: 7px;
-            text-align: left;
-            margin-bottom: 0.7rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: background .13s;
-          }
-          .navbar-links-mobile a.active,
-          .navbar-links-mobile a:hover,
-          .navbar-links-mobile button:hover {
-            background: #e0edff;
-            color: #2563eb;
+          .navbar-links-desktop {
+            display: none;
           }
         }
       `}</style>
@@ -219,18 +274,18 @@ export default function Navbar() {
           </div>
 
           <div className="navbar-links-desktop">
-            <NavLink to="/gyms" className={({ isActive }) => (isActive ? "active" : "")}>
+            <NavLink to="/gyms" className="navbar-link">
               {NAV_LABELS.gyms}
             </NavLink>
-            <NavLink to="/about" className={({ isActive }) => (isActive ? "active" : "")}>
+            <NavLink to="/about" className="navbar-link">
               {NAV_LABELS.about}
             </NavLink>
             {user && (
               <>
-                <NavLink to="/profile" className={({ isActive }) => (isActive ? "active" : "")}>
+                <NavLink to="/profile" className="navbar-link">
                   {NAV_LABELS.profile}
                 </NavLink>
-                <NavLink to="/my-codes" className={({ isActive }) => (isActive ? "active" : "")}>
+                <NavLink to="/my-codes" className="navbar-link">
                   {NAV_LABELS.myCodes}
                 </NavLink>
               </>
@@ -245,7 +300,7 @@ export default function Navbar() {
               aria-controls="mobile-nav"
               onClick={() => setMenuOpen(open => !open)}
             >
-              {menuOpen ? "\u2716" : "\u2630"}
+              <span className="hamburger-icon" />
             </button>
             <ThemeToggle aria-label="Toggle dark mode" />
             {!user ? (
@@ -267,49 +322,52 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Hamburger menu overlay */}
-        {menuOpen && (
-          <div
-            className="navbar-links-mobile"
-            id="mobile-nav"
-            aria-label="Mobile navigation"
-          >
-            <NavLink to="/gyms" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-              {NAV_LABELS.gyms}
-            </NavLink>
-            <NavLink to="/about" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-              {NAV_LABELS.about}
-            </NavLink>
-            {user && (
-              <>
-                <NavLink to="/profile" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-                  {NAV_LABELS.profile}
-                </NavLink>
-                <NavLink to="/my-codes" onClick={() => setMenuOpen(false)} className={({ isActive }) => (isActive ? "active" : "")}>
-                  {NAV_LABELS.myCodes}
-                </NavLink>
-              </>
-            )}
-            {!user ? (
-              <>
-                <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-btn">
-                  {NAV_LABELS.login}
-                </NavLink>
-                <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-btn">
-                  {NAV_LABELS.signup}
-                </NavLink>
-              </>
-            ) : (
-              <button
-                className="nav-btn"
-                style={{ width: "100%", textAlign: "left" }}
-                onClick={handleLogout}
-              >
-                {NAV_LABELS.logout}
-              </button>
-            )}
-          </div>
-        )}
+        <div
+          className={`navbar-links-mobile${menuOpen ? " open" : ""}`}
+          id="mobile-nav"
+          aria-label="Mobile navigation"
+          style={{ pointerEvents: menuOpen ? "auto" : "none" }}
+        >
+          {menuOpen && (
+            <>
+              <div className="nav-menu-title">Menu</div>
+              <NavLink to="/gyms" onClick={() => setMenuOpen(false)}>
+                {NAV_LABELS.gyms}
+              </NavLink>
+              <NavLink to="/about" onClick={() => setMenuOpen(false)}>
+                {NAV_LABELS.about}
+              </NavLink>
+              {user && (
+                <>
+                  <NavLink to="/profile" onClick={() => setMenuOpen(false)}>
+                    {NAV_LABELS.profile}
+                  </NavLink>
+                  <NavLink to="/my-codes" onClick={() => setMenuOpen(false)}>
+                    {NAV_LABELS.myCodes}
+                  </NavLink>
+                </>
+              )}
+              {!user ? (
+                <>
+                  <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-btn">
+                    {NAV_LABELS.login}
+                  </NavLink>
+                  <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-btn">
+                    {NAV_LABELS.signup}
+                  </NavLink>
+                </>
+              ) : (
+                <button
+                  className="nav-btn"
+                  style={{ width: "100%", textAlign: "left" }}
+                  onClick={handleLogout}
+                >
+                  {NAV_LABELS.logout}
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </nav>
     </>
   );
