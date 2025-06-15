@@ -10,7 +10,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import BookSession from './pages/BookSession';
 import MyCodes from './pages/MyCodes';
-import MyBookings from './pages/MyBookings'; // <-- Add this line
+import MyBookings from './pages/MyBookings';
 
 // Optional: Prevents scroll-stuck on route change (improves mobile feel)
 function ScrollToTop() {
@@ -34,7 +34,7 @@ export default function App() {
           paddingBottom: "2rem",
           boxSizing: "border-box",
           overflowX: "hidden", // Prevents horizontal scroll/white space
-          width: "100vw",      // Ensure full viewport width (responsive)
+          width: "100%",       // FIXED: Use 100%, NOT 100vw
         }}
       >
         <Routes>
@@ -47,7 +47,7 @@ export default function App() {
           <Route path="/book-session" element={<BookSession />} />
           <Route path="/book/:gymId" element={<BookSession />} />
           <Route path="/my-codes" element={<MyCodes />} />
-          <Route path="/my-bookings" element={<MyBookings />} /> {/* <-- Add this line */}
+          <Route path="/my-bookings" element={<MyBookings />} />
         </Routes>
       </main>
     </Router>
