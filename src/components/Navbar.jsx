@@ -5,7 +5,6 @@ import fitspotLogo from "../assets/FitSpot.png";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
 
-// ---- CONFIG ----
 const NAV_LABELS = {
   brand: "FitSpot",
   gyms: "Gyms",
@@ -28,21 +27,18 @@ const USER_LINKS = [
   { to: "/my-bookings", label: NAV_LABELS.myBookings },
 ];
 
-// ---- COMPONENT ----
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Lock body scroll when menu is open
   useEffect(() => {
     if (menuOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  // Auth state
   useEffect(() => {
     supabase.auth.getSession().then(({ data: sessionData }) => {
       setUser(sessionData?.session?.user || null);
@@ -53,12 +49,10 @@ export default function Navbar() {
     return () => listener?.unsubscribe?.();
   }, []);
 
-  // Close menu on navigation
   useEffect(() => {
     setMenuOpen(false);
   }, [location]);
 
-  // Keyboard accessibility: close menu on Esc
   useEffect(() => {
     if (!menuOpen) return;
     const onKeyDown = e => {
@@ -68,7 +62,6 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [menuOpen]);
 
-  // Click outside overlay closes menu
   const overlayRef = useCallback(node => {
     if (!node) return;
     function handleClick(e) {
@@ -85,7 +78,6 @@ export default function Navbar() {
     navigate("/login");
   }
 
-  // User Initials (for avatar placeholder)
   function getInitials(user) {
     if (!user) return "";
     if (user.user_metadata?.full_name) {
@@ -181,7 +173,7 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           gap: 0.8rem;
-          z-index: 5001; /* HIGHER than overlays */
+          z-index: 9998;
           position: relative;
         }
         .navbar-hamburger {
@@ -263,7 +255,6 @@ export default function Navbar() {
           border: 2px solid #2563eb55;
           margin-left: 0.6rem;
         }
-        /* Hamburger menu overlay */
         .navbar-overlay {
           display: none;
         }
@@ -272,7 +263,7 @@ export default function Navbar() {
           position: fixed;
           inset: 0;
           background: rgba(24,30,40,0.17);
-          z-index: 3000;
+          z-index: 9997;
           justify-content: center;
           align-items: flex-start;
           animation: overlayFadeIn .18s;
@@ -296,7 +287,7 @@ export default function Navbar() {
           overflow-y: auto;
           animation: fadeInNavMenu .18s;
           flex-direction: column;
-          z-index: 3500;
+          z-index: 9997;
           pointer-events: auto;
         }
         .navbar-links-mobile.open {
