@@ -29,6 +29,14 @@ export default function BookSession() {
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
 
+  // Debug: Show user info in console on load
+  useEffect(() => {
+    (async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      console.log("Current Supabase User (on load):", user, error);
+    })();
+  }, []);
+
   if (!gymName) {
     return (
       <div style={{
@@ -49,13 +57,14 @@ export default function BookSession() {
 
     // Get user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
+    console.log("User before insert:", user, userError);
+
     if (!user || userError) {
       setError("Not logged in! Please sign in to book a session.");
       return;
     }
 
     // Prepare gym object if needed
-    // If your codes table expects a gym object, use this:
     const gymObj = { name: gymName };
 
     // Insert booking into Supabase
@@ -64,7 +73,7 @@ export default function BookSession() {
       .insert([{
         user_id: user.id,
         code,
-        gym: gymObj, // or gym: gymName, depending on your table's structure
+        gym: gymObj, // Or gym: gymName, depending on your schema
         date,
         time,
         used: false,
@@ -73,6 +82,7 @@ export default function BookSession() {
 
     if (insertError) {
       setError("Failed to save booking: " + insertError.message);
+      console.error("Supabase Insert Error:", insertError);
       return;
     }
 
