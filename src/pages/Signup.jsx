@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import SearchBar from '../components/SearchBar';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Signup() {
-  // State for the signup form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-
-  // State for the search bar (for consistency, optional to use)
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Signup handler
+  const navigate = useNavigate();
+
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
 
-    if (!email.trim() || !password) {
+    if (!email.trim() || !password || !name.trim()) {
       setMessage('Please fill all required fields.');
       setLoading(false);
       return;
@@ -27,19 +27,25 @@ export default function Signup() {
     const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
+      options: {
+        data: { full_name: name.trim() }
+      }
     });
 
     if (signUpError) {
       setMessage(signUpError.message);
     } else {
-      setMessage('Signup successful! Please check your email to confirm your account.');
+      setMessage('Sign up successful! Please check your email to confirm.');
+      setTimeout(() => {
+        navigate('/login');
+      }, 1200);
     }
     setLoading(false);
   };
 
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", padding: "2.5rem 1rem" }}>
-      {/* Fancy Search Bar at the top, just like in Gyms/MyCodes */}
+      {/* Fancy Search Bar at the top, just like in other pages */}
       <div style={{ margin: "18px 0 18px 0", maxWidth: 420 }}>
         <SearchBar
           value={searchTerm}
@@ -57,16 +63,33 @@ export default function Signup() {
         margin: "0 auto",
         maxWidth: 380
       }}>
-        <h2 style={{ 
-          textAlign: "center", 
-          fontSize: "2rem", 
-          fontWeight: 800, 
-          marginBottom: "1.6rem", 
-          color: "#2563eb" 
+        <h2 style={{
+          textAlign: "center",
+          fontSize: "2rem",
+          fontWeight: 800,
+          marginBottom: "1.6rem",
+          color: "#2563eb"
         }}>
           Sign Up
         </h2>
         <form onSubmit={handleSignup}>
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "0.8rem 1.2rem",
+              borderRadius: 10,
+              border: "1px solid #e0e7ef",
+              fontSize: "1rem",
+              boxSizing: "border-box",
+              marginBottom: "0.9rem",
+              background: "#f9fafb"
+            }}
+          />
           <input
             type="email"
             placeholder="Email"
@@ -121,10 +144,15 @@ export default function Signup() {
             {loading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
+        <div style={{ textAlign: "center", marginTop: "-0.5rem" }}>
+          <Link to="/login" style={{ color: '#2563eb', textDecoration: 'underline', fontSize: "0.97rem" }}>
+            Already have an account? Log in
+          </Link>
+        </div>
         {message && (
           <div style={{
             textAlign: "center",
-            color: message.startsWith('Signup successful') ? "#22c55e" : "#dc2626",
+            color: message.startsWith('Sign up successful') ? "#22c55e" : "#dc2626",
             marginTop: "0.8rem",
             fontWeight: 600,
           }}>
