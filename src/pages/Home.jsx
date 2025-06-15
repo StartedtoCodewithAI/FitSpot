@@ -118,6 +118,8 @@ export default function Home() {
           flex-wrap: wrap;
           margin: 0 auto;
           max-width: 900px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .feature-card {
           background: #fff;
@@ -125,12 +127,11 @@ export default function Home() {
           box-shadow: 0 2px 12px #2563eb18;
           padding: 2rem 1.5rem 1.3rem 1.5rem;
           text-align: center;
-          min-width: 220px;
           max-width: 300px;
-          flex: 1 1 220px;
+          width: 100%;
+          min-width: 0;
           margin-bottom: 1.2rem;
           transition: box-shadow .14s, transform .13s;
-          min-width: 0;
         }
         .feature-card:hover {
           box-shadow: 0 8px 30px #2563eb33;
@@ -196,8 +197,6 @@ export default function Home() {
           }
           .feature-card {
             max-width: 100%;
-            min-width: 0;
-            width: 100%;
           }
         }
         .feature-card, p, pre, code {
