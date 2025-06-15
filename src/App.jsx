@@ -1,5 +1,6 @@
 import React from "react";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast"; // Add this line
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Gyms from './pages/Gyms';
@@ -23,6 +24,8 @@ export default function App() {
     <Router>
       <Navbar />
       <ScrollToTop />
+      {/* Place Toaster high in the tree so toasts show on any page */}
+      <Toaster position="top-center" reverseOrder={false} />
       <main
         style={{
           minHeight: "calc(100vh - 72px)", // Prevents content hiding behind navbar
@@ -39,7 +42,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/book-session" element={<BookSession />} />
-          <Route path="/book/:gymId" element={<BookSession />} />  {/* <-- Add this line */}
+          <Route path="/book/:gymId" element={<BookSession />} />
           <Route path="/my-codes" element={<MyCodes />} />
         </Routes>
       </main>
