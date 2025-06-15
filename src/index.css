@@ -36,7 +36,6 @@ body {
   background: var(--color-bg-light);
   color: var(--color-text);
   font-family: 'Montserrat', Arial, sans-serif;
-  /* Smooth theme transitions */
   transition: background 0.2s, color 0.2s;
 }
 
@@ -257,7 +256,6 @@ body {
   width: 100%;
   z-index: 1000;
   border-bottom: 1.5px solid var(--color-border);
-  /* Smooth menu transition */
   transition: max-height 0.3s cubic-bezier(.4,0,.2,1), opacity 0.2s;
   overflow: hidden;
   opacity: 1;
@@ -328,7 +326,6 @@ body {
     display: flex;
   }
 }
-/* Extra: shrink nav padding on very small screens */
 @media (max-width: 600px) {
   .nav-root {
     padding: 0.5rem 0.25rem;
@@ -362,6 +359,10 @@ body {
   cursor: pointer;
   display: inline-block;
   box-shadow: 0 1px 3px rgba(60,60,60,0.04);
+  /* Make sure width and font-size is always the same */
+  min-width: 120px;
+  max-width: 160px;
+  text-align: center;
 }
 .nav-btn:hover,
 .nav-btn:focus {
@@ -375,12 +376,10 @@ body {
 /* --- FEATURE CARDS LAYOUT FOR FITSPOT --- */
 .features-row {
   display: flex;
-  gap: 2.5rem;
   justify-content: center;
-  align-items: flex-start;
+  gap: 2.5rem;
   margin: 2.5rem 0;
   width: 100%;
-  padding: 0;
 }
 
 .feature-card {
@@ -392,21 +391,19 @@ body {
   min-width: 220px;
   max-width: 320px;
   width: 100%;
-  margin: 0 0.5rem;
+  margin: 0;
   box-sizing: border-box;
 }
 
-/* Mobile: Stack features vertically and center them */
 @media (max-width: 900px) {
   .features-row {
     flex-direction: column;
     gap: 1.5rem;
     align-items: center;
-    padding: 0;
   }
   .feature-card {
     margin: 0 auto;
-    width: 100%;
+    width: 90vw;
     max-width: 430px;
   }
 }
