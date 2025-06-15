@@ -100,6 +100,7 @@ export default function Home() {
           background: #003d80;
           box-shadow: 0 8px 15px rgba(0,86,179,0.4);
         }
+        /* Updated features section */
         section.features {
           width: 100%;
           margin: 0 auto 3rem auto;
@@ -108,23 +109,41 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
         }
-        section.features > div {
+        .features-row {
+          display: flex;
+          justify-content: center;
+          align-items: stretch;
+          gap: 2rem;
+          max-width: 980px;
+          margin: 0 auto 0 auto;
           width: 100%;
-          max-width: 500px;
+          flex-wrap: wrap;
+        }
+        .feature-card {
           background: white;
           padding: 1.5rem;
           border-radius: 15px;
           box-shadow: 0 6px 15px rgba(0,0,0,0.05);
           text-align: center;
-          transition: transform 0.3s ease;
-          margin-bottom: 2rem;
-        }
-        section.features > div:last-child {
+          min-width: 220px;
+          max-width: 320px;
+          flex: 1 1 220px;
           margin-bottom: 0;
+          transition: transform 0.3s;
         }
-        section.features > div:hover {
+        .feature-card:hover {
           transform: translateY(-8px);
           box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        @media (max-width: 900px) {
+          .features-row {
+            flex-direction: column;
+            gap: 1.5rem;
+          }
+          .feature-card {
+            margin: 0 auto;
+            max-width: 98vw;
+          }
         }
         section.callToAction {
           margin-bottom: 3rem;
@@ -165,9 +184,6 @@ export default function Home() {
           }
           .hero-text h1 {
             font-size: 2.2rem;
-          }
-          section.features > div {
-            max-width: 100%;
           }
         }
         .modal-backdrop {
@@ -234,17 +250,19 @@ export default function Home() {
             </div>
           </section>
           <section className="features">
-            <div>
-              <h3>No Memberships</h3>
-              <p>Pay per session. No strings attached.</p>
-            </div>
-            <div>
-              <h3>Find Nearby Gyms</h3>
-              <p>Use GPS to locate gyms around you instantly.</p>
-            </div>
-            <div>
-              <h3>Instant Booking</h3>
-              <p>Reserve your workout slot in seconds.</p>
+            <div className="features-row">
+              <div className="feature-card">
+                <h3>No Memberships</h3>
+                <p>Pay per session. No strings attached.</p>
+              </div>
+              <div className="feature-card">
+                <h3>Find Nearby Gyms</h3>
+                <p>Use GPS to locate gyms around you instantly.</p>
+              </div>
+              <div className="feature-card">
+                <h3>Instant Booking</h3>
+                <p>Reserve your workout slot in seconds.</p>
+              </div>
             </div>
           </section>
         </div>
