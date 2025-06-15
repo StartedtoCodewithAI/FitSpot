@@ -4,7 +4,7 @@ import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
 import ThemeToggle from "./ThemeToggle";
 
-// Example i18n-ready labels (replace with a translation function if needed)
+// i18n-ready labels
 const NAV_LABELS = {
   brand: "FitSpot",
   gyms: "Gyms",
@@ -156,7 +156,7 @@ export default function Navbar() {
         )}
         {!user ? (
           <>
-            <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-profile-login">
+            <NavLink to="/login" onClick={() => setMenuOpen(false)} className="nav-mobile-book">
               {NAV_LABELS.login}
             </NavLink>
             <NavLink to="/signup" onClick={() => setMenuOpen(false)} className="nav-mobile-book">
