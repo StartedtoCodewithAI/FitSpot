@@ -371,3 +371,35 @@ body {
   text-decoration: none;
   outline: none;
 }
+
+/* --- FEATURE CARDS LAYOUT FOR FITSPOT --- */
+.features-row {
+  display: flex;
+  gap: 2.5rem;
+  justify-content: center;
+  margin: 2.5rem 0;
+}
+.feature-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px #2563eb11;
+  padding: 2.1rem 1.5rem 1.3rem 1.5rem;
+  text-align: center;
+  min-width: 220px;
+  max-width: 320px;
+  flex: 1;
+  margin: 0 auto;
+}
+/* Mobile: Stack features vertically and center them */
+@media (max-width: 900px) {
+  .features-row {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .feature-card {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 98vw;
+  }
+}
