@@ -86,7 +86,7 @@ export default function Navbar() {
               <Link to="/login" className="nav-btn">
                 Login
               </Link>
-              <Link to="/signup" className="nav-btn" style={{ marginRight: 0 }}>
+              <Link to="/signup" className="nav-btn">
                 Sign Up
               </Link>
             </>
