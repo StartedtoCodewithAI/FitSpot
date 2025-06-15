@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import toast from "react-hot-toast"; // Make sure to have react-hot-toast installed
+import FSButton from "../components/FSButton";
 
 const defaultProfile = {
   name: "",
@@ -221,7 +222,7 @@ export default function Profile() {
               onChange={handleAvatarUpload}
               disabled={avatarUploading}
             />
-            <button
+            <FSButton
               type="button"
               onClick={() => fileInputRef.current && fileInputRef.current.click()}
               style={{
@@ -238,9 +239,9 @@ export default function Profile() {
               disabled={avatarUploading}
             >
               {avatarUploading ? "Uploading..." : profile.avatar_url ? "Change Photo" : "Upload Photo"}
-            </button>
+            </FSButton>
             {profile.avatar_url && (
-              <button
+              <FSButton
                 type="button"
                 onClick={handleAvatarRemove}
                 style={{
@@ -254,7 +255,7 @@ export default function Profile() {
                   marginLeft: 8,
                   cursor: "pointer"
                 }}
-              >Remove Photo</button>
+              >Remove Photo</FSButton>
             )}
           </div>
         )}
@@ -315,7 +316,7 @@ export default function Profile() {
                       style={{ width: 80, padding: 6, borderRadius: 6, border: "1px solid #bcd" }}
                       required
                     />
-                    <button
+                    <FSButton
                       type="submit"
                       style={{
                         background: "#22c55e",
@@ -328,11 +329,11 @@ export default function Profile() {
                         cursor: "pointer"
                       }}>
                       Log
-                    </button>
+                    </FSButton>
                   </form>
                 )}
                 {profile.currentProgress > 0 && (
-                  <button
+                  <FSButton
                     onClick={handleProgressReset}
                     style={{
                       marginTop: 10,
@@ -346,7 +347,7 @@ export default function Profile() {
                       cursor: "pointer"
                     }}>
                     Reset Progress
-                  </button>
+                  </FSButton>
                 )}
                 {profile.progressLog && profile.progressLog.length > 0 && (
                   <div style={{ marginTop: 10, textAlign: "left", fontSize: ".97rem", color: "#64748b" }}>
@@ -365,7 +366,7 @@ export default function Profile() {
               <span style={{ color: "#aaa" }}>Set a target to track your progress!</span>
             )}
           </div>
-          <button
+          <FSButton
             style={{
               background: "#2563eb",
               color: "#fff",
@@ -380,7 +381,7 @@ export default function Profile() {
             onClick={() => setEditMode(true)}
           >
             Edit Profile
-          </button>
+          </FSButton>
         </div>
       ) : (
         <form onSubmit={handleSave} style={{ textAlign: "left" }}>
@@ -437,7 +438,7 @@ export default function Profile() {
             />
           </div>
           <div style={{ display: "flex", gap: 12 }}>
-            <button
+            <FSButton
               type="submit"
               style={{
                 background: "#22c55e",
@@ -451,8 +452,8 @@ export default function Profile() {
               }}
             >
               Save Profile
-            </button>
-            <button
+            </FSButton>
+            <FSButton
               type="button"
               onClick={() => setEditMode(false)}
               style={{
@@ -467,7 +468,7 @@ export default function Profile() {
               }}
             >
               Cancel
-            </button>
+            </FSButton>
           </div>
         </form>
       )}
