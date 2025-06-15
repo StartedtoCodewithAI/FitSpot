@@ -1,6 +1,6 @@
 /* --- GLOBAL MOBILE/OVERFLOW FIXES --- */
 html, body {
-  max-width: 100vw;
+  width: 100%;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
@@ -205,40 +205,4 @@ body {
   box-shadow: 0 2px 8px rgba(60,60,60,0.14);
   text-decoration: none;
   outline: none;
-}
-
-/* --- FEATURE CARDS LAYOUT FOR FITSPOT --- */
-.features-row {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 2.5rem;
-  margin: 2.5rem auto;
-  max-width: 980px;
-  width: auto;
-}
-.feature-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px #2563eb11;
-  padding: 2.1rem 1.5rem 1.3rem 1.5rem;
-  text-align: center;
-  max-width: 320px;
-  width: 320px;
-  margin: 0;
-  box-sizing: border-box;
-}
-@media (max-width: 900px) {
-  .features-row {
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: center;
-    max-width: 100vw;
-    width: 100vw;
-  }
-  .feature-card {
-    margin: 0 auto;
-    width: 90vw;
-    max-width: 430px;
-  }
 }
