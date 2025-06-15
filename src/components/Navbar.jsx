@@ -11,6 +11,7 @@ const NAV_LABELS = {
   about: "About",
   profile: "Profile",
   myCodes: "My Codes",
+  myBookings: "My Bookings", // Added label
   login: "Login",
   signup: "Sign Up",
   logout: "Logout",
@@ -23,6 +24,7 @@ const NAV_LINKS = [
 const USER_LINKS = [
   { to: "/profile", label: NAV_LABELS.profile },
   { to: "/my-codes", label: NAV_LABELS.myCodes },
+  { to: "/my-bookings", label: NAV_LABELS.myBookings }, // Added here!
 ];
 
 // ---- COMPONENT ----
