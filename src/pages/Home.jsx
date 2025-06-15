@@ -1,224 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import fitspotLogo from "../assets/FitSpot.png";
-import { supabase } from "../supabaseClient";
+import FSButton from "../components/FSButton";
 
-export default function Home() {
+export default function Home({ user }) {
   const [showModal, setShowModal] = useState(false);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: sessionData }) => {
-      setUser(sessionData?.session?.user || null);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-    return () => listener?.subscription?.unsubscribe?.();
-  }, []);
-
-  function handleGetStarted() {
-    setShowModal(true);
-  }
-
-  function handleCloseModal(e) {
-    if (
-      e.target.className === "modal-backdrop" ||
-      e.target.className === "close-modal"
-    ) {
-      setShowModal(false);
-    }
-  }
+  const handleGetStarted = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
 
   return (
     <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
-        rel="stylesheet"
-      />
       <style>{`
-        html, body, #root {
-          width: 100%;
-          min-width: 0;
-          box-sizing: border-box;
-          overflow-x: hidden;
-        }
-        body {
-          font-family: 'Montserrat', Arial, sans-serif;
-        }
-        .page-wrapper {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 2rem 1rem 0 1rem;
-          flex: 1;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .hero {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 2rem;
-          margin-bottom: 3rem;
-          text-align: center;
-        }
-        .hero-logo {
-          width: 185px;
-          height: 185px;
-          border-radius: 50%;
-          object-fit: cover;
-          background: #e0e7ef;
-          max-width: 100%;
-          display: block;
-        }
-        .hero-text h1 {
-          font-size: 2.5rem;
-          margin-bottom: 0.5rem;
-          font-weight: 700;
-        }
-        .lead {
-          font-size: 1.3rem;
-          margin-bottom: 1.5rem;
-          color: #444;
-          font-weight: 400;
-        }
-        .cta {
-          background: #0056b3;
-          color: #fff;
-          border: none;
-          padding: 0.75rem 2rem;
-          border-radius: 30px;
-          font-size: 1.1rem;
-          cursor: pointer;
-          font-weight: 600;
-          transition: background 0.2s, box-shadow 0.2s;
-          box-shadow: 0 4px 10px rgba(0,86,179,0.18);
-        }
-        .cta:hover {
-          background: #003d80;
-          box-shadow: 0 8px 15px rgba(0,86,179,0.4);
-        }
-        section.features {
-          margin: 0 auto 3rem auto;
-          padding: 0;
-        }
-        .features-row {
-          display: flex;
-          justify-content: center;
-          gap: 2rem;
-          flex-wrap: wrap;
-          margin: 0 auto;
-          max-width: 900px;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .feature-card {
-          background: #fff;
-          border-radius: 14px;
-          box-shadow: 0 2px 12px #2563eb18;
-          padding: 2rem 1.5rem 1.3rem 1.5rem;
-          text-align: center;
-          max-width: 300px;
-          width: 100%;
-          min-width: 0;
-          margin-bottom: 1.2rem;
-          transition: box-shadow .14s, transform .13s;
-        }
-        .feature-card:hover {
-          box-shadow: 0 8px 30px #2563eb33;
-          transform: translateY(-4px) scale(1.04);
-        }
-        section.callToAction {
-          margin-bottom: 3rem;
-          background-color: #f5f5f5;
-          padding: 3rem 1rem;
-          border-radius: 15px;
-          text-align: center;
-          width: 100%;
-          max-width: 900px;
-          margin-left: auto;
-          margin-right: auto;
-          box-sizing: border-box;
-        }
-        .callToAction .center-btn-row {
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        .callToAction .center-btn-row .nav-btn {
-          margin: 0 auto;
-          display: block;
-        }
-        footer {
-          text-align: center;
-          padding: 2rem 1rem;
-          font-size: 0.9rem;
-          color: #888;
-          border-top: 1px solid #ddd;
-          background: #fff;
-          flex-shrink: 0;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .modal-content .cta {
-          margin: 0.7rem 0;
-          width: 220px;
-          max-width: 90vw;
-          min-width: 120px;
-          display: block;
-          margin-left: auto;
-          margin-right: auto;
-        }
-        @media (max-width: 600px) {
-          .hero-logo {
-            margin-bottom: 1rem;
-            width: 90%;
-            height: auto;
-            max-width: 180px;
-          }
-          .hero-text h1 {
-            font-size: 2.2rem;
-          }
-          .features-row {
-            flex-direction: column;
-            gap: 1rem;
-            max-width: 100%;
-            width: 100%;
-          }
-          .feature-card {
-            max-width: 100%;
-          }
-        }
-        .feature-card, p, pre, code {
-          word-break: break-word;
-          overflow-wrap: break-word;
-        }
-        .modal-backdrop {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.35);
-          z-index: 9999;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
         .modal-content {
-          background: #fff;
-          border-radius: 18px;
-          padding: 2rem 2.2rem 1.6rem 2.2rem;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-          min-width: 300px;
-          text-align: center;
           position: relative;
           max-width: 95vw;
         }
@@ -250,15 +45,15 @@ export default function Home() {
                 Book your workout spot instantly. Anytime. Anywhere. Just like Uber — but for gyms.
               </p>
               {!user ? (
-                <button className="cta" onClick={handleGetStarted}>Get Started</button>
+                <FSButton className="cta" onClick={handleGetStarted}>Get Started</FSButton>
               ) : (
                 <>
                   <p style={{ fontWeight: 500, margin: "1.2rem 0 1.5rem 0" }}>
                     Welcome back, <span style={{ color: "#6C47FF" }}>{user.email}</span>!
                   </p>
-                  <button className="cta" onClick={() => navigate("/gyms")}>
+                  <FSButton className="cta" onClick={() => navigate("/gyms")}>
                     Explore Gyms
-                  </button>
+                  </FSButton>
                 </>
               )}
             </div>
@@ -284,9 +79,9 @@ export default function Home() {
           <section className="callToAction">
             <h2>Ready to start your fitness journey?</h2>
             <div className="center-btn-row">
-              <button className="nav-btn" onClick={() => navigate("/signup")}>
+              <FSButton className="nav-btn" onClick={() => navigate("/signup")}>
                 Sign Up
-              </button>
+              </FSButton>
             </div>
           </section>
         )}
@@ -299,7 +94,7 @@ export default function Home() {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="close-modal" onClick={handleCloseModal} title="Close">&times;</button>
             <h2>Get Started</h2>
-            <button
+            <FSButton
               className="cta"
               onClick={() => {
                 setShowModal(false);
@@ -307,10 +102,11 @@ export default function Home() {
               }}
             >
               Login to your account
-            </button>
+            </FSButton>
             <br />
-            <button
+            <FSButton
               className="cta"
+              variant="secondary"
               style={{ background: "#008000" }}
               onClick={() => {
                 setShowModal(false);
@@ -318,7 +114,7 @@ export default function Home() {
               }}
             >
               Sign up if there is no account
-            </button>
+            </FSButton>
           </div>
         </div>
       )}
