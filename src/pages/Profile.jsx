@@ -1,76 +1,12 @@
+// src/pages/Profile.jsx
+
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
-import toast from "react-hot-toast"; // Optional: Use window.alert if you prefer
-
-// --- SVG Avatar Component ---
-function AvatarSVG({ hair, eyes, nose, body, color }) {
-  const hairOptions = {
-    short: <ellipse cx="80" cy="58" rx="35" ry="22" fill={color} />,
-    long: <ellipse cx="80" cy="60" rx="38" ry="28" fill={color} />,
-    bald: null,
-    curly: <ellipse cx="80" cy="60" rx="38" ry="28" fill={color} stroke="#333" strokeDasharray="4 2"/>,
-  };
-  const eyeOptions = {
-    blue: <>
-      <circle cx="68" cy="90" r="7" fill="#fff"/>
-      <circle cx="68" cy="90" r="3" fill="#4bc3ff"/>
-      <circle cx="92" cy="90" r="7" fill="#fff"/>
-      <circle cx="92" cy="90" r="3" fill="#4bc3ff"/>
-    </>,
-    brown: <>
-      <circle cx="68" cy="90" r="7" fill="#fff"/>
-      <circle cx="68" cy="90" r="3" fill="#a65a2a"/>
-      <circle cx="92" cy="90" r="7" fill="#fff"/>
-      <circle cx="92" cy="90" r="3" fill="#a65a2a"/>
-    </>,
-    green: <>
-      <circle cx="68" cy="90" r="7" fill="#fff"/>
-      <circle cx="68" cy="90" r="3" fill="#5ac84b"/>
-      <circle cx="92" cy="90" r="7" fill="#fff"/>
-      <circle cx="92" cy="90" r="3" fill="#5ac84b"/>
-    </>,
-  };
-  const noseOptions = {
-    small: <ellipse cx="80" cy="105" rx="2" ry="5" fill="#b97a56" />,
-    medium: <ellipse cx="80" cy="105" rx="3" ry="7" fill="#b97a56" />,
-    big: <ellipse cx="80" cy="105" rx="5" ry="8" fill="#b97a56" />,
-  };
-  const bodyOptions = {
-    slim: <rect x="60" y="125" width="40" height="45" rx="20" fill="#b97a56" />,
-    average: <rect x="55" y="125" width="50" height="50" rx="25" fill="#b97a56" />,
-    athletic: <rect x="50" y="125" width="60" height="48" rx="30" fill="#b97a56" stroke="#333" strokeWidth="2"/>,
-    strong: <rect x="45" y="125" width="70" height="50" rx="33" fill="#b97a56" stroke="#222" strokeWidth="3"/>,
-  };
-
-  return (
-    <svg width="160" height="200" viewBox="0 0 160 200">
-      <ellipse cx="80" cy="90" rx="40" ry="48" fill="#fcd7b6" stroke="#b97a56" strokeWidth="2"/>
-      {hairOptions[hair]}
-      {eyeOptions[eyes]}
-      {noseOptions[nose]}
-      {bodyOptions[body]}
-    </svg>
-  );
-}
-
-const hairColors = [
-  { value: "#4B3E2A", label: "Dark Brown" },
-  { value: "#FFD700", label: "Blonde" },
-  { value: "#9A4C1E", label: "Reddish" },
-  { value: "#333", label: "Black" },
-  { value: "#FFF", label: "White" },
-  { value: "#7fd0fa", label: "Blue" },
-  { value: "#ff62b6", label: "Pink" },
-];
+import toast from "react-hot-toast"; // Or use window.alert if you don't use toast
 
 const defaultProfile = {
   name: "",
   email: "",
-  hair: "short",
-  eyes: "brown",
-  nose: "medium",
-  body: "average",
-  color: "#4B3E2A",
   goals: "",
   targetLabel: "",
   targetTotal: "",
@@ -93,6 +29,17 @@ function getMotivationalMsg(pct) {
   if (pct >= 50) return MOTIVATION[2].msg;
   if (pct >= 25) return MOTIVATION[1].msg;
   return MOTIVATION[0].msg;
+}
+
+// Returns the initials of a name, or "?" if not available
+function getInitials(name, email) {
+  if (name) {
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  if (email) return email[0].toUpperCase();
+  return "?";
 }
 
 export default function Profile() {
@@ -154,7 +101,6 @@ export default function Profile() {
     setProfile(prev => ({ ...prev, [name]: value }));
   };
 
-  // Avatar upload logic
   async function handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file || !authUser) return;
@@ -247,20 +193,28 @@ export default function Profile() {
     }}>
       <h1 style={{ color: "#2563eb", marginBottom: 20 }}>Your Profile</h1>
       <div style={{ marginBottom: 22, position: "relative" }}>
+        {/* Avatar block */}
         {profile.avatar_url ? (
-          <>
-            <img
-              src={profile.avatar_url}
-              alt="Your avatar"
-              style={{
-                width: 130, height: 130, objectFit: "cover",
-                borderRadius: "50%", border: "3px solid #2563eb", marginBottom: 8
-              }}
-            />
-            <br />
-          </>
+          <img
+            src={profile.avatar_url}
+            alt="Profile avatar"
+            style={{
+              width: 130, height: 130, objectFit: "cover",
+              borderRadius: "50%", border: "3px solid #2563eb", marginBottom: 8
+            }}
+          />
         ) : (
-          <AvatarSVG {...profile} />
+          <div
+            style={{
+              width: 130, height: 130, borderRadius: "50%",
+              background: "#f1f5f9", color: "#64748b",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "2.8rem", fontWeight: 700, border: "3px solid #e0e7ef",
+              margin: "0 auto 8px auto"
+            }}
+          >
+            {getInitials(profile.name, profile.email)}
+          </div>
         )}
         {editMode && (
           <div style={{ marginTop: 12 }}>
@@ -288,7 +242,7 @@ export default function Profile() {
               }}
               disabled={avatarUploading}
             >
-              {avatarUploading ? "Uploading..." : profile.avatar_url ? "Change Avatar" : "Upload Avatar"}
+              {avatarUploading ? "Uploading..." : profile.avatar_url ? "Change Photo" : "Upload Photo"}
             </button>
             {profile.avatar_url && (
               <button
@@ -305,12 +259,12 @@ export default function Profile() {
                   marginLeft: 8,
                   cursor: "pointer"
                 }}
-              >Remove Avatar</button>
+              >Remove Photo</button>
             )}
           </div>
         )}
       </div>
-      {/* --- rest of your profile page (unchanged) --- */}
+      {/* --- rest of your profile page (goals, progress, etc.) --- */}
       {!editMode ? (
         <div>
           <h2 style={{ margin: 0 }}>{profile.name || "No Name"}</h2>
@@ -458,52 +412,6 @@ export default function Profile() {
               required
             />
           </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 600 }}>Hair</label>
-              <select name="hair" value={profile.hair} onChange={handleChange} style={{ width: "100%", padding: 7, borderRadius: 6, marginTop: 4 }}>
-                <option value="short">Short</option>
-                <option value="long">Long</option>
-                <option value="curly">Curly</option>
-                <option value="bald">Bald</option>
-              </select>
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 600 }}>Hair Color</label>
-              <select name="color" value={profile.color} onChange={handleChange} style={{ width: "100%", padding: 7, borderRadius: 6, marginTop: 4 }}>
-                {hairColors.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 600 }}>Eyes</label>
-              <select name="eyes" value={profile.eyes} onChange={handleChange} style={{ width: "100%", padding: 7, borderRadius: 6, marginTop: 4 }}>
-                <option value="brown">Brown</option>
-                <option value="blue">Blue</option>
-                <option value="green">Green</option>
-              </select>
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 600 }}>Nose</label>
-              <select name="nose" value={profile.nose} onChange={handleChange} style={{ width: "100%", padding: 7, borderRadius: 6, marginTop: 4 }}>
-                <option value="small">Small</option>
-                <option value="medium">Medium</option>
-                <option value="big">Big</option>
-              </select>
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontWeight: 600 }}>Body Type</label>
-              <select name="body" value={profile.body} onChange={handleChange} style={{ width: "100%", padding: 7, borderRadius: 6, marginTop: 4 }}>
-                <option value="slim">Slim</option>
-                <option value="average">Average</option>
-                <option value="athletic">Athletic</option>
-                <option value="strong">Strong</option>
-              </select>
-            </div>
-          </div>
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontWeight: 600 }}>Describe your goals</label>
             <textarea
@@ -592,10 +500,6 @@ export default function Profile() {
           .profile-container button {
             font-size: 1.08rem !important;
             padding: 0.8rem 1.2rem;
-          }
-          .profile-container svg {
-            width: 120px !important;
-            height: 150px !important;
           }
         }
         html, body { max-width: 100vw; overflow-x: hidden; }
