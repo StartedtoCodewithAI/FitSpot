@@ -277,26 +277,13 @@ body {
   border-bottom: 1px solid var(--color-border);
   transition: background 0.2s, color 0.2s;
 }
-.nav-mobile-book {
-  display: block;
-  margin: 1rem auto;
-  width: 80%;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 8px;
-  padding: 0.7rem;
-  text-align: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-  text-decoration: none;
-}
-  
+/* NO .nav-mobile-book anymore */
+
 /* --- ACCESSIBILITY: Focus States for Nav Links/Buttons --- */
 .navbar-links-desktop a:focus, 
 .navbar-links-mobile a:focus, 
 .nav-profile-login:focus, 
-.nav-profile-logout:focus, 
-.nav-mobile-book:focus {
+.nav-profile-logout:focus {
   outline: 2.5px solid var(--color-accent);
   outline-offset: 2px;
   background: rgba(56, 189, 248, 0.10);
@@ -359,7 +346,6 @@ body {
   cursor: pointer;
   display: inline-block;
   box-shadow: 0 1px 3px rgba(60,60,60,0.04);
-  /* removed min-width and max-width, so all buttons are same size naturally */
   text-align: center;
 }
 .nav-btn:hover,
