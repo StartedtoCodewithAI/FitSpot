@@ -1,6 +1,6 @@
 import React from "react";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import { Toaster } from "react-hot-toast"; // Add this line
+import { Toaster } from "react-hot-toast";
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Gyms from './pages/Gyms';
@@ -24,14 +24,16 @@ export default function App() {
     <Router>
       <Navbar />
       <ScrollToTop />
-      {/* Place Toaster high in the tree so toasts show on any page */}
       <Toaster position="top-center" reverseOrder={false} />
       <main
         style={{
-          minHeight: "calc(100vh - 72px)", // Prevents content hiding behind navbar
-          background: "#f8fafc",
+          minHeight: "calc(100vh - 72px)",
+          background: "var(--color-bg-light)",
           paddingTop: 0,
           paddingBottom: "2rem",
+          boxSizing: "border-box",
+          overflowX: "hidden", // Prevents horizontal scroll/white space
+          width: "100vw",      // Ensure full viewport width (responsive)
         }}
       >
         <Routes>
