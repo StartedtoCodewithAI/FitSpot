@@ -210,6 +210,11 @@ export default function Navbar() {
         .nav-brand, .navbar-links-desktop, .nav-icons {
           min-width: 0;
         }
+
+        /* DEBUG: RED OUTLINE for overflow debug */
+        * {
+          outline: 1px solid red !important;
+        }
       `}</style>
       <nav className="nav-root" role="navigation" aria-label="Main navigation">
         <div className="nav-inner">
