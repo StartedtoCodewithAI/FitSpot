@@ -36,7 +36,8 @@ export default function Navbar() {
   return (
     <nav className="nav-root">
       <div className="nav-inner">
-        <div className="nav-brand">
+        {/* Left: Logo/Brand */}
+        <div className="nav-brand" style={{ display: "flex", alignItems: "center" }}>
           <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <img
               src={fitspotLogo}
@@ -56,17 +57,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Hamburger for mobile */}
-        <button
-          className="navbar-hamburger"
-          aria-label="Menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          {menuOpen ? "✖" : "☰"}
-        </button>
-
-        {/* Desktop links */}
+        {/* Middle: Desktop links */}
         <div className="navbar-links-desktop">
           <Link to="/gyms">Gyms</Link>
           <Link to="/about">About</Link>
@@ -78,8 +69,17 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Right icons (Theme + Auth) */}
+        {/* Right: Hamburger + Theme + Auth */}
         <div className="nav-icons">
+          {/* Hamburger for mobile */}
+          <button
+            className="navbar-hamburger"
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(open => !open)}
+          >
+            {menuOpen ? "✖" : "☰"}
+          </button>
           <ThemeToggle />
           {!user ? (
             <>
