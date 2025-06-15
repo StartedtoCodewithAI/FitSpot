@@ -7,20 +7,19 @@ export default function PrivateRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     async function checkSession() {
-      // Get Supabase session
-      const { data, error } = await supabase.auth.getSession();
-      // Get user from localStorage
+      // Get Supabase session (fresh, not cached)
+      const { data } = await supabase.auth.getSession();
       const storedUser = localStorage.getItem('user');
-      // Consider authenticated if either a Supabase session OR a stored user exists
-      if ((data && data.session) || storedUser) {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
+      // Authenticated if Supabase session OR localStorage user
+      if (isMounted) {
+        setIsAuthenticated(!!(data?.session || storedUser));
+        setLoading(false);
       }
-      setLoading(false);
     }
     checkSession();
+    return () => { isMounted = false; };
   }, []);
 
   if (loading) return <div>Loading...</div>;
