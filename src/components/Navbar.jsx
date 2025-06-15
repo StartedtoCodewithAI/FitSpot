@@ -279,6 +279,7 @@ export default function Navbar() {
           to { opacity: 1;}
         }
         .navbar-links-mobile {
+          display: none;
           background: #fff;
           border-radius: 22px;
           margin-top: 3.2rem;
@@ -290,8 +291,10 @@ export default function Navbar() {
           box-sizing: border-box;
           overflow-y: auto;
           animation: fadeInNavMenu .18s;
-          display: flex;
           flex-direction: column;
+        }
+        .navbar-links-mobile.open {
+          display: flex;
         }
         @keyframes fadeInNavMenu {
           from { opacity: 0; transform: translateY(-18px);}
@@ -468,7 +471,7 @@ export default function Navbar() {
           style={{ pointerEvents: menuOpen ? "auto" : "none" }}
         >
           {menuOpen && (
-            <div className="navbar-links-mobile" id="mobile-nav" aria-label="Mobile navigation">
+            <div className={`navbar-links-mobile open`} id="mobile-nav" aria-label="Mobile navigation">
               <div className="nav-menu-header">
                 <div className="nav-menu-title">Menu</div>
                 <button
