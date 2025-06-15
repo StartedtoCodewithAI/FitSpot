@@ -173,7 +173,7 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           gap: 0.8rem;
-          z-index: 9998;
+          z-index: 10001;
           position: relative;
         }
         .navbar-hamburger {
@@ -263,7 +263,7 @@ export default function Navbar() {
           position: fixed;
           inset: 0;
           background: rgba(24,30,40,0.17);
-          z-index: 9997;
+          z-index: 9999;
           justify-content: center;
           align-items: flex-start;
           animation: overlayFadeIn .18s;
@@ -287,11 +287,15 @@ export default function Navbar() {
           overflow-y: auto;
           animation: fadeInNavMenu .18s;
           flex-direction: column;
-          z-index: 9997;
+          position: fixed;
+          top: 0;
+          right: 0;
+          left: 0;
+          z-index: 10000;
           pointer-events: auto;
         }
         .navbar-links-mobile.open {
-          display: flex;
+          display: flex !important;
         }
         @keyframes fadeInNavMenu {
           from { opacity: 0; transform: translateY(-18px);}
