@@ -42,7 +42,7 @@ export default function Login() {
 
     setMessage('Login successful! Redirecting...');
     setTimeout(() => {
-      navigate('/mycodes'); // redirect to codes page after login
+      navigate('/my-codes'); // redirect to codes page after login
     }, 900);
 
     setLoading(false);
