@@ -277,3 +277,15 @@ pre, code {
   white-space: pre-wrap;
   word-break: break-word;
 }
+/* Bulletproof: Prevent overflow for key sections */
+.nav-root,
+footer,
+.callToAction {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
