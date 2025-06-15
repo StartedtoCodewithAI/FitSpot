@@ -54,6 +54,7 @@ export default function Navbar() {
           position: relative;
           z-index: 2000;
           box-sizing: border-box;
+          max-width: 100%;
         }
         .nav-inner {
           max-width: 1200px;
@@ -65,6 +66,7 @@ export default function Navbar() {
           flex-wrap: wrap;
           width: 100%;
           box-sizing: border-box;
+          max-width: 100%;
         }
         .nav-brand {
           display: flex;
@@ -164,7 +166,8 @@ export default function Navbar() {
             background: #fff;
             border-bottom: 1px solid #e5e5e5;
             box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-            width: 100%;
+            width: 100% !important;
+            max-width: 100% !important;
             min-width: 0;
             z-index: 3000;
             padding: 1.2rem 0.5rem 1.7rem 0.5rem;
@@ -176,7 +179,8 @@ export default function Navbar() {
             from { opacity: 0; transform: translateY(-12px);}
             to { opacity: 1; transform: none;}
           }
-          .navbar-links-mobile a, .navbar-links-mobile button {
+          .navbar-links-mobile a,
+          .navbar-links-mobile button {
             display: block;
             width: 100%;
             padding: 0.7rem 0.8rem;
@@ -191,7 +195,9 @@ export default function Navbar() {
             text-decoration: none;
             transition: background .13s;
           }
-          .navbar-links-mobile a.active, .navbar-links-mobile a:hover, .navbar-links-mobile button:hover {
+          .navbar-links-mobile a.active,
+          .navbar-links-mobile a:hover,
+          .navbar-links-mobile button:hover {
             background: #e0edff;
             color: #2563eb;
           }
@@ -241,7 +247,7 @@ export default function Navbar() {
               aria-controls="mobile-nav"
               onClick={() => setMenuOpen(open => !open)}
             >
-              {menuOpen ? "✖" : "☰"}
+              {menuOpen ? "\u2716" : "\u2630"}
             </button>
             <ThemeToggle aria-label="Toggle dark mode" />
             {!user ? (
