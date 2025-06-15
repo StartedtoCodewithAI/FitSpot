@@ -157,7 +157,7 @@ export default function Gyms() {
   function GymCardSkeleton() {
     return (
       <div style={{
-        flex: "1 0 320px",
+        flex: "0 1 320px", // <-- updated here
         minWidth: 280,
         maxWidth: 370,
         background: "#f1f5f9",
@@ -398,7 +398,7 @@ export default function Gyms() {
                 tabIndex={0}
                 aria-label={`Gym: ${gym.name}`}
                 style={{
-                  flex: "1 0 320px",
+                  flex: "0 1 320px", // <-- updated here
                   minWidth: 280,
                   maxWidth: 370,
                   background: isFav ? "rgba(255,215,0,0.14)" : "rgba(37,99,235,0.08)",
