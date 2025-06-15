@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";More actions
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import fitspotLogo from "../assets/FitSpot.png";
 import { supabase } from "../supabaseClient";
