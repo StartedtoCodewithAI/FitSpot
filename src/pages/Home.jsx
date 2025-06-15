@@ -40,9 +40,13 @@ export default function Home() {
         rel="stylesheet"
       />
       <style>{`
+        html, body {
+          overflow-x: hidden !important;
+          width: 100% !important;
+          max-width: 100vw !important;
+        }
         body {
           font-family: 'Montserrat', Arial, sans-serif;
-          overflow-x: hidden !important;
         }
         .page-wrapper, .container, .hero, .features, .callToAction, footer {
           font-family: 'Montserrat', Arial, sans-serif;
@@ -61,6 +65,7 @@ export default function Home() {
           flex: 1;
           width: 100%;
           box-sizing: border-box;
+          overflow-x: hidden;
         }
         .hero {
           display: flex;
@@ -78,7 +83,6 @@ export default function Home() {
           object-fit: cover;
           background: #e0e7ef;
           max-width: 100%;
-          height: auto;
         }
         .hero-text h1 {
           font-size: 2.5rem;
@@ -122,6 +126,7 @@ export default function Home() {
           max-width: 900px;
           width: 100%;
           box-sizing: border-box;
+          overflow-x: hidden;
         }
         .feature-card {
           background: #fff;
@@ -136,6 +141,7 @@ export default function Home() {
           transition: box-shadow .14s, transform .13s;
           min-width: 0;
           box-sizing: border-box;
+          overflow-x: hidden;
         }
         .feature-card:hover {
           box-shadow: 0 8px 30px #2563eb33;
@@ -197,15 +203,15 @@ export default function Home() {
           .features-row {
             flex-direction: column;
             gap: 1rem;
-            max-width: 100vw;
-            width: 100vw;
+            max-width: 100%;
+            width: 100%;
             box-sizing: border-box;
             overflow-x: hidden;
           }
           .feature-card {
-            max-width: 100vw;
+            max-width: 100%;
             min-width: 0;
-            width: 100vw;
+            width: 100%;
             box-sizing: border-box;
             overflow-x: hidden;
           }
@@ -227,6 +233,8 @@ export default function Home() {
           min-width: 300px;
           text-align: center;
           position: relative;
+          max-width: 95vw;
+          overflow-x: hidden;
         }
         .modal-content h2 {
           margin-bottom: 1.5rem;
