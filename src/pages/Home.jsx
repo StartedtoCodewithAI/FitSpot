@@ -57,7 +57,7 @@ export default function Home() {
           margin: 0 auto;
           padding: 2rem 1rem 0 1rem;
           flex: 1;
-          display: block !important;
+          /* REMOVED display: block !important; so internal flex works! */
         }
         .hero {
           display: flex;
@@ -107,10 +107,7 @@ export default function Home() {
           width: 100%;
           margin: 0 auto 3rem auto;
           padding: 0;
-          /* REMOVE flex + align-items for correct centering */
-          /* display: flex;
-             flex-direction: column;
-             align-items: center; */
+          /* DO NOT add display:flex or flex-direction here! */
         }
         section.callToAction {
           margin-bottom: 3rem;
