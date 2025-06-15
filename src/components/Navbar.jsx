@@ -36,7 +36,7 @@ export default function Navbar() {
   return (
     <nav className="nav-root">
       <div className="nav-inner">
-        {/* Left: Logo/Brand */}
+        {/* Brand/Logo */}
         <div className="nav-brand" style={{ display: "flex", alignItems: "center" }}>
           <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <img
@@ -57,7 +57,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Middle: Desktop links */}
+        {/* Desktop links */}
         <div className="navbar-links-desktop">
           <Link to="/gyms">Gyms</Link>
           <Link to="/about">About</Link>
@@ -69,7 +69,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Right: Hamburger + Theme + Auth */}
+        {/* Right section: Hamburger, Theme, Auth */}
         <div className="nav-icons">
           {/* Hamburger for mobile */}
           <button
@@ -83,10 +83,10 @@ export default function Navbar() {
           <ThemeToggle />
           {!user ? (
             <>
-              <Link to="/login" className="nav-profile-login">
+              <Link to="/login" className="nav-btn">
                 Login
               </Link>
-              <Link to="/signup" className="nav-fab">
+              <Link to="/signup" className="nav-btn" style={{ marginRight: 0 }}>
                 Sign Up
               </Link>
             </>
