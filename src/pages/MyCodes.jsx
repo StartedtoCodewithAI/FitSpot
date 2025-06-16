@@ -9,14 +9,14 @@ function formatDate(date) {
 }
 
 // Helper: status label
-function getStatusLabel(session) {
-  if (!session.date) return "";
+function getStatusLabel(code) {
+  if (!code.date) return "";
   const today = new Date();
-  const sessionDate = new Date(session.date);
+  const codeDate = new Date(code.date);
   today.setHours(0, 0, 0, 0);
-  sessionDate.setHours(0, 0, 0, 0);
-  if (sessionDate.getTime() > today.getTime()) return "Upcoming";
-  if (sessionDate.getTime() === today.getTime()) return "Today";
+  codeDate.setHours(0, 0, 0, 0);
+  if (codeDate.getTime() > today.getTime()) return "Upcoming";
+  if (codeDate.getTime() === today.getTime()) return "Today";
   return "Past";
 }
 
@@ -70,15 +70,16 @@ export default function MyCodes() {
   const [copiedCode, setCopiedCode] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalSession, setModalSession] = useState(null);
+  const [modalCode, setModalCode] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ open: false, type: null, code: null });
 
   // Fetch codes on mount
   useEffect(() => {
     async function fetchCodes() {
       setLoading(true);
+      // Optionally: filter by user_id if needed
       const { data, error } = await supabase
-        .from("sessions")
+        .from("codes")
         .select("*")
         .order("date", { ascending: false });
 
@@ -118,7 +119,7 @@ export default function MyCodes() {
     const { type, code } = confirmModal;
     setActionLoading(code);
     if (type === "delete") {
-      const { error } = await supabase.from("sessions").delete().eq("code", code);
+      const { error } = await supabase.from("codes").delete().eq("code", code);
       if (!error) {
         setCodes(codes => codes.filter(b => b.code !== code));
         toast.success("Deleted!");
@@ -127,7 +128,7 @@ export default function MyCodes() {
       }
     }
     if (type === "markAsUsed") {
-      const { error } = await supabase.from("sessions").update({ used: true }).eq("code", code);
+      const { error } = await supabase.from("codes").update({ used: true }).eq("code", code);
       if (!error) {
         setCodes(codes => codes.map(b => b.code === code ? { ...b, used: true } : b));
         toast.success("Marked as used!");
@@ -140,13 +141,13 @@ export default function MyCodes() {
   }
 
   // Modal handlers
-  function openModal(session) {
-    setModalSession(session);
+  function openModal(code) {
+    setModalCode(code);
     setShowModal(true);
   }
   function closeModal() {
     setShowModal(false);
-    setModalSession(null);
+    setModalCode(null);
   }
 
   // Export to CSV
@@ -165,9 +166,9 @@ export default function MyCodes() {
     URL.revokeObjectURL(url);
   }
 
-  // Session details modal
-  function SessionModal({ session, onClose }) {
-    if (!session) return null;
+  // Code details modal
+  function CodeModal({ code, onClose }) {
+    if (!code) return null;
     return (
       <div
         style={{
@@ -196,23 +197,23 @@ export default function MyCodes() {
         >
           <FSButton
             onClick={onClose}
-            aria-label="Close session details"
+            aria-label="Close code details"
             style={{
               position: "absolute", top: 14, right: 18,
               background: "none", border: "none", fontSize: "1.5rem", color: "#64748b", cursor: "pointer"
             }}
           >×</FSButton>
-          <h2 style={{ color: "#2563eb" }}>Session Details</h2>
+          <h2 style={{ color: "#2563eb" }}>Code Details</h2>
           <div style={{ margin: "1.1rem 0" }}>
-            <div><strong>Code:</strong> <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{session.code}</span></div>
-            <div><strong>Gym:</strong> {session.gym}</div>
-            <div><strong>Date:</strong> {formatDate(session.date)}</div>
-            <div><strong>Time:</strong> {session.time}</div>
-            <div><strong>Status:</strong> {getStatusLabel(session)}</div>
-            <div><strong>Used:</strong> {session.used ? "Yes" : "No"}</div>
+            <div><strong>Code:</strong> <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{code.code}</span></div>
+            <div><strong>Gym:</strong> {code.gym}</div>
+            <div><strong>Date:</strong> {formatDate(code.date)}</div>
+            <div><strong>Time:</strong> {code.time}</div>
+            <div><strong>Status:</strong> {getStatusLabel(code)}</div>
+            <div><strong>Used:</strong> {code.used ? "Yes" : "No"}</div>
           </div>
           <FSButton
-            onClick={() => { handleCopy(session.code); }}
+            onClick={() => { handleCopy(code.code); }}
             style={{
               background: "#e0e7ef",
               color: "#2563eb",
@@ -227,9 +228,9 @@ export default function MyCodes() {
           >
             Copy Code
           </FSButton>
-          {!session.used && (
+          {!code.used && (
             <FSButton
-              onClick={() => { openConfirm("markAsUsed", session.code); onClose(); }}
+              onClick={() => { openConfirm("markAsUsed", code.code); onClose(); }}
               style={{
                 background: "#22c55e",
                 color: "#fff",
@@ -240,10 +241,10 @@ export default function MyCodes() {
                 fontSize: ".97rem",
                 cursor: "pointer"
               }}
-              disabled={actionLoading === session.code}
-              aria-disabled={actionLoading === session.code}
+              disabled={actionLoading === code.code}
+              aria-disabled={actionLoading === code.code}
             >
-              {actionLoading === session.code ? "Processing..." : "Mark as Used"}
+              {actionLoading === code.code ? "Processing..." : "Mark as Used"}
             </FSButton>
           )}
         </div>
@@ -254,7 +255,7 @@ export default function MyCodes() {
   return (
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "2.5rem 1rem", position: "relative" }}>
       <Toaster />
-      <h1 style={{ textAlign: "center", color: "#2563eb", marginBottom: 18 }}>My Session Codes</h1>
+      <h1 style={{ textAlign: "center", color: "#2563eb", marginBottom: 18 }}>My Codes</h1>
       <FSButton
         onClick={exportToCSV}
         style={{
@@ -269,7 +270,7 @@ export default function MyCodes() {
           cursor: "pointer",
           float: "right"
         }}
-        aria-label="Export session codes as CSV"
+        aria-label="Export codes as CSV"
       >
         Export as CSV
       </FSButton>
@@ -290,7 +291,7 @@ export default function MyCodes() {
             transition: "background 0.16s"
           }}
           onClick={() => setActiveTab("active")}
-          aria-label="Show active session codes"
+          aria-label="Show active codes"
         >Active</FSButton>
         <FSButton
           style={{
@@ -306,7 +307,7 @@ export default function MyCodes() {
             transition: "background 0.16s"
           }}
           onClick={() => setActiveTab("used")}
-          aria-label="Show used session codes"
+          aria-label="Show used codes"
         >Used</FSButton>
       </div>
 
@@ -464,8 +465,8 @@ export default function MyCodes() {
         </>
       )}
 
-      {/* Session details modal */}
-      {showModal && <SessionModal session={modalSession} onClose={closeModal} />}
+      {/* Code details modal */}
+      {showModal && <CodeModal code={modalCode} onClose={closeModal} />}
 
       {/* Global confirmation modal */}
       <ConfirmModal
@@ -474,7 +475,7 @@ export default function MyCodes() {
           confirmModal.type === "delete"
             ? "Are you sure you want to delete this code?"
             : confirmModal.type === "markAsUsed"
-            ? "Mark this session as used?"
+            ? "Mark this code as used?"
             : ""
         }
         onConfirm={handleConfirm}
