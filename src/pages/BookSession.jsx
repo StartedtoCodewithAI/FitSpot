@@ -9,20 +9,36 @@ export default function BookSession() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const initialGymName = location.state?.gymName || "";
+  // Accept the full gym object if passed via navigation, fallback to just id/name
+  const initialGymObj = location.state?.gym || null;
+  const initialGymName = initialGymObj?.name || location.state?.gymName || "";
   const initialTeamName = location.state?.teamName || "";
 
+  const [gym, setGym] = useState(initialGymObj);
   const [gymName, setGymName] = useState(initialGymName);
   const [teamName, setTeamName] = useState(initialTeamName);
 
+  // If gym object not passed, fetch it (update this logic as per your gym storage)
   useEffect(() => {
-    if (!gymName && gymId) {
-      setTimeout(() => {
+    // If already loaded, nothing to do
+    if (gym) return;
+    if (!gymId) return;
+    (async () => {
+      // Example: fetch from your gyms table
+      const { data, error } = await supabase
+        .from('gyms')
+        .select('*')
+        .eq('id', gymId)
+        .single();
+      if (data) {
+        setGym(data);
+        setGymName(data.name);
+      } else {
         setGymName("Demo Gym " + gymId);
         setTeamName("Default Team");
-      }, 400);
-    }
-  }, [gymId, gymName]);
+      }
+    })();
+  }, [gym, gymId]);
 
   const [step, setStep] = useState(1);
   const [date, setDate] = useState('');
@@ -61,13 +77,17 @@ export default function BookSession() {
       return;
     }
 
-    // Insert into the correct table: 'codes'
+    // Save the FULL gym object (with lat/lng) in the booking!
+    const gymToSave = gym 
+      ? { id: gym.id, name: gym.name, lat: gym.lat, lng: gym.lng }
+      : { id: gymId, name: gymName };
+
     const { error: insertError } = await supabase
       .from("codes")
       .insert([{
         user_id: user.id,
         code,
-        gym: gymId,
+        gym: gymToSave,
         date,
         time,
         used: false,
