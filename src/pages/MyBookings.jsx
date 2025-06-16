@@ -57,12 +57,15 @@ export default function MyBookings() {
   });
 
   return (
-    <div style={{
-      maxWidth: 700,
-      margin: "0 auto",
-      padding: "2.5rem 1rem 3rem 1rem",
-      minHeight: "80vh"
-    }}>
+    <div
+      className="container"
+      style={{
+        maxWidth: 1200,
+        margin: "0 auto",
+        padding: "2rem 1rem 3rem 1rem",
+        minHeight: "80vh"
+      }}
+    >
       <h2 style={{
         fontSize: "2rem",
         fontWeight: 800,
