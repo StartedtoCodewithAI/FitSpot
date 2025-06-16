@@ -61,16 +61,13 @@ export default function BookSession() {
       return;
     }
 
-    const gymObj = { name: gymName };
-
-    // --- FIX: Make sure this table matches what MyCodes.jsx expects! ---
-    // Change "codes" to "sessions" if that's where your codes should go.
+    // Insert gymId (not gymObj) here!
     const { error: insertError } = await supabase
-      .from("sessions") // <-- use "sessions" for consistency!
+      .from("sessions")
       .insert([{
         user_id: user.id,
         code,
-        gym: gymObj,
+        gym: gymId,    // <--- THIS IS THE CORRECT LINE
         date,
         time,
         used: false,
