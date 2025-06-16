@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import BookingSuccessModal from '../components/BookingSuccessModal';
 import { supabase } from '../supabaseClient';
 import FSButton from "../components/FSButton";
@@ -7,6 +7,7 @@ import FSButton from "../components/FSButton";
 export default function BookSession() {
   const { gymId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const initialGymName = location.state?.gymName || "";
   const initialTeamName = location.state?.teamName || "";
@@ -61,8 +62,11 @@ export default function BookSession() {
     }
 
     const gymObj = { name: gymName };
+
+    // --- FIX: Make sure this table matches what MyCodes.jsx expects! ---
+    // Change "codes" to "sessions" if that's where your codes should go.
     const { error: insertError } = await supabase
-      .from("codes")
+      .from("sessions") // <-- use "sessions" for consistency!
       .insert([{
         user_id: user.id,
         code,
@@ -81,6 +85,9 @@ export default function BookSession() {
     setModalOpen(true);
     setStep(4);
   };
+
+  // Go to My Codes handler
+  const goToMyCodes = () => navigate('/my-codes');
 
   return (
     <div style={{ maxWidth: 500, margin: "40px auto", background: "#fff", borderRadius: 12, boxShadow: "0 2px 16px #6C47FF11", padding: 28 }}>
@@ -155,6 +162,23 @@ export default function BookSession() {
         <>
           <h4>Booking Complete!</h4>
           <div>Your code will also be shown in a popup.</div>
+          {/* --- Add a button to go to My Codes --- */}
+          <FSButton
+            onClick={goToMyCodes}
+            style={{
+              marginTop: 22,
+              fontWeight: 700,
+              fontSize: 17,
+              padding: "0.8rem 2rem",
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer"
+            }}
+          >
+            Go to My Codes
+          </FSButton>
         </>
       )}
       <BookingSuccessModal
@@ -165,6 +189,7 @@ export default function BookSession() {
         date={date}
         time={time}
         message="You're all set! Show this code at reception."
+        // Optionally: add a button to go to My Codes in your BookingSuccessModal as well
       />
     </div>
   );
