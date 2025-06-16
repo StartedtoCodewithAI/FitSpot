@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import SearchBar from "../components/SearchBar";
 import FSButton from "../components/FSButton";
@@ -33,6 +33,7 @@ function saveFavorites(favorites) {
 
 export default function Gyms() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(undefined); // undefined = loading, null = not logged in, object = logged in
   const [userLocation, setUserLocation] = useState(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
@@ -44,6 +45,9 @@ export default function Gyms() {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("distance");
+
+  // --- Enhancement: Success state if a code was just created ---
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => saveFavorites(favorites), [favorites]);
 
@@ -57,9 +61,16 @@ export default function Gyms() {
         navigate("/login?redirect=gyms");
       }
     });
-    // Optionally, you can subscribe to auth changes here too
-    // (not strictly necessary for this page)
   }, [navigate]);
+
+  // Show success after redirect from booking if location state has { codeCreated: true }
+  useEffect(() => {
+    if (location.state?.codeCreated) {
+      setShowSuccess(true);
+      // clear the state so it doesn't persist after reload
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   // Early out: if loading user status, show nothing
   if (user === undefined) return <div style={{ padding: 32 }}>Loading...</div>;
@@ -214,6 +225,42 @@ export default function Gyms() {
   return (
     <div style={{ padding: "2rem", minHeight: "80vh" }}>
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
+
+      {/* --- Success Message after booking a session/code --- */}
+      {showSuccess && (
+        <div style={{
+          background: "#e0ffe6",
+          color: "#25633e",
+          padding: "1.2rem 2rem",
+          borderRadius: 10,
+          marginBottom: 28,
+          maxWidth: 520,
+          marginLeft: "auto",
+          marginRight: "auto",
+          textAlign: "center",
+          boxShadow: "0 2px 12px #22c55e18"
+        }}>
+          🎉 <b>Your code has been created!</b>
+          <br />
+          <FSButton
+            style={{
+              marginTop: 16,
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: 10,
+              padding: "0.82rem 2.2rem",
+              fontWeight: 700,
+              fontSize: "1.1rem",
+              boxShadow: "0 2px 10px #2563eb25",
+              cursor: "pointer"
+            }}
+            onClick={() => navigate("/my-codes")}
+          >
+            Go to My Codes
+          </FSButton>
+        </div>
+      )}
 
       <div style={{ fontSize: "0.95rem", color: "#888", marginBottom: 16 }}>
         <b>Tip:</b> Searching within
