@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
+import moment from "moment";
 import { supabase } from "../supabaseClient";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useNavigate } from "react-router-dom";
-import moment from "moment";
+import FSButton from "../components/FSButton";
 
 const localizer = momentLocalizer(moment);
 
@@ -30,13 +31,13 @@ export default function MyCalendar() {
       } else {
         // Map bookings to calendar events
         setEvents(
-          data
+          (data || [])
             .filter(b => b.date)
             .map(b => ({
               id: b.id || b.code,
               title: `Session @ ${b.gym?.name || "Gym"}`,
               start: new Date(`${b.date}T${b.time || "09:00"}`),
-              end: new Date(`${b.date}T${b.time || "10:00"}`), // 1 hour default
+              end: new Date(`${b.date}T${b.time || "10:00"}`), // 1-hour default
               booking: b,
             }))
         );
@@ -47,7 +48,6 @@ export default function MyCalendar() {
   }, []);
 
   function eventStyleGetter(event) {
-    // Optionally style past/future events
     const now = new Date();
     if (event.start < now) {
       return { style: { backgroundColor: "#cbd5e1" } };
@@ -55,9 +55,25 @@ export default function MyCalendar() {
     return { style: { backgroundColor: "#2563eb", color: "#fff" } };
   }
 
+  // Optional: show booking details on event click
+  function onSelectEvent(event) {
+    // You can navigate or show a modal with event.booking details
+    navigate("/my-codes", { state: { highlight: event.booking.code } });
+  }
+
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto", background: "#fff", borderRadius: 12, boxShadow: "0 2px 16px #6C47FF11", padding: 32 }}>
-      <h2 style={{ color: "#2563eb", marginBottom: 18 }}>My Session Calendar</h2>
+    <div style={{
+      maxWidth: 900,
+      margin: "40px auto",
+      background: "#fff",
+      borderRadius: 12,
+      boxShadow: "0 2px 16px #6C47FF11",
+      padding: 32
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2 style={{ color: "#2563eb", marginBottom: 18 }}>My Session Calendar</h2>
+        <FSButton onClick={() => navigate("/my-codes")}>My Codes</FSButton>
+      </div>
       {loading ? (
         <div>Loading...</div>
       ) : (
@@ -68,9 +84,7 @@ export default function MyCalendar() {
           endAccessor="end"
           style={{ height: 600 }}
           eventPropGetter={eventStyleGetter}
-          onSelectEvent={event =>
-            navigate(`/my-codes`, { state: { highlight: event.booking.code } })
-          }
+          onSelectEvent={onSelectEvent}
         />
       )}
     </div>
