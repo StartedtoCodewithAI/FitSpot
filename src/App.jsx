@@ -11,7 +11,7 @@ import Signup from './pages/Signup';
 import BookSession from './pages/BookSession';
 import MyCodes from './pages/MyCodes';
 import MyBookings from './pages/MyBookings';
-import MyCalendar from './pages/MyCalendar'; // <-- Add this line
+import MyCalendar from './pages/Mycalendar'; // <-- Add this line
 
 // Optional: Prevents scroll-stuck on route change (improves mobile feel)
 function ScrollToTop() {
