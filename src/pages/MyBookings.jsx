@@ -3,6 +3,11 @@ import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import FSButton from "../components/FSButton";
 
+// Helper: format date to "YYYY-MM-DD"
+function formatDate(date) {
+  return date ? new Date(date).toLocaleDateString() : "";
+}
+
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +16,6 @@ export default function MyBookings() {
 
   useEffect(() => {
     let isMounted = true;
-
     async function fetchBookings() {
       setLoading(true);
       setFetchError("");
@@ -22,10 +26,9 @@ export default function MyBookings() {
         setLoading(false);
         return;
       }
-
-      // Fetch bookings for this user from sessions, no join, just select *
+      // Fetch codes/bookings for this user
       const { data, error } = await supabase
-        .from("sessions")
+        .from("codes")
         .select("*")
         .eq("user_id", user.id)
         .order("date", { ascending: false })
@@ -38,11 +41,8 @@ export default function MyBookings() {
       }
       setLoading(false);
     }
-
     fetchBookings();
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
   // Split bookings into upcoming and past
@@ -106,7 +106,7 @@ export default function MyBookings() {
             ) : (
               <ul style={{ listStyle: "none", padding: 0 }}>
                 {upcoming.map((b, i) => (
-                  <li key={b.id || i} style={{
+                  <li key={b.id || b.code || i} style={{
                     background: "#f1f5f9",
                     borderRadius: 12,
                     padding: "1.2rem 1.3rem",
@@ -117,7 +117,7 @@ export default function MyBookings() {
                       {b.gym || "Gym"}
                     </div>
                     <div style={{ margin: "0.35rem 0", color: "#333" }}>
-                      <b>Date:</b> {b.date} <b>Time:</b> {b.time || "N/A"}
+                      <b>Date:</b> {formatDate(b.date)} <b>Time:</b> {b.time || "N/A"}
                     </div>
                     <div style={{ color: "#888" }}>
                       <b>Status:</b> {b.used ? "Checked In" : "Booked"}
@@ -146,7 +146,7 @@ export default function MyBookings() {
             ) : (
               <ul style={{ listStyle: "none", padding: 0 }}>
                 {past.map((b, i) => (
-                  <li key={b.id || i} style={{
+                  <li key={b.id || b.code || i} style={{
                     background: "#fff",
                     borderRadius: 12,
                     padding: "1.2rem 1.3rem",
@@ -157,7 +157,7 @@ export default function MyBookings() {
                       {b.gym || "Gym"}
                     </div>
                     <div style={{ margin: "0.35rem 0", color: "#333" }}>
-                      <b>Date:</b> {b.date} <b>Time:</b> {b.time || "N/A"}
+                      <b>Date:</b> {formatDate(b.date)} <b>Time:</b> {b.time || "N/A"}
                     </div>
                     <div style={{ color: "#888" }}>
                       <b>Status:</b> {b.used ? "Checked In" : "Missed"}
