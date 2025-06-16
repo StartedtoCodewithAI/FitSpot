@@ -3,11 +3,6 @@ import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import FSButton from "../components/FSButton";
 
-// Helper: format date to "YYYY-MM-DD"
-function formatDate(date) {
-  return date ? new Date(date).toLocaleDateString() : "";
-}
-
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,17 +93,7 @@ export default function MyBookings() {
         </div>
       )}
 
-      {!loading && !fetchError && bookings.length === 0 && (
-        <div style={{
-          textAlign: "center",
-          color: "#888",
-          padding: "2rem 1rem"
-        }}>
-          No bookings found for your account.
-        </div>
-      )}
-
-      {!loading && !fetchError && bookings.length > 0 && (
+      {!loading && !fetchError && (
         <>
           <section style={{ marginBottom: "3rem" }}>
             <h3 style={{ color: "#2563eb", fontWeight: 700, fontSize: "1.2rem", marginBottom: 16 }}>
@@ -119,7 +104,7 @@ export default function MyBookings() {
             ) : (
               <ul style={{ listStyle: "none", padding: 0 }}>
                 {upcoming.map((b, i) => (
-                  <li key={b.id || b.code || i} style={{
+                  <li key={b.id || i} style={{
                     background: "#f1f5f9",
                     borderRadius: 12,
                     padding: "1.2rem 1.3rem",
@@ -127,10 +112,10 @@ export default function MyBookings() {
                     boxShadow: "0 2px 8px #2563eb13"
                   }}>
                     <div style={{ fontWeight: 700, color: "#2563eb" }}>
-                      {b.gym || "Gym"}
+                      {b.gym?.name || b.gym || "Gym"}
                     </div>
                     <div style={{ margin: "0.35rem 0", color: "#333" }}>
-                      <b>Date:</b> {formatDate(b.date)} <b>Time:</b> {b.time || "N/A"}
+                      <b>Date:</b> {b.date} <b>Time:</b> {b.time || "N/A"}
                     </div>
                     <div style={{ color: "#888" }}>
                       <b>Status:</b> {b.used ? "Checked In" : "Booked"}
@@ -159,7 +144,7 @@ export default function MyBookings() {
             ) : (
               <ul style={{ listStyle: "none", padding: 0 }}>
                 {past.map((b, i) => (
-                  <li key={b.id || b.code || i} style={{
+                  <li key={b.id || i} style={{
                     background: "#fff",
                     borderRadius: 12,
                     padding: "1.2rem 1.3rem",
@@ -167,10 +152,10 @@ export default function MyBookings() {
                     boxShadow: "0 2px 8px #2563eb13"
                   }}>
                     <div style={{ fontWeight: 700, color: "#2563eb" }}>
-                      {b.gym || "Gym"}
+                      {b.gym?.name || b.gym || "Gym"}
                     </div>
                     <div style={{ margin: "0.35rem 0", color: "#333" }}>
-                      <b>Date:</b> {formatDate(b.date)} <b>Time:</b> {b.time || "N/A"}
+                      <b>Date:</b> {b.date} <b>Time:</b> {b.time || "N/A"}
                     </div>
                     <div style={{ color: "#888" }}>
                       <b>Status:</b> {b.used ? "Checked In" : "Missed"}
