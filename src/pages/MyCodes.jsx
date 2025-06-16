@@ -163,27 +163,31 @@ export default function MyCodes() {
   const [showModal, setShowModal] = useState(false);
   const [modalCode, setModalCode] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ open: false, type: null, code: null });
+  const [errorMsg, setErrorMsg] = useState("");
 
-  // Fetch codes on mount (optionally filter by user)
+  // Fetch codes for the current user only
   useEffect(() => {
     async function fetchCodes() {
       setLoading(true);
-      // Optionally: filter by user_id if you want only user's codes
-      // const { data: userData } = await supabase.auth.getUser();
-      // const userId = userData?.user?.id;
-      // const { data, error } = await supabase
-      //   .from("codes")
-      //   .select("*")
-      //   .eq("user_id", userId)
-      //   .order("date", { ascending: false });
-      
+      setErrorMsg("");
+      // Get user
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (userError || !userId) {
+        setErrorMsg("You must be logged in to view your codes.");
+        setCodes([]);
+        setLoading(false);
+        return;
+      }
+      // Fetch only this user's codes
       const { data, error } = await supabase
         .from("codes")
         .select("*")
+        .eq("user_id", userId)
         .order("date", { ascending: false });
 
       if (error) {
-        toast.error("Failed to fetch codes.");
+        setErrorMsg("Failed to fetch codes. Please try again later.");
         setCodes([]);
       } else {
         setCodes(data || []);
@@ -329,6 +333,20 @@ export default function MyCodes() {
           aria-label="Show used codes"
         >Used</FSButton>
       </div>
+
+      {errorMsg && (
+        <div style={{
+          background: "#fee2e2",
+          color: "#b91c1c",
+          padding: "1.5rem 1rem",
+          borderRadius: 10,
+          margin: "2rem 0",
+          textAlign: "center",
+          fontWeight: 600,
+        }}>
+          {errorMsg}
+        </div>
+      )}
 
       {loading ? (
         <div style={{ textAlign: "center", color: "#2563eb", marginTop: 30 }}>Loading...</div>
