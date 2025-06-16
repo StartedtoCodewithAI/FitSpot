@@ -275,4 +275,257 @@ export default function MyCodes() {
     openConfirm("markAsUsed", code);
   };
 
-  // START OF RENDER RETURN (stop here for first half)
+   return (
+    <div style={{ maxWidth: 700, margin: "0 auto", padding: "2.5rem 1rem", position: "relative" }}>
+      <Toaster />
+      <h1 style={{ textAlign: "center", color: "#2563eb", marginBottom: 18 }}>My Codes</h1>
+      <FSButton
+        onClick={exportToCSV}
+        style={{
+          marginBottom: 16,
+          background: "#2563eb",
+          color: "#fff",
+          border: "none",
+          borderRadius: 8,
+          fontWeight: 700,
+          fontSize: "1rem",
+          padding: "0.5rem 1rem",
+          cursor: "pointer",
+          float: "right"
+        }}
+        aria-label="Export codes as CSV"
+      >
+        Export as CSV
+      </FSButton>
+      <div style={{ clear: "both" }} />
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+        <FSButton
+          style={{
+            flex: 1,
+            padding: "0.7rem 0",
+            background: activeTab === "active" ? "#2563eb" : "#f1f5f9",
+            color: activeTab === "active" ? "#fff" : "#2563eb",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: 700,
+            fontSize: "1rem",
+            cursor: "pointer",
+            transition: "background 0.16s"
+          }}
+          onClick={() => setActiveTab("active")}
+          aria-label="Show active codes"
+        >Active</FSButton>
+        <FSButton
+          style={{
+            flex: 1,
+            padding: "0.7rem 0",
+            background: activeTab === "used" ? "#2563eb" : "#f1f5f9",
+            color: activeTab === "used" ? "#fff" : "#2563eb",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: 700,
+            fontSize: "1rem",
+            cursor: "pointer",
+            transition: "background 0.16s"
+          }}
+          onClick={() => setActiveTab("used")}
+          aria-label="Show used codes"
+        >Used</FSButton>
+      </div>
+
+      {errorMsg && (
+        <div style={{
+          background: "#fee2e2",
+          color: "#b91c1c",
+          padding: "1.5rem 1rem",
+          borderRadius: 10,
+          margin: "2rem 0",
+          textAlign: "center",
+          fontWeight: 600,
+        }}>
+          {errorMsg}
+        </div>
+      )}
+
+      {loading ? (
+        <div style={{ textAlign: "center", color: "#2563eb", marginTop: 30 }}>Loading...</div>
+      ) : (
+        <>
+          {activeTab === "active" && (
+            filteredActive.length === 0 ? (
+              <div style={{
+                padding: "2rem",
+                borderRadius: 12,
+                background: "#f1f5f9",
+                textAlign: "center",
+                color: "#64748b",
+                marginTop: 28
+              }}>
+                No active codes found.
+              </div>
+            ) : (
+              <div>
+                {filteredActive.map((b, i) => (
+                  <div key={b.id || b.code || i} style={{
+                    background: "#fff",
+                    border: "1px solid #e0e7ef",
+                    borderRadius: 10,
+                    padding: "1.2rem 1rem 1.2rem 1.5rem",
+                    marginBottom: 18,
+                    boxShadow: "0 2px 10px #2563eb10",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    flexWrap: "wrap"
+                  }}>
+                    <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openModal(b)}>
+                      <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code || "No Code"}</div>
+                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym || "Unknown Gym"}</div>
+                      <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date) || "No Date"} {b.time || ""}</div>
+                      <div style={{ fontWeight: 500, color: "#22c55e", fontSize: "0.97rem" }}>{getStatusLabel(b)}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <FSButton
+                        onClick={() => handleCopy(b.code)}
+                        style={{
+                          background: "#e0e7ef",
+                          color: "#2563eb",
+                          border: "none",
+                          borderRadius: 7,
+                          padding: "0.5rem 1rem",
+                          fontWeight: 700,
+                          fontSize: ".97rem",
+                          cursor: "pointer"
+                        }}
+                        aria-label={`Copy code ${b.code}`}
+                        disabled={actionLoading === b.code}
+                      >
+                        {copiedCode === b.code ? "Copied!" : "Copy"}
+                      </FSButton>
+                      <FSButton
+                        onClick={() => openConfirm("markAsUsed", b.code)}
+                        style={{
+                          background: "#22c55e",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 7,
+                          padding: "0.5rem 1.1rem",
+                          fontWeight: 700,
+                          fontSize: ".97rem",
+                          cursor: "pointer"
+                        }}
+                        disabled={actionLoading === b.code}
+                        aria-disabled={actionLoading === b.code}
+                      >
+                        {actionLoading === b.code ? "Processing..." : "Mark as Used"}
+                      </FSButton>
+                      <FSButton
+                        onClick={() => openConfirm("delete", b.code)}
+                        style={{
+                          background: "#fee2e2",
+                          color: "#dc2626",
+                          border: "none",
+                          borderRadius: 7,
+                          padding: "0.5rem 1.1rem",
+                          fontWeight: 700,
+                          fontSize: ".97rem",
+                          cursor: "pointer"
+                        }}
+                        disabled={actionLoading === b.code}
+                        aria-disabled={actionLoading === b.code}
+                      >
+                        {actionLoading === b.code ? "Processing..." : "Delete"}
+                      </FSButton>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+
+          {activeTab === "used" && (
+            filteredUsed.length === 0 ? (
+              <div style={{
+                padding: "2rem",
+                borderRadius: 12,
+                background: "#f1f5f9",
+                textAlign: "center",
+                color: "#64748b",
+                marginTop: 28
+              }}>
+                No used codes found.
+              </div>
+            ) : (
+              <div>
+                {filteredUsed.map((b, i) => (
+                  <div key={b.id || b.code || i} style={{
+                    background: "#fff",
+                    border: "1px solid #e0e7ef",
+                    borderRadius: 10,
+                    padding: "1.2rem 1rem 1.2rem 1.5rem",
+                    marginBottom: 18,
+                    boxShadow: "0 2px 10px #2563eb10",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    opacity: 0.7,
+                    flexWrap: "wrap"
+                  }}>
+                    <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openModal(b)}>
+                      <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code || "No Code"}</div>
+                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym || "Unknown Gym"}</div>
+                      <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date) || "No Date"} {b.time || ""}</div>
+                      <div style={{ fontWeight: 500, color: "#22c55e", fontSize: "0.97rem" }}>{getStatusLabel(b)}</div>
+                    </div>
+                    <FSButton
+                      onClick={() => handleCopy(b.code)}
+                      style={{
+                        background: "#e0e7ef",
+                        color: "#2563eb",
+                        border: "none",
+                        borderRadius: 7,
+                        padding: "0.5rem 1rem",
+                        fontWeight: 700,
+                        fontSize: ".97rem",
+                        cursor: "pointer"
+                      }}
+                      aria-label={`Copy code ${b.code}`}
+                    >
+                      {copiedCode === b.code ? "Copied!" : "Copy"}
+                    </FSButton>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </>
+      )}
+
+      {/* Code details modal */}
+      {showModal && (
+        <CodeModal
+          code={modalCode}
+          onClose={closeModal}
+          handleCopy={handleCopy}
+          handleMarkAsUsed={handleMarkAsUsed}
+          actionLoading={actionLoading}
+        />
+      )}
+
+      {/* Global confirmation modal */}
+      <ConfirmModal
+        open={confirmModal.open}
+        message={
+          confirmModal.type === "delete"
+            ? "Are you sure you want to delete this code?"
+            : confirmModal.type === "markAsUsed"
+            ? "Mark this code as used?"
+            : ""
+        }
+        onConfirm={handleConfirm}
+        onCancel={closeConfirm}
+      />
+    </div>
+  );
+}
