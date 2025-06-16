@@ -250,6 +250,7 @@ export default function MyCodes() {
         b.code?.toLowerCase().includes(lowerSearch))
   );
 
+  // Modal for session details
   function SessionModal({ session, onClose }) {
     if (!session) return null;
     return (
