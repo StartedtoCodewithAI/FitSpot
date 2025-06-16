@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
-import toast from "react-hot-toast"; // Make sure to have react-hot-toast installed
+import toast from "react-hot-toast";
 import FSButton from "../components/FSButton";
 
 const defaultProfile = {
@@ -178,15 +178,18 @@ export default function Profile() {
   if (!authUser) return <div>Please log in to view your profile.</div>;
 
   return (
-    <div className="profile-container" style={{
-      maxWidth: 540,
-      margin: "3.5rem auto",
-      background: "#fff",
-      borderRadius: 20,
-      boxShadow: "0 8px 32px rgba(0,0,0,0.09)",
-      padding: "2.4rem 2.1rem 1.7rem 2.1rem",
-      textAlign: "center"
-    }}>
+    <div
+      className="container"
+      style={{
+        maxWidth: 540,
+        margin: "3.5rem auto",
+        background: "#fff",
+        borderRadius: 20,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.09)",
+        padding: "2.4rem 2.1rem 1.7rem 2.1rem",
+        textAlign: "center"
+      }}
+    >
       <h1 style={{ color: "#2563eb", marginBottom: 20 }}>Your Profile</h1>
       <div style={{ marginBottom: 22, position: "relative" }}>
         {/* Avatar block */}
@@ -475,21 +478,21 @@ export default function Profile() {
       <style>
         {`
         @media (max-width: 480px) {
-          .profile-container {
+          .container {
             padding: 1rem 0.5rem !important;
             border-radius: 0 !important;
             box-shadow: none !important;
           }
-          .profile-container input,
-          .profile-container textarea,
-          .profile-container select {
+          .container input,
+          .container textarea,
+          .container select {
             font-size: 1.1rem;
             padding: 10px;
           }
-          .profile-container h1 {
+          .container h1 {
             font-size: 1.4rem !important;
           }
-          .profile-container button {
+          .container button {
             font-size: 1.08rem !important;
             padding: 0.8rem 1.2rem;
           }
