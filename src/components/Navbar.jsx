@@ -263,7 +263,7 @@ export default function Navbar() {
           position: fixed;
           inset: 0;
           background: rgba(24,30,40,0.17);
-          z-index: 9999;
+          z-index: 99998;
           justify-content: center;
           align-items: flex-start;
           animation: overlayFadeIn .18s;
@@ -291,7 +291,7 @@ export default function Navbar() {
           top: 0;
           right: 0;
           left: 0;
-          z-index: 10000;
+          z-index: 99999; /* <-- raised z-index for menu */
           pointer-events: auto;
         }
         .navbar-links-mobile.open {
