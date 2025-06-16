@@ -61,13 +61,13 @@ export default function BookSession() {
       return;
     }
 
-    // Insert gymId (not gymObj) here!
+    // Insert into the correct table: 'codes'
     const { error: insertError } = await supabase
-      .from("sessions")
+      .from("codes")
       .insert([{
         user_id: user.id,
         code,
-        gym: gymId,    // <--- THIS IS THE CORRECT LINE
+        gym: gymId,
         date,
         time,
         used: false,
@@ -159,7 +159,6 @@ export default function BookSession() {
         <>
           <h4>Booking Complete!</h4>
           <div>Your code will also be shown in a popup.</div>
-          {/* --- Add a button to go to My Codes --- */}
           <FSButton
             onClick={goToMyCodes}
             style={{
@@ -186,7 +185,6 @@ export default function BookSession() {
         date={date}
         time={time}
         message="You're all set! Show this code at reception."
-        // Optionally: add a button to go to My Codes in your BookingSuccessModal as well
       />
     </div>
   );
