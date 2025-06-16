@@ -77,10 +77,9 @@ export default function MyCodes() {
   useEffect(() => {
     async function fetchCodes() {
       setLoading(true);
-      // TODO: Adjust table/column names as per your Supabase schema
       const { data, error } = await supabase
         .from("sessions")
-        .select("*, gym:gyms(*)")
+        .select("*")
         .order("date", { ascending: false });
 
       if (error) {
@@ -154,7 +153,7 @@ export default function MyCodes() {
   function exportToCSV() {
     const header = "Code,Gym,Date,Time,Status,Used\n";
     const rows = codes.map(b =>
-      [b.code, b.gym?.name || "", formatDate(b.date), b.time || "", getStatusLabel(b), b.used ? "Yes" : "No"].join(",")
+      [b.code, b.gym || "", formatDate(b.date), b.time || "", getStatusLabel(b), b.used ? "Yes" : "No"].join(",")
     ).join("\n");
     const csv = header + rows;
     const blob = new Blob([csv], { type: "text/csv" });
@@ -206,25 +205,11 @@ export default function MyCodes() {
           <h2 style={{ color: "#2563eb" }}>Session Details</h2>
           <div style={{ margin: "1.1rem 0" }}>
             <div><strong>Code:</strong> <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{session.code}</span></div>
-            <div><strong>Gym:</strong> {session.gym?.name}</div>
+            <div><strong>Gym:</strong> {session.gym}</div>
             <div><strong>Date:</strong> {formatDate(session.date)}</div>
             <div><strong>Time:</strong> {session.time}</div>
             <div><strong>Status:</strong> {getStatusLabel(session)}</div>
             <div><strong>Used:</strong> {session.used ? "Yes" : "No"}</div>
-            {session.gym?.lat && session.gym?.lng && (
-              <div style={{ marginTop: 10 }}>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${session.gym.lat},${session.gym.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#2563eb",
-                    textDecoration: "underline",
-                    fontWeight: 600
-                  }}
-                >Get directions</a>
-              </div>
-            )}
           </div>
           <FSButton
             onClick={() => { handleCopy(session.code); }}
@@ -358,7 +343,7 @@ export default function MyCodes() {
                   }}>
                     <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openModal(b)}>
                       <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code}</div>
-                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym?.name}</div>
+                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym}</div>
                       <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date)} {b.time}</div>
                       <div style={{ fontWeight: 500, color: "#22c55e", fontSize: "0.97rem" }}>{getStatusLabel(b)}</div>
                     </div>
@@ -451,7 +436,7 @@ export default function MyCodes() {
                   }}>
                     <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openModal(b)}>
                       <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code}</div>
-                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym?.name}</div>
+                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym}</div>
                       <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date)} {b.time}</div>
                       <div style={{ fontWeight: 500, color: "#22c55e", fontSize: "0.97rem" }}>{getStatusLabel(b)}</div>
                     </div>
