@@ -51,7 +51,6 @@ export default function Gyms() {
 
   useEffect(() => saveFavorites(favorites), [favorites]);
 
-  // Route protection: check user status before doing anything else
   useEffect(() => {
     supabase.auth.getSession().then(({ data: sessionData }) => {
       if (sessionData?.session?.user) {
@@ -63,16 +62,13 @@ export default function Gyms() {
     });
   }, [navigate]);
 
-  // Show success after redirect from booking if location state has { codeCreated: true }
   useEffect(() => {
     if (location.state?.codeCreated) {
       setShowSuccess(true);
-      // clear the state so it doesn't persist after reload
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, navigate]);
 
-  // Early out: if loading user status, show nothing
   if (user === undefined) return <div style={{ padding: 32 }}>Loading...</div>;
 
   // Geolocation
@@ -155,7 +151,6 @@ export default function Gyms() {
     );
   };
 
-  // Sorting/filtering
   function getSortedGyms(gymArray) {
     let arr = [...gymArray];
     if (sortOption === "name") {
@@ -169,7 +164,7 @@ export default function Gyms() {
         return a.distance - b.distance;
       });
     } else {
-      arr.sort((a, b) => a.distance - b.distance); // Closest
+      arr.sort((a, b) => a.distance - b.distance);
     }
     return arr;
   }
@@ -184,7 +179,6 @@ export default function Gyms() {
 
   const displayedGyms = getSortedGyms(filteredGyms);
 
-  // Skeleton loader for gym cards
   function GymCardSkeleton() {
     return (
       <div style={{
@@ -223,10 +217,17 @@ export default function Gyms() {
   }
 
   return (
-    <div style={{ padding: "2rem", minHeight: "80vh" }}>
+    <div
+      className="container"
+      style={{
+        maxWidth: 1200,
+        margin: "0 auto",
+        padding: "2rem 1rem 0 1rem",
+        flex: 1,
+        minHeight: "80vh"
+      }}
+    >
       <h1 style={{ color: "#2563eb", marginBottom: "1.4rem" }}>Real Gyms Near You</h1>
-
-      {/* --- Success Message after booking a session/code --- */}
       {showSuccess && (
         <div style={{
           background: "#e0ffe6",
