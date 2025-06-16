@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import SearchBar from '../components/SearchBar';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
@@ -8,7 +7,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
 
   const navigate = useNavigate();
 
@@ -50,15 +48,6 @@ export default function Login() {
 
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", padding: "2.5rem 1rem" }}>
-      {/* Search Bar at the top */}
-      <div style={{ margin: "18px 0 18px 0", maxWidth: 420 }}>
-        <SearchBar
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          placeholder="Search (does nothing here)..."
-        />
-      </div>
-
       {/* Login form card */}
       <div style={{
         background: "#fff",
