@@ -11,6 +11,7 @@ import Signup from './pages/Signup';
 import BookSession from './pages/BookSession';
 import MyCodes from './pages/MyCodes';
 import MyBookings from './pages/MyBookings';
+import MyCalendar from './pages/MyCalendar'; // <-- Add this line
 
 // Optional: Prevents scroll-stuck on route change (improves mobile feel)
 function ScrollToTop() {
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/book/:gymId" element={<BookSession />} />
           <Route path="/my-codes" element={<MyCodes />} />
           <Route path="/my-bookings" element={<MyBookings />} />
+          <Route path="/my-calendar" element={<MyCalendar />} /> {/* <-- Calendar route */}
         </Routes>
       </main>
     </Router>
