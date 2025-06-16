@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
-import SearchBar from "../components/SearchBar";
 import toast, { Toaster } from "react-hot-toast";
-import FSButton from "../components/FSButton"; // <-- Add this import
+import FSButton from "../components/FSButton";
 
 // Helper: format date to "YYYY-MM-DD"
 function formatDate(date) {
@@ -65,10 +64,109 @@ function ConfirmModal({ open, message, onConfirm, onCancel }) {
 }
 
 export default function MyCodes() {
-  // ... unchanged code until SessionModal below
+  const [codes, setCodes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("active");
+  const [copiedCode, setCopiedCode] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalSession, setModalSession] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ open: false, type: null, code: null });
 
-  // ...all code unchanged...
+  // Fetch codes on mount
+  useEffect(() => {
+    async function fetchCodes() {
+      setLoading(true);
+      // TODO: Adjust table/column names as per your Supabase schema
+      const { data, error } = await supabase
+        .from("sessions")
+        .select("*, gym:gyms(*)")
+        .order("date", { ascending: false });
 
+      if (error) {
+        toast.error("Failed to fetch codes.");
+        setCodes([]);
+      } else {
+        setCodes(data || []);
+      }
+      setLoading(false);
+    }
+    fetchCodes();
+  }, []);
+
+  // Filtering
+  const filteredActive = codes.filter(b => !b.used);
+  const filteredUsed = codes.filter(b => b.used);
+
+  // Copy code
+  function handleCopy(code) {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    toast.success("Code copied!");
+    setTimeout(() => setCopiedCode(null), 1500);
+  }
+
+  // Confirmation modal
+  function openConfirm(type, code) {
+    setConfirmModal({ open: true, type, code });
+  }
+  function closeConfirm() {
+    setConfirmModal({ open: false, type: null, code: null });
+  }
+
+  // Handle actions
+  async function handleConfirm() {
+    const { type, code } = confirmModal;
+    setActionLoading(code);
+    if (type === "delete") {
+      const { error } = await supabase.from("sessions").delete().eq("code", code);
+      if (!error) {
+        setCodes(codes => codes.filter(b => b.code !== code));
+        toast.success("Deleted!");
+      } else {
+        toast.error("Failed to delete.");
+      }
+    }
+    if (type === "markAsUsed") {
+      const { error } = await supabase.from("sessions").update({ used: true }).eq("code", code);
+      if (!error) {
+        setCodes(codes => codes.map(b => b.code === code ? { ...b, used: true } : b));
+        toast.success("Marked as used!");
+      } else {
+        toast.error("Failed to update.");
+      }
+    }
+    setActionLoading(null);
+    closeConfirm();
+  }
+
+  // Modal handlers
+  function openModal(session) {
+    setModalSession(session);
+    setShowModal(true);
+  }
+  function closeModal() {
+    setShowModal(false);
+    setModalSession(null);
+  }
+
+  // Export to CSV
+  function exportToCSV() {
+    const header = "Code,Gym,Date,Time,Status,Used\n";
+    const rows = codes.map(b =>
+      [b.code, b.gym?.name || "", formatDate(b.date), b.time || "", getStatusLabel(b), b.used ? "Yes" : "No"].join(",")
+    ).join("\n");
+    const csv = header + rows;
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "session_codes.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Session details modal
   function SessionModal({ session, onClose }) {
     if (!session) return null;
     return (
@@ -192,7 +290,6 @@ export default function MyCodes() {
       </FSButton>
       <div style={{ clear: "both" }} />
 
-      {/* ...streak section and tabs... */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
         <FSButton
           style={{
@@ -228,146 +325,158 @@ export default function MyCodes() {
         >Used</FSButton>
       </div>
 
-      {/* ...unchanged SearchBar and error message... */}
-
-      {/* Active Codes */}
-      {activeTab === "active" && (
-        filteredActive.length === 0 ? (
-          <div style={{
-            padding: "2rem",
-            borderRadius: 12,
-            background: "#f1f5f9",
-            textAlign: "center",
-            color: "#64748b",
-            marginTop: 28
-          }}>
-            No active codes found.
-          </div>
-        ) : (
-          <div>
-            {filteredActive.map(b => (
-              <div key={b.code} style={{
-                background: "#fff",
-                border: "1px solid #e0e7ef",
-                borderRadius: 10,
-                padding: "1.2rem 1rem 1.2rem 1.5rem",
-                marginBottom: 18,
-                boxShadow: "0 2px 10px #2563eb10",
-                display: "flex",
-                alignItems: "center",
-                gap: 16,
-                flexWrap: "wrap"
+      {loading ? (
+        <div style={{ textAlign: "center", color: "#2563eb", marginTop: 30 }}>Loading...</div>
+      ) : (
+        <>
+          {activeTab === "active" && (
+            filteredActive.length === 0 ? (
+              <div style={{
+                padding: "2rem",
+                borderRadius: 12,
+                background: "#f1f5f9",
+                textAlign: "center",
+                color: "#64748b",
+                marginTop: 28
               }}>
-                {/* ...unchanged session code and info... */}
-                <div style={{ display: "flex", gap: 8 }}>
-                  <FSButton
-                    onClick={() => handleCopy(b.code)}
-                    style={{
-                      background: "#e0e7ef",
-                      color: "#2563eb",
-                      border: "none",
-                      borderRadius: 7,
-                      padding: "0.5rem 1rem",
-                      fontWeight: 700,
-                      fontSize: ".97rem",
-                      cursor: "pointer"
-                    }}
-                    aria-label={`Copy code ${b.code}`}
-                    disabled={actionLoading === b.code}
-                  >
-                    {copiedCode === b.code ? "Copied!" : "Copy"}
-                  </FSButton>
-                  <FSButton
-                    onClick={() => openConfirm("markAsUsed", b.code)}
-                    style={{
-                      background: "#22c55e",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 7,
-                      padding: "0.5rem 1.1rem",
-                      fontWeight: 700,
-                      fontSize: ".97rem",
-                      cursor: "pointer"
-                    }}
-                    disabled={actionLoading === b.code}
-                    aria-disabled={actionLoading === b.code}
-                  >
-                    {actionLoading === b.code ? "Processing..." : "Mark as Used"}
-                  </FSButton>
-                  <FSButton
-                    onClick={() => openConfirm("delete", b.code)}
-                    style={{
-                      background: "#fee2e2",
-                      color: "#dc2626",
-                      border: "none",
-                      borderRadius: 7,
-                      padding: "0.5rem 1.1rem",
-                      fontWeight: 700,
-                      fontSize: ".97rem",
-                      cursor: "pointer"
-                    }}
-                    disabled={actionLoading === b.code}
-                    aria-disabled={actionLoading === b.code}
-                  >
-                    {actionLoading === b.code ? "Processing..." : "Delete"}
-                  </FSButton>
-                </div>
+                No active codes found.
               </div>
-            ))}
-          </div>
-        )
-      )}
+            ) : (
+              <div>
+                {filteredActive.map(b => (
+                  <div key={b.code} style={{
+                    background: "#fff",
+                    border: "1px solid #e0e7ef",
+                    borderRadius: 10,
+                    padding: "1.2rem 1rem 1.2rem 1.5rem",
+                    marginBottom: 18,
+                    boxShadow: "0 2px 10px #2563eb10",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    flexWrap: "wrap"
+                  }}>
+                    <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openModal(b)}>
+                      <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code}</div>
+                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym?.name}</div>
+                      <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date)} {b.time}</div>
+                      <div style={{ fontWeight: 500, color: "#22c55e", fontSize: "0.97rem" }}>{getStatusLabel(b)}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <FSButton
+                        onClick={() => handleCopy(b.code)}
+                        style={{
+                          background: "#e0e7ef",
+                          color: "#2563eb",
+                          border: "none",
+                          borderRadius: 7,
+                          padding: "0.5rem 1rem",
+                          fontWeight: 700,
+                          fontSize: ".97rem",
+                          cursor: "pointer"
+                        }}
+                        aria-label={`Copy code ${b.code}`}
+                        disabled={actionLoading === b.code}
+                      >
+                        {copiedCode === b.code ? "Copied!" : "Copy"}
+                      </FSButton>
+                      <FSButton
+                        onClick={() => openConfirm("markAsUsed", b.code)}
+                        style={{
+                          background: "#22c55e",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 7,
+                          padding: "0.5rem 1.1rem",
+                          fontWeight: 700,
+                          fontSize: ".97rem",
+                          cursor: "pointer"
+                        }}
+                        disabled={actionLoading === b.code}
+                        aria-disabled={actionLoading === b.code}
+                      >
+                        {actionLoading === b.code ? "Processing..." : "Mark as Used"}
+                      </FSButton>
+                      <FSButton
+                        onClick={() => openConfirm("delete", b.code)}
+                        style={{
+                          background: "#fee2e2",
+                          color: "#dc2626",
+                          border: "none",
+                          borderRadius: 7,
+                          padding: "0.5rem 1.1rem",
+                          fontWeight: 700,
+                          fontSize: ".97rem",
+                          cursor: "pointer"
+                        }}
+                        disabled={actionLoading === b.code}
+                        aria-disabled={actionLoading === b.code}
+                      >
+                        {actionLoading === b.code ? "Processing..." : "Delete"}
+                      </FSButton>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
 
-      {/* Used Codes */}
-      {activeTab === "used" && (
-        filteredUsed.length === 0 ? (
-          <div style={{
-            padding: "2rem",
-            borderRadius: 12,
-            background: "#f1f5f9",
-            textAlign: "center",
-            color: "#64748b",
-            marginTop: 28
-          }}>
-            No used codes found.
-          </div>
-        ) : (
-          <div>
-            {filteredUsed.map(b => (
-              <div key={b.code} style={{
-                background: "#fff",
-                border: "1px solid #e0e7ef",
-                borderRadius: 10,
-                padding: "1.2rem 1rem 1.2rem 1.5rem",
-                marginBottom: 18,
-                boxShadow: "0 2px 10px #2563eb10",
-                display: "flex",
-                alignItems: "center",
-                gap: 16,
-                opacity: 0.7,
-                flexWrap: "wrap"
+          {activeTab === "used" && (
+            filteredUsed.length === 0 ? (
+              <div style={{
+                padding: "2rem",
+                borderRadius: 12,
+                background: "#f1f5f9",
+                textAlign: "center",
+                color: "#64748b",
+                marginTop: 28
               }}>
-                {/* ...unchanged session code and info... */}
-                <FSButton
-                  onClick={() => handleCopy(b.code)}
-                  style={{
-                    background: "#e0e7ef",
-                    color: "#2563eb",
-                    border: "none",
-                    borderRadius: 7,
-                    padding: "0.5rem 1rem",
-                    fontWeight: 700,
-                    fontSize: ".97rem",
-                    cursor: "pointer"
-                  }}
-                  aria-label={`Copy code ${b.code}`}
-                >
-                  {copiedCode === b.code ? "Copied!" : "Copy"}
-                </FSButton>
+                No used codes found.
               </div>
-            ))}
-          </div>
-        )
+            ) : (
+              <div>
+                {filteredUsed.map(b => (
+                  <div key={b.code} style={{
+                    background: "#fff",
+                    border: "1px solid #e0e7ef",
+                    borderRadius: 10,
+                    padding: "1.2rem 1rem 1.2rem 1.5rem",
+                    marginBottom: 18,
+                    boxShadow: "0 2px 10px #2563eb10",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    opacity: 0.7,
+                    flexWrap: "wrap"
+                  }}>
+                    <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openModal(b)}>
+                      <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code}</div>
+                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym?.name}</div>
+                      <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date)} {b.time}</div>
+                      <div style={{ fontWeight: 500, color: "#22c55e", fontSize: "0.97rem" }}>{getStatusLabel(b)}</div>
+                    </div>
+                    <FSButton
+                      onClick={() => handleCopy(b.code)}
+                      style={{
+                        background: "#e0e7ef",
+                        color: "#2563eb",
+                        border: "none",
+                        borderRadius: 7,
+                        padding: "0.5rem 1rem",
+                        fontWeight: 700,
+                        fontSize: ".97rem",
+                        cursor: "pointer"
+                      }}
+                      aria-label={`Copy code ${b.code}`}
+                    >
+                      {copiedCode === b.code ? "Copied!" : "Copy"}
+                    </FSButton>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </>
       )}
 
       {/* Session details modal */}
