@@ -23,10 +23,10 @@ export default function MyBookings() {
         return;
       }
 
-      // Fetch bookings for this user from sessions, with gym details if available
+      // Fetch bookings for this user from sessions, no join, just select *
       const { data, error } = await supabase
         .from("sessions")
-        .select("*, gym:gyms(*)")
+        .select("*")
         .eq("user_id", user.id)
         .order("date", { ascending: false })
         .order("time", { ascending: false });
@@ -114,7 +114,7 @@ export default function MyBookings() {
                     boxShadow: "0 2px 8px #2563eb13"
                   }}>
                     <div style={{ fontWeight: 700, color: "#2563eb" }}>
-                      {b.gym?.name || "Gym"}
+                      {b.gym || "Gym"}
                     </div>
                     <div style={{ margin: "0.35rem 0", color: "#333" }}>
                       <b>Date:</b> {b.date} <b>Time:</b> {b.time || "N/A"}
@@ -154,7 +154,7 @@ export default function MyBookings() {
                     boxShadow: "0 2px 8px #2563eb13"
                   }}>
                     <div style={{ fontWeight: 700, color: "#2563eb" }}>
-                      {b.gym?.name || "Gym"}
+                      {b.gym || "Gym"}
                     </div>
                     <div style={{ margin: "0.35rem 0", color: "#333" }}>
                       <b>Date:</b> {b.date} <b>Time:</b> {b.time || "N/A"}
