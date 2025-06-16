@@ -350,7 +350,17 @@ export default function MyCodes() {
   }
 
   return (
-    <div style={{ maxWidth: 700, margin: "0 auto", padding: "2.5rem 1rem", position: "relative" }}>
+    <div
+      className="container"
+      style={{
+        maxWidth: 1200,
+        margin: "0 auto",
+        padding: "2rem 1rem 0 1rem",
+        flex: 1,
+        minHeight: "80vh",
+        position: "relative"
+      }}
+    >
       <Toaster />
       <h1 style={{ textAlign: "center", color: "#2563eb", marginBottom: 18 }}>My Session Codes</h1>
       <FSButton
