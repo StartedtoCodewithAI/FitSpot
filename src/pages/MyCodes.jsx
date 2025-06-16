@@ -3,24 +3,29 @@ import { supabase } from "../supabaseClient";
 import toast, { Toaster } from "react-hot-toast";
 import FSButton from "../components/FSButton";
 
-// Helper: format date to "YYYY-MM-DD"
+// Format date as "YYYY-MM-DD"
 function formatDate(date) {
-  return date ? new Date(date).toLocaleDateString() : "";
+  if (!date) return "";
+  try {
+    return new Date(date).toLocaleDateString();
+  } catch {
+    return "";
+  }
 }
 
-// Helper: status label
+// Status label for a code
 function getStatusLabel(code) {
   if (!code.date) return "";
   const today = new Date();
   const codeDate = new Date(code.date);
   today.setHours(0, 0, 0, 0);
   codeDate.setHours(0, 0, 0, 0);
-  if (codeDate.getTime() > today.getTime()) return "Upcoming";
+  if (codeDate > today) return "Upcoming";
   if (codeDate.getTime() === today.getTime()) return "Today";
   return "Past";
 }
 
-// Custom confirmation modal
+// Confirmation modal
 function ConfirmModal({ open, message, onConfirm, onCancel }) {
   if (!open) return null;
   return (
@@ -63,6 +68,92 @@ function ConfirmModal({ open, message, onConfirm, onCancel }) {
   );
 }
 
+// Code details modal
+function CodeModal({ code, onClose, handleCopy, handleMarkAsUsed, actionLoading }) {
+  if (!code) return null;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0, left: 0, width: "100vw", height: "100vh",
+        background: "rgba(30,41,59,0.22)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        zIndex: 99,
+      }}
+      onClick={onClose}
+      tabIndex={-1}
+      aria-modal="true"
+      role="dialog"
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 12,
+          padding: "2rem 2.2rem",
+          minWidth: 320,
+          maxWidth: "90vw",
+          boxShadow: "0 6px 30px #2563eb29",
+          position: "relative"
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <FSButton
+          onClick={onClose}
+          aria-label="Close code details"
+          style={{
+            position: "absolute", top: 14, right: 18,
+            background: "none", border: "none", fontSize: "1.5rem", color: "#64748b", cursor: "pointer"
+          }}
+        >×</FSButton>
+        <h2 style={{ color: "#2563eb" }}>Code Details</h2>
+        <div style={{ margin: "1.1rem 0" }}>
+          <div><strong>Code:</strong> <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{code.code || "N/A"}</span></div>
+          <div><strong>Gym:</strong> {code.gym || "Unknown Gym"}</div>
+          <div><strong>Date:</strong> {formatDate(code.date) || "No Date"}</div>
+          <div><strong>Time:</strong> {code.time || "No Time"}</div>
+          <div><strong>Status:</strong> {getStatusLabel(code)}</div>
+          <div><strong>Used:</strong> {code.used ? "Yes" : "No"}</div>
+        </div>
+        <FSButton
+          onClick={() => { handleCopy(code.code); }}
+          style={{
+            background: "#e0e7ef",
+            color: "#2563eb",
+            border: "none",
+            borderRadius: 7,
+            padding: "0.5rem 1.1rem",
+            fontWeight: 700,
+            fontSize: ".97rem",
+            cursor: "pointer",
+            marginRight: 10
+          }}
+        >
+          Copy Code
+        </FSButton>
+        {!code.used && (
+          <FSButton
+            onClick={() => { handleMarkAsUsed(code.code); onClose(); }}
+            style={{
+              background: "#22c55e",
+              color: "#fff",
+              border: "none",
+              borderRadius: 7,
+              padding: "0.5rem 1.1rem",
+              fontWeight: 700,
+              fontSize: ".97rem",
+              cursor: "pointer"
+            }}
+            disabled={actionLoading === code.code}
+            aria-disabled={actionLoading === code.code}
+          >
+            {actionLoading === code.code ? "Processing..." : "Mark as Used"}
+          </FSButton>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MyCodes() {
   const [codes, setCodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,11 +164,19 @@ export default function MyCodes() {
   const [modalCode, setModalCode] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ open: false, type: null, code: null });
 
-  // Fetch codes on mount
+  // Fetch codes on mount (optionally filter by user)
   useEffect(() => {
     async function fetchCodes() {
       setLoading(true);
-      // Optionally: filter by user_id if needed
+      // Optionally: filter by user_id if you want only user's codes
+      // const { data: userData } = await supabase.auth.getUser();
+      // const userId = userData?.user?.id;
+      // const { data, error } = await supabase
+      //   .from("codes")
+      //   .select("*")
+      //   .eq("user_id", userId)
+      //   .order("date", { ascending: false });
+      
       const { data, error } = await supabase
         .from("codes")
         .select("*")
@@ -100,6 +199,7 @@ export default function MyCodes() {
 
   // Copy code
   function handleCopy(code) {
+    if (!code) return;
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     toast.success("Code copied!");
@@ -141,8 +241,8 @@ export default function MyCodes() {
   }
 
   // Modal handlers
-  function openModal(code) {
-    setModalCode(code);
+  function openModal(codeObj) {
+    setModalCode(codeObj);
     setShowModal(true);
   }
   function closeModal() {
@@ -166,91 +266,10 @@ export default function MyCodes() {
     URL.revokeObjectURL(url);
   }
 
-  // Code details modal
-  function CodeModal({ code, onClose }) {
-    if (!code) return null;
-    return (
-      <div
-        style={{
-          position: "fixed",
-          top: 0, left: 0, width: "100vw", height: "100vh",
-          background: "rgba(30,41,59,0.22)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          zIndex: 99,
-        }}
-        onClick={onClose}
-        tabIndex={-1}
-        aria-modal="true"
-        role="dialog"
-      >
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: "2rem 2.2rem",
-            minWidth: 320,
-            maxWidth: "90vw",
-            boxShadow: "0 6px 30px #2563eb29",
-            position: "relative"
-          }}
-          onClick={e => e.stopPropagation()}
-        >
-          <FSButton
-            onClick={onClose}
-            aria-label="Close code details"
-            style={{
-              position: "absolute", top: 14, right: 18,
-              background: "none", border: "none", fontSize: "1.5rem", color: "#64748b", cursor: "pointer"
-            }}
-          >×</FSButton>
-          <h2 style={{ color: "#2563eb" }}>Code Details</h2>
-          <div style={{ margin: "1.1rem 0" }}>
-            <div><strong>Code:</strong> <span style={{ fontFamily: "monospace", fontWeight: 700 }}>{code.code}</span></div>
-            <div><strong>Gym:</strong> {code.gym}</div>
-            <div><strong>Date:</strong> {formatDate(code.date)}</div>
-            <div><strong>Time:</strong> {code.time}</div>
-            <div><strong>Status:</strong> {getStatusLabel(code)}</div>
-            <div><strong>Used:</strong> {code.used ? "Yes" : "No"}</div>
-          </div>
-          <FSButton
-            onClick={() => { handleCopy(code.code); }}
-            style={{
-              background: "#e0e7ef",
-              color: "#2563eb",
-              border: "none",
-              borderRadius: 7,
-              padding: "0.5rem 1.1rem",
-              fontWeight: 700,
-              fontSize: ".97rem",
-              cursor: "pointer",
-              marginRight: 10
-            }}
-          >
-            Copy Code
-          </FSButton>
-          {!code.used && (
-            <FSButton
-              onClick={() => { openConfirm("markAsUsed", code.code); onClose(); }}
-              style={{
-                background: "#22c55e",
-                color: "#fff",
-                border: "none",
-                borderRadius: 7,
-                padding: "0.5rem 1.1rem",
-                fontWeight: 700,
-                fontSize: ".97rem",
-                cursor: "pointer"
-              }}
-              disabled={actionLoading === code.code}
-              aria-disabled={actionLoading === code.code}
-            >
-              {actionLoading === code.code ? "Processing..." : "Mark as Used"}
-            </FSButton>
-          )}
-        </div>
-      </div>
-    );
-  }
+  // Helper for the modal to mark as used
+  const handleMarkAsUsed = async (code) => {
+    openConfirm("markAsUsed", code);
+  };
 
   return (
     <div style={{ maxWidth: 700, margin: "0 auto", padding: "2.5rem 1rem", position: "relative" }}>
@@ -329,8 +348,8 @@ export default function MyCodes() {
               </div>
             ) : (
               <div>
-                {filteredActive.map(b => (
-                  <div key={b.code} style={{
+                {filteredActive.map((b, i) => (
+                  <div key={b.id || b.code || i} style={{
                     background: "#fff",
                     border: "1px solid #e0e7ef",
                     borderRadius: 10,
@@ -343,9 +362,9 @@ export default function MyCodes() {
                     flexWrap: "wrap"
                   }}>
                     <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openModal(b)}>
-                      <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code}</div>
-                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym}</div>
-                      <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date)} {b.time}</div>
+                      <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code || "No Code"}</div>
+                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym || "Unknown Gym"}</div>
+                      <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date) || "No Date"} {b.time || ""}</div>
                       <div style={{ fontWeight: 500, color: "#22c55e", fontSize: "0.97rem" }}>{getStatusLabel(b)}</div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -421,8 +440,8 @@ export default function MyCodes() {
               </div>
             ) : (
               <div>
-                {filteredUsed.map(b => (
-                  <div key={b.code} style={{
+                {filteredUsed.map((b, i) => (
+                  <div key={b.id || b.code || i} style={{
                     background: "#fff",
                     border: "1px solid #e0e7ef",
                     borderRadius: 10,
@@ -436,9 +455,9 @@ export default function MyCodes() {
                     flexWrap: "wrap"
                   }}>
                     <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openModal(b)}>
-                      <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code}</div>
-                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym}</div>
-                      <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date)} {b.time}</div>
+                      <div style={{ fontWeight: 700, fontSize: "1.07rem", marginBottom: 2 }}>{b.code || "No Code"}</div>
+                      <div style={{ color: "#2563eb", fontWeight: 600 }}>{b.gym || "Unknown Gym"}</div>
+                      <div style={{ color: "#64748b", fontSize: "0.98rem" }}>{formatDate(b.date) || "No Date"} {b.time || ""}</div>
                       <div style={{ fontWeight: 500, color: "#22c55e", fontSize: "0.97rem" }}>{getStatusLabel(b)}</div>
                     </div>
                     <FSButton
@@ -466,7 +485,15 @@ export default function MyCodes() {
       )}
 
       {/* Code details modal */}
-      {showModal && <CodeModal code={modalCode} onClose={closeModal} />}
+      {showModal && (
+        <CodeModal
+          code={modalCode}
+          onClose={closeModal}
+          handleCopy={handleCopy}
+          handleMarkAsUsed={handleMarkAsUsed}
+          actionLoading={actionLoading}
+        />
+      )}
 
       {/* Global confirmation modal */}
       <ConfirmModal
