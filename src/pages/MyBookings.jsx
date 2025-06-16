@@ -50,7 +50,10 @@ export default function MyBookings() {
   const upcoming = [];
   const past = [];
   bookings.forEach(b => {
-    const bDate = new Date(b.date + "T" + (b.time || "00:00"));
+    if (!b.date) return past.push(b);
+    const dateString = typeof b.date === "string" ? b.date : b.date.toString();
+    const bDate = new Date(dateString + "T" + (b.time || "00:00"));
+    if (isNaN(bDate.getTime())) return past.push(b);
     if (bDate >= now) {
       upcoming.push(b);
     } else {
@@ -95,7 +98,17 @@ export default function MyBookings() {
         </div>
       )}
 
-      {!loading && !fetchError && (
+      {!loading && !fetchError && bookings.length === 0 && (
+        <div style={{
+          textAlign: "center",
+          color: "#888",
+          padding: "2rem 1rem"
+        }}>
+          No bookings found for your account.
+        </div>
+      )}
+
+      {!loading && !fetchError && bookings.length > 0 && (
         <>
           <section style={{ marginBottom: "3rem" }}>
             <h3 style={{ color: "#2563eb", fontWeight: 700, fontSize: "1.2rem", marginBottom: 16 }}>
