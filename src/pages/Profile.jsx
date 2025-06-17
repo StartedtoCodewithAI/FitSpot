@@ -100,7 +100,6 @@ export default function Profile() {
     getUserProfile();
   }, []);
 
-  // --- Stream Chat useEffect ---
   useEffect(() => {
     if (!authUser) return;
 
@@ -121,6 +120,13 @@ export default function Profile() {
         const data = await response.json();
         const token = data.token;
         // ----------------------------------------------
+
+        // DEBUG LOGGING
+        console.log("API Key:", apiKey);
+        console.log("User ID:", userId);
+        console.log("Name:", userName);
+        console.log("Avatar:", userImage);
+        console.log("Token:", token);
 
         await client.connectUser(
           {
@@ -153,7 +159,6 @@ export default function Profile() {
     };
     // eslint-disable-next-line
   }, [authUser, profile.name, profile.email, profile.avatar_url]);
-  // ----------------------------
 
   const handleSave = async (e) => {
     e.preventDefault();
