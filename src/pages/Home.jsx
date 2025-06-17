@@ -65,6 +65,7 @@ export default function Home() {
           margin: 0 auto;
           padding: 2rem 1rem 0 1rem;
           flex: 1;
+          /* No z-index or overflow here */
         }
         .hero {
           display: flex;
