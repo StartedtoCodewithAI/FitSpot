@@ -29,6 +29,17 @@ const USER_LINKS = [
   { to: "/my-calendar", label: NAV_LABELS.myCalendar },
 ];
 
+function getInitials(user) {
+  if (!user) return "";
+  if (user.user_metadata?.full_name) {
+    return user.user_metadata.full_name.split(" ").map(s => s[0]).join("").slice(0, 2).toUpperCase();
+  }
+  if (user.email) {
+    return user.email.slice(0, 2).toUpperCase();
+  }
+  return "U";
+}
+
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,12 +48,14 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (menuOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
+  // Auth state
   useEffect(() => {
     supabase.auth.getSession().then(({ data: sessionData }) => {
       setUser(sessionData?.session?.user || null);
@@ -53,11 +66,13 @@ export default function Navbar() {
     return () => listener?.unsubscribe?.();
   }, []);
 
+  // Close menus on route change
   useEffect(() => {
     setMenuOpen(false);
     setAvatarMenuOpen(false);
   }, [location]);
 
+  // Close menu on Escape
   useEffect(() => {
     if (!menuOpen) return;
     const onKeyDown = e => {
@@ -82,6 +97,7 @@ export default function Navbar() {
     };
   }, [avatarMenuOpen]);
 
+  // Overlay click for closing mobile menu
   const overlayRef = useCallback(node => {
     if (!node) return;
     function handleClick(e) {
@@ -99,15 +115,12 @@ export default function Navbar() {
     navigate("/login");
   }
 
-  function getInitials(user) {
+  // Helper: get user display name
+  function getDisplayName(user) {
     if (!user) return "";
-    if (user.user_metadata?.full_name) {
-      return user.user_metadata.full_name.split(" ").map(s=>s[0]).join("").slice(0,2).toUpperCase();
-    }
-    if (user.email) {
-      return user.email.slice(0,2).toUpperCase();
-    }
-    return "U";
+    if (user.user_metadata?.full_name) return user.user_metadata.full_name;
+    if (user.email) return user.email;
+    return "";
   }
 
   return (
@@ -123,7 +136,7 @@ export default function Navbar() {
         .navbar-link.active, .navbar-link:hover { background: #f3f6ff; color: #2563eb; }
         .navbar-link-disabled { pointer-events: none; opacity: 0.6; background: none !important; color: #aaa !important; cursor: not-allowed; }
         .nav-icons { display: flex; align-items: center; gap: 0.8rem; z-index: 10001; position: relative; }
-        .navbar-hamburger { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 42px; height: 42px; border: none; background: none; border-radius: 10px; margin-left: 0.4rem; cursor: pointer; transition: background 0.13s; }
+        .navbar-hamburger { display: none; flex-direction: column; justify-content: center; align-items: center; width: 42px; height: 42px; border: none; background: none; border-radius: 10px; margin-left: 0.4rem; cursor: pointer; transition: background 0.13s; }
         .navbar-hamburger:hover { background: #f3f6ff; }
         .hamburger-icon, .hamburger-icon::before, .hamburger-icon::after { display: block; background: #222; height: 3.3px; border-radius: 2px; width: 28px; transition: all .21s cubic-bezier(.4,1,.3,1); content: ''; position: relative;}
         .hamburger-icon::before, .hamburger-icon::after { content: ''; position: absolute; left: 0; width: 28px; height: 3.3px; background: #222; border-radius: 2px;}
@@ -137,7 +150,20 @@ export default function Navbar() {
         .nav-avatar-menu { position: relative; display: inline-block; }
         .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb22; color: #2563eb; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #2563eb55; margin-left: 0.6rem; transition: box-shadow .13s;}
         .nav-avatar:focus { outline: none; box-shadow: 0 0 0 2px #2563eb55; }
-        .avatar-dropdown { position: absolute; right: 0; top: 110%; min-width: 170px; background: #fff; border: 1px solid #e5e8ef; border-radius: 8px; box-shadow: 0 6px 24px #2222; z-index: 3000; display: flex; flex-direction: column; padding: 0.5rem 0; }
+        .avatar-dropdown {
+          position: absolute;
+          right: 0;
+          top: 110%;
+          min-width: 170px;
+          background: #fff;
+          border: 1px solid #e5e8ef;
+          border-radius: 8px;
+          box-shadow: 0 6px 24px #2222;
+          z-index: 99999 !important;
+          display: flex;
+          flex-direction: column;
+          padding: 0.5rem 0;
+        }
         .avatar-dropdown .dropdown-link { padding: 0.7rem 1.1rem; background: none; color: #202942; border: none; text-align: left; text-decoration: none; font-size: 1rem; cursor: pointer; transition: background 0.13s, color 0.13s;}
         .avatar-dropdown .dropdown-link:hover { background: #f3f6ff; color: #2563eb; }
         .navbar-overlay { display: none; }
@@ -146,6 +172,40 @@ export default function Navbar() {
         .navbar-links-mobile { display: none; background: #fff; border-radius: 22px; margin-top: 3.2rem; box-shadow: 0 8px 40px #2224; min-width: 90vw; max-width: 400px; width: 98vw; padding: 2.1rem 1.5rem 2rem 1.5rem; box-sizing: border-box; overflow-y: auto; animation: fadeInNavMenu .18s; flex-direction: column; position: fixed; top: 0; right: 0; left: 0; z-index: 99999;}
         .navbar-links-mobile.open { display: flex !important; }
         @keyframes fadeInNavMenu { from { opacity: 0; transform: translateY(-18px);} to { opacity: 1; transform: none;} }
+        .nav-menu-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+        .nav-menu-title { font-weight: 700; font-size: 1.13rem; letter-spacing: 0.5px;}
+        .menu-close-btn { background: none; border: none; font-size: 2rem; cursor: pointer; color: #aaa; transition: color .13s;}
+        .menu-close-btn:hover { color: #2563eb; }
+        .nav-section { margin-bottom: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem;}
+        .mobile-profile-header {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 1.3rem;
+        }
+        .mobile-profile-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: #2563eb22;
+          color: #2563eb;
+          font-size: 1.5rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid #2563eb55;
+          margin-bottom: 0.5rem;
+        }
+        .mobile-profile-name {
+          font-size: 1.06rem;
+          font-weight: 700;
+          color: #202942;
+        }
+        .mobile-profile-email {
+          font-size: 0.98rem;
+          color: #666;
+        }
         @media (max-width: 900px) {
           .navbar-links-desktop { display: none; }
           .navbar-hamburger { display: flex; }
@@ -224,6 +284,13 @@ export default function Navbar() {
                   &times;
                 </button>
               </div>
+              {user && (
+                <div className="mobile-profile-header">
+                  <div className="mobile-profile-avatar">{getInitials(user)}</div>
+                  <div className="mobile-profile-name">{getDisplayName(user)}</div>
+                  <div className="mobile-profile-email">{user.email}</div>
+                </div>
+              )}
               <div className="nav-section">
                 {NAV_LINKS.map(link =>
                   link.protected && !user ? (
@@ -252,9 +319,6 @@ export default function Navbar() {
                   <button className="nav-btn" style={{ width: "100%", textAlign: "left" }} onClick={handleLogout}>
                     {NAV_LABELS.logout}
                   </button>
-                )}
-                {user && (
-                  <span className="nav-avatar" style={{ marginTop: 16, marginLeft: 0 }}>{getInitials(user)}</span>
                 )}
               </div>
             </div>
