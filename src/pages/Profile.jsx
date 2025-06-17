@@ -103,7 +103,9 @@ export default function Profile() {
   useEffect(() => {
     if (!authUser) return;
 
-    const apiKey = "pths2aqgsqcm";
+    // ---- UPDATED API KEY BELOW ----
+    const apiKey = "wmdtapw82c5p";
+    // ------------------------------
     const userId = authUser.id || "demo-user";
     const userName = profile.name || profile.email || "Demo User";
     const userImage = profile.avatar_url || `https://getstream.io/random_png/?id=${userId}&name=${userName}`;
