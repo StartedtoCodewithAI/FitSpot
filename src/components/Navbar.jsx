@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import fitspotLogo from "../assets/FitSpot.png";
@@ -32,6 +32,8 @@ const USER_LINKS = [
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -53,6 +55,7 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setAvatarMenuOpen(false);
   }, [location]);
 
   useEffect(() => {
@@ -63,6 +66,21 @@ export default function Navbar() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [menuOpen]);
+
+  // Avatar dropdown: close when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(event.target)) {
+        setAvatarMenuOpen(false);
+      }
+    }
+    if (avatarMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [avatarMenuOpen]);
 
   const overlayRef = useCallback(node => {
     if (!node) return;
@@ -77,6 +95,7 @@ export default function Navbar() {
     await supabase.auth.signOut();
     setUser(null);
     setMenuOpen(false);
+    setAvatarMenuOpen(false);
     navigate("/login");
   }
 
@@ -115,7 +134,12 @@ export default function Navbar() {
         .navbar-hamburger[aria-expanded="true"] .hamburger-icon::after { transform: translateY(-9px) rotate(-45deg);}
         .nav-btn { margin-left: 0.2rem; background: #2563eb; color: #fff; border: none; border-radius: 16px; padding: 0.39rem 1.3rem; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .16s, box-shadow .16s;}
         .nav-btn:hover { background: #174bbd; color: #fff;}
-        .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb22; color: #2563eb; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #2563eb55; margin-left: 0.6rem;}
+        .nav-avatar-menu { position: relative; display: inline-block; }
+        .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb22; color: #2563eb; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #2563eb55; margin-left: 0.6rem; transition: box-shadow .13s;}
+        .nav-avatar:focus { outline: none; box-shadow: 0 0 0 2px #2563eb55; }
+        .avatar-dropdown { position: absolute; right: 0; top: 110%; min-width: 170px; background: #fff; border: 1px solid #e5e8ef; border-radius: 8px; box-shadow: 0 6px 24px #2222; z-index: 3000; display: flex; flex-direction: column; padding: 0.5rem 0; }
+        .avatar-dropdown .dropdown-link { padding: 0.7rem 1.1rem; background: none; color: #202942; border: none; text-align: left; text-decoration: none; font-size: 1rem; cursor: pointer; transition: background 0.13s, color 0.13s;}
+        .avatar-dropdown .dropdown-link:hover { background: #f3f6ff; color: #2563eb; }
         .navbar-overlay { display: none; }
         .navbar-overlay.open { display: flex; position: fixed; inset: 0; background: rgba(24,30,40,0.17); z-index: 99998; justify-content: center; align-items: flex-start; animation: overlayFadeIn .18s;}
         @keyframes overlayFadeIn { from { opacity: 0;} to { opacity: 1;} }
@@ -147,11 +171,29 @@ export default function Navbar() {
                 </NavLink>
               )
             )}
-            {user && USER_LINKS.map(link => (
-              <NavLink to={link.to} key={link.to} className={({ isActive }) => "navbar-link" + (isActive ? " active" : "")}>
-                {link.label}
-              </NavLink>
-            ))}
+            {user && (
+              <div className="nav-avatar-menu" ref={avatarMenuRef}>
+                <button
+                  className="nav-avatar"
+                  title={user.email}
+                  onClick={() => setAvatarMenuOpen((prev) => !prev)}
+                  aria-haspopup="menu"
+                  aria-expanded={avatarMenuOpen}
+                  style={{ border: "none", background: "none", padding: 0, cursor: "pointer" }}
+                >
+                  {getInitials(user)}
+                </button>
+                {avatarMenuOpen && (
+                  <div className="avatar-dropdown" role="menu">
+                    <NavLink to="/profile" className="dropdown-link" onClick={() => setAvatarMenuOpen(false)}>Profile</NavLink>
+                    <NavLink to="/my-codes" className="dropdown-link" onClick={() => setAvatarMenuOpen(false)}>My Codes</NavLink>
+                    <NavLink to="/my-bookings" className="dropdown-link" onClick={() => setAvatarMenuOpen(false)}>My Bookings</NavLink>
+                    <NavLink to="/my-calendar" className="dropdown-link" onClick={() => setAvatarMenuOpen(false)}>My Calendar</NavLink>
+                    <button className="dropdown-link" onClick={async () => { await handleLogout(); setAvatarMenuOpen(false); }}>Logout</button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="nav-icons">
             <NotificationBell />
@@ -170,12 +212,7 @@ export default function Navbar() {
                 <NavLink to="/login" className="nav-btn">{NAV_LABELS.login}</NavLink>
                 <NavLink to="/signup" className="nav-btn">{NAV_LABELS.signup}</NavLink>
               </>
-            ) : (
-              <>
-                <button className="nav-btn" onClick={handleLogout}>{NAV_LABELS.logout}</button>
-                <span className="nav-avatar" title={user.email}>{getInitials(user)}</span>
-              </>
-            )}
+            ) : null}
           </div>
         </div>
         <div className={`navbar-overlay${menuOpen ? " open" : ""}`} ref={overlayRef}>
