@@ -64,6 +64,7 @@ export default function Profile() {
   // --- Stream Chat State ---
   const [chatClient, setChatClient] = useState(null);
   const [channel, setChannel] = useState(null);
+  const [chatError, setChatError] = useState(null); // <--- NEW
   // -------------------------
 
   useEffect(() => {
@@ -101,7 +102,6 @@ export default function Profile() {
 
   // --- Stream Chat useEffect ---
   useEffect(() => {
-    // Only set up chat if user is logged in and has a name or email
     if (!authUser) return;
 
     const apiKey = "pths2aqgsqcm";
@@ -113,27 +113,34 @@ export default function Profile() {
     const devToken = client.devToken(userId);
 
     async function initChat() {
-      await client.connectUser(
-        {
-          id: userId,
-          name: userName,
-          image: userImage,
-        },
-        devToken
-      );
+      try {
+        await client.connectUser(
+          {
+            id: userId,
+            name: userName,
+            image: userImage,
+          },
+          devToken
+        );
 
-      const channel = client.channel("messaging", "fitspot-general", {
-        name: "FitSpot General Chat",
-      });
+        const channel = client.channel("messaging", "fitspot-general", {
+          name: "FitSpot General Chat",
+        });
 
-      await channel.watch();
-      setChatClient(client);
-      setChannel(channel);
+        await channel.watch();
+        setChatClient(client);
+        setChannel(channel);
+        setChatError(null); // reset error on success
+      } catch (err) {
+        // Show error message in UI
+        setChatError(err.message || String(err));
+        setChatClient(null);
+        setChannel(null);
+      }
     }
 
     initChat();
 
-    // Cleanup on unmount
     return () => {
       client.disconnectUser();
     };
@@ -538,6 +545,11 @@ export default function Profile() {
       {/* --- STREAM CHAT UI --- */}
       <div style={{ marginTop: 40, marginBottom: 10 }}>
         <h2 style={{ color: "#2563eb", fontSize: "1.25rem", marginBottom: 12 }}>Community Chat</h2>
+        {chatError && (
+          <div style={{ color: "red", marginBottom: 12 }}>
+            Chat Error: {chatError}
+          </div>
+        )}
         {chatClient && channel ? (
           <Chat client={chatClient} theme="messaging light">
             <Channel channel={channel}>
