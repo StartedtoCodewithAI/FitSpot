@@ -150,16 +150,17 @@ export default function Navbar() {
         .nav-avatar-menu { position: relative; display: inline-block; }
         .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb22; color: #2563eb; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #2563eb55; margin-left: 0.6rem; transition: box-shadow .13s;}
         .nav-avatar:focus { outline: none; box-shadow: 0 0 0 2px #2563eb55; }
+        /* --- THE FIXED DROPDOWN --- */
         .avatar-dropdown {
-          position: absolute;
-          right: 0;
-          top: 110%;
+          position: fixed !important;
+          right: 2rem;
+          top: 4.3rem;
           min-width: 170px;
           background: #fff;
           border: 1px solid #e5e8ef;
           border-radius: 8px;
           box-shadow: 0 6px 24px #2222;
-          z-index: 99999 !important;
+          z-index: 2147483647 !important;
           display: flex;
           flex-direction: column;
           padding: 0.5rem 0;
