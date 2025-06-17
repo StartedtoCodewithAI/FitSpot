@@ -64,7 +64,7 @@ export default function Profile() {
   // --- Stream Chat State ---
   const [chatClient, setChatClient] = useState(null);
   const [channel, setChannel] = useState(null);
-  const [chatError, setChatError] = useState(null); // <--- NEW
+  const [chatError, setChatError] = useState(null);
   // -------------------------
 
   useEffect(() => {
@@ -110,17 +110,25 @@ export default function Profile() {
     const userImage = profile.avatar_url || `https://getstream.io/random_png/?id=${userId}&name=${userName}`;
 
     const client = StreamChat.getInstance(apiKey);
-    const devToken = client.devToken(userId);
 
     async function initChat() {
       try {
+        // --- Fetch token from your deployed backend ---
+        const response = await fetch(
+          `https://stream-token-server-production.up.railway.app/token?user_id=${userId}`
+        );
+        if (!response.ok) throw new Error("Unable to fetch chat token");
+        const data = await response.json();
+        const token = data.token;
+        // ----------------------------------------------
+
         await client.connectUser(
           {
             id: userId,
             name: userName,
             image: userImage,
           },
-          devToken
+          token
         );
 
         const channel = client.channel("messaging", "fitspot-general", {
@@ -130,9 +138,8 @@ export default function Profile() {
         await channel.watch();
         setChatClient(client);
         setChannel(channel);
-        setChatError(null); // reset error on success
+        setChatError(null);
       } catch (err) {
-        // Show error message in UI
         setChatError(err.message || String(err));
         setChatClient(null);
         setChannel(null);
