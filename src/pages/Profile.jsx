@@ -3,6 +3,18 @@ import { supabase } from "../supabaseClient";
 import toast from "react-hot-toast";
 import FSButton from "../components/FSButton";
 
+// --- Stream Chat Imports ---
+import { StreamChat } from "stream-chat";
+import {
+  Chat,
+  Channel,
+  Window,
+  MessageList,
+  MessageInput
+} from "stream-chat-react";
+import "stream-chat-react/dist/css/index.css";
+// --------------------------
+
 const defaultProfile = {
   name: "",
   email: "",
@@ -49,6 +61,11 @@ export default function Profile() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const fileInputRef = useRef();
 
+  // --- Stream Chat State ---
+  const [chatClient, setChatClient] = useState(null);
+  const [channel, setChannel] = useState(null);
+  // -------------------------
+
   useEffect(() => {
     async function getUserProfile() {
       setLoading(true);
@@ -81,6 +98,48 @@ export default function Profile() {
     }
     getUserProfile();
   }, []);
+
+  // --- Stream Chat useEffect ---
+  useEffect(() => {
+    // Only set up chat if user is logged in and has a name or email
+    if (!authUser) return;
+
+    const apiKey = "pths2aqgsqcm";
+    const userId = authUser.id || "demo-user";
+    const userName = profile.name || profile.email || "Demo User";
+    const userImage = profile.avatar_url || `https://getstream.io/random_png/?id=${userId}&name=${userName}`;
+
+    const client = StreamChat.getInstance(apiKey);
+    const devToken = client.devToken(userId);
+
+    async function initChat() {
+      await client.connectUser(
+        {
+          id: userId,
+          name: userName,
+          image: userImage,
+        },
+        devToken
+      );
+
+      const channel = client.channel("messaging", "fitspot-general", {
+        name: "FitSpot General Chat",
+      });
+
+      await channel.watch();
+      setChatClient(client);
+      setChannel(channel);
+    }
+
+    initChat();
+
+    // Cleanup on unmount
+    return () => {
+      client.disconnectUser();
+    };
+    // eslint-disable-next-line
+  }, [authUser, profile.name, profile.email, profile.avatar_url]);
+  // ----------------------------
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -475,6 +534,25 @@ export default function Profile() {
           </div>
         </form>
       )}
+
+      {/* --- STREAM CHAT UI --- */}
+      <div style={{ marginTop: 40, marginBottom: 10 }}>
+        <h2 style={{ color: "#2563eb", fontSize: "1.25rem", marginBottom: 12 }}>Community Chat</h2>
+        {chatClient && channel ? (
+          <Chat client={chatClient} theme="messaging light">
+            <Channel channel={channel}>
+              <Window>
+                <MessageList />
+                <MessageInput />
+              </Window>
+            </Channel>
+          </Chat>
+        ) : (
+          <div>Loading chat…</div>
+        )}
+      </div>
+      {/* --- END STREAM CHAT UI --- */}
+
       <style>
         {`
         @media (max-width: 480px) {
