@@ -144,7 +144,22 @@ export default function Navbar() {
         .navbar-hamburger[aria-expanded="true"] .hamburger-icon { background: transparent;}
         .navbar-hamburger[aria-expanded="true"] .hamburger-icon::before { transform: translateY(9px) rotate(45deg);}
         .navbar-hamburger[aria-expanded="true"] .hamburger-icon::after { transform: translateY(-9px) rotate(-45deg);}
-        .nav-btn { margin-left: 0.2rem; background: #2563eb; color: #fff; border: none; border-radius: 16px; padding: 0.39rem 1.3rem; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .16s, box-shadow .16s;}
+        .nav-btn { 
+          margin-left: 0.2rem;
+          background: #2563eb;
+          color: #fff;
+          border: none;
+          border-radius: 10px;
+          padding: 0.85rem 0;
+          font-size: 1.07rem;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 1px 8px #2563eb13;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          transition: background .16s, box-shadow .16s;
+        }
         .nav-btn:hover { background: #174bbd; color: #fff;}
         .nav-avatar-menu { position: relative; display: inline-block; }
         .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb22; color: #2563eb; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #2563eb55; margin-left: 0.6rem; transition: box-shadow .13s;}
@@ -207,7 +222,7 @@ export default function Navbar() {
           color: #666;
         }
 
-        /* --- MOBILE BUTTON STYLES --- */
+        /* --- MOBILE BUTTON STYLES: Login/Sign Up in mobile menu identical --- */
         @media (max-width: 900px) {
           .navbar-links-desktop { display: none; }
           .navbar-hamburger { display: flex; }
@@ -217,11 +232,16 @@ export default function Navbar() {
             display: block;
             width: 100%;
             margin: 0 0 0.7rem 0;
-            border-radius: 16px;
-            font-size: 1.12rem;
-            padding: 0.55rem 0;
+            border-radius: 10px;
+            font-size: 1.07rem;
+            padding: 0.85rem 0;
             text-align: center;
             font-weight: 700;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            box-shadow: 0 1px 8px #2563eb13;
+            text-decoration: none;
           }
           .navbar-links-mobile .nav-btn:last-child {
             margin-bottom: 0;
