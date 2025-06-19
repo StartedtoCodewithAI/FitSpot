@@ -149,9 +149,9 @@ export default function Navbar() {
           background: #2563eb;
           color: #fff;
           border: none;
-          border-radius: 10px;
-          padding: 0.85rem 0;
-          font-size: 1.07rem;
+          border-radius: 16px;
+          padding: 0.39rem 1.3rem;
+          font-size: 1rem;
           font-weight: 700;
           cursor: pointer;
           box-shadow: 0 1px 8px #2563eb13;
@@ -221,32 +221,11 @@ export default function Navbar() {
           font-size: 0.98rem;
           color: #666;
         }
-
-        /* --- MOBILE BUTTON STYLES: Login/Sign Up in mobile menu identical --- */
         @media (max-width: 900px) {
           .navbar-links-desktop { display: none; }
           .navbar-hamburger { display: flex; }
         }
-        @media (max-width: 800px) {
-          .navbar-links-mobile .nav-btn {
-            display: block;
-            width: 100%;
-            margin: 0 0 0.7rem 0;
-            border-radius: 10px;
-            font-size: 1.07rem;
-            padding: 0.85rem 0;
-            text-align: center;
-            font-weight: 700;
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            box-shadow: 0 1px 8px #2563eb13;
-            text-decoration: none;
-          }
-          .navbar-links-mobile .nav-btn:last-child {
-            margin-bottom: 0;
-          }
-        }
+        /* No mobile override for nav-btn: keep both compact and inline */
       `}</style>
       <nav className="nav-root" role="navigation" aria-label="Main navigation">
         <div className="nav-inner">
