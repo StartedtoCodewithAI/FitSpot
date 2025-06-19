@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { useSupabaseClient } from '@supabase/ssr';
 import SearchBar from '../components/SearchBar';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ export default function Signup() {
   const [message, setMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
+  const supabase = useSupabaseClient();
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
