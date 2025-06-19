@@ -43,29 +43,33 @@ export default function Home() {
 
   return (
     <>
+      {/* Fonts and global styles for scroll/box-sizing fixes */}
       <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
         rel="stylesheet"
       />
       <style>{`
         html, body, #root {
+          width: 100vw;
+          overflow-x: hidden;
           margin: 0;
           padding: 0;
           font-family: 'Montserrat', Arial, sans-serif;
           background: linear-gradient(120deg, #f8fafc 0%, #e0f2fe 100%);
           min-height: 100vh;
         }
+        *, *:before, *:after { box-sizing: border-box; }
         .page-wrapper {
           min-height: 100vh;
           display: flex;
           flex-direction: column;
         }
         .container {
-          max-width: 1200px;
+          max-width: 430px;
           margin: 0 auto;
-          padding: 2rem 1rem 0 1rem;
+          padding: 2.5rem 1rem 0 1rem;
           flex: 1;
-          /* No z-index or overflow here */
+          width: 100%;
         }
         .hero {
           display: flex;
@@ -75,8 +79,8 @@ export default function Home() {
           margin-bottom: 2rem;
         }
         .hero-logo {
-          width: 160px;
-          height: 160px;
+          width: 140px;
+          height: 140px;
           margin-bottom: 1.5rem;
           border-radius: 50%;
           object-fit: cover;
@@ -84,13 +88,14 @@ export default function Home() {
           background: #fff;
         }
         .hero-text h1 {
-          font-size: 2.5rem;
+          font-size: 2.25rem;
           font-weight: 700;
           margin-bottom: 1rem;
         }
         .lead {
-          font-size: 1.2rem;
+          font-size: 1.17rem;
           margin-bottom: 1.5rem;
+          color: #444;
         }
         .features {
           margin-bottom: 3rem;
@@ -99,17 +104,26 @@ export default function Home() {
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
-          gap: 2rem;
+          gap: 1.2rem;
         }
         .feature-card {
           background: #fff;
           border-radius: 18px;
           box-shadow: 0 4px 16px rgba(0,0,0,0.07);
-          padding: 2rem 1.5rem;
-          min-width: 220px;
-          max-width: 320px;
+          padding: 1.2rem 1rem;
+          min-width: 180px;
+          max-width: 290px;
           text-align: center;
-          flex: 1 1 250px;
+          flex: 1 1 220px;
+        }
+        .feature-card h3 {
+          font-size: 1.12rem;
+          font-weight: 700;
+          margin-bottom: 0.5rem;
+        }
+        .feature-card p {
+          color: #555;
+          font-size: 0.98rem;
         }
         .callToAction {
           text-align: center;
@@ -134,13 +148,13 @@ export default function Home() {
           padding: 2rem 1.5rem;
           box-shadow: 0 8px 32px rgba(0,0,0,0.18);
           min-width: 300px;
+          max-width: 95vw;
           text-align: center;
           position: relative;
-          max-width: 95vw;
         }
         .modal-content h2 {
           margin-bottom: 1.2rem;
-          font-size: 1.3rem;
+          font-size: 1.2rem;
         }
         .close-modal {
           position: absolute;
@@ -157,20 +171,25 @@ export default function Home() {
           color: #fff !important;
           margin-top: 8px;
         }
-        @media (max-width: 800px) {
+        @media (max-width: 540px) {
+          .container {
+            max-width: 98vw;
+            padding: 1.5rem 2vw 0 2vw;
+          }
+          .hero-logo {
+            width: 90px;
+            height: 90px;
+          }
+          .hero-text h1 {
+            font-size: 1.5rem;
+          }
           .features-row {
-            flex-direction: column;
-            gap: 1rem;
+            gap: 0.5rem;
           }
           .feature-card {
             max-width: 100%;
-          }
-          .hero-text h1 {
-            font-size: 2rem;
-          }
-          .hero-logo {
-            width: 110px;
-            height: 110px;
+            min-width: 110px;
+            padding: 1rem 0.3rem;
           }
         }
         footer {
@@ -179,6 +198,8 @@ export default function Home() {
           text-align: center;
           padding: 1rem 0;
           margin-top: auto;
+          font-size: 0.99rem;
+          color: #666;
         }
       `}</style>
       <div className="page-wrapper">
