@@ -120,45 +120,58 @@ export default function Navbar() {
   return (
     <>
       <style>{`
-        .nav-root { width: 100%; background: #fff; border-bottom: 1px solid #e5e8ef; position: sticky; top: 0; z-index: 2000;}
+        .nav-root {
+          width: 100%;
+          background: #fff;
+          border-bottom: 1px solid #e5e8ef;
+          position: sticky;
+          top: 0;
+          z-index: 2000;
+        }
         .nav-inner {
-          position: relative;
           max-width: 1200px;
           margin: 0 auto;
-          height: 62px;
+          padding: 0.7rem 1.2rem;
           display: flex;
           align-items: center;
-          justify-content: center;
+          justify-content: space-between;
+          min-height: 60px;
         }
-        .nav-brand-center {
-          position: absolute;
-          left: 0; right: 0;
-          margin: auto;
+        .nav-section {
           display: flex;
           align-items: center;
+          min-width: 0;
+        }
+        .nav-brand {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          flex: 1;
           justify-content: center;
-          pointer-events: auto;
-          text-align: center;
-          width: fit-content;
-          top: 0; bottom: 0; height: 62px;
         }
         .nav-brand-link {
           display: flex;
           align-items: center;
           text-decoration: none;
         }
-        .nav-brand-center img { height: 40px; border-radius: 10px; }
-        .nav-brand-center span { color: #2563eb; font-weight: 800; font-size: 1.4rem; letter-spacing: .5px; margin-left: 9px;}
-        .nav-left,
-        .nav-right {
-          position: absolute;
-          top: 0;
-          height: 100%;
-          display: flex;
-          align-items: center;
+        .nav-brand img { height: 38px; border-radius: 10px; }
+        .nav-brand span {
+          color: #2563eb;
+          font-weight: 800;
+          font-size: 1.3rem;
+          letter-spacing: .5px;
+          margin-left: 7px;
+          white-space: nowrap;
         }
-        .nav-left { left: 14px; }
-        .nav-right { right: 18px; gap: 0.7rem; }
+        .nav-section.left {
+          justify-content: flex-start;
+          flex: 1;
+        }
+        .nav-section.right {
+          justify-content: flex-end;
+          flex: 1;
+          gap: 0.7rem;
+        }
         .navbar-hamburger {
           display: flex;
           flex-direction: column;
@@ -215,14 +228,79 @@ export default function Navbar() {
           white-space: nowrap;
         }
         .nav-btn:hover { background: #174bbd; color: #fff;}
+        .nav-avatar-menu { position: relative; display: inline-block; }
+        .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb22; color: #2563eb; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #2563eb55; margin-left: 0.6rem; transition: box-shadow .13s;}
+        .nav-avatar:focus { outline: none; box-shadow: 0 0 0 2px #2563eb55; }
+        .avatar-dropdown {
+          position: fixed !important;
+          right: 2rem;
+          top: 4.3rem;
+          min-width: 170px;
+          background: #fff;
+          border: 1px solid #e5e8ef;
+          border-radius: 8px;
+          box-shadow: 0 6px 24px #2222;
+          z-index: 2147483647 !important;
+          display: flex;
+          flex-direction: column;
+          padding: 0.5rem 0;
+        }
+        .avatar-dropdown .dropdown-link { padding: 0.7rem 1.1rem; background: none; color: #202942; border: none; text-align: left; text-decoration: none; font-size: 1rem; cursor: pointer; transition: background 0.13s, color 0.13s;}
+        .avatar-dropdown .dropdown-link:hover { background: #f3f6ff; color: #2563eb; }
+        .navbar-overlay { display: none; }
+        .navbar-overlay.open { display: flex; position: fixed; inset: 0; background: rgba(24,30,40,0.17); z-index: 99998; justify-content: center; align-items: flex-start; animation: overlayFadeIn .18s;}
+        @keyframes overlayFadeIn { from { opacity: 0;} to { opacity: 1;} }
+        .navbar-links-mobile { display: none; background: #fff; border-radius: 22px; margin-top: 3.2rem; box-shadow: 0 8px 40px #2224; min-width: 90vw; max-width: 400px; width: 98vw; padding: 2.1rem 1.5rem 2rem 1.5rem; box-sizing: border-box; overflow-y: auto; animation: fadeInNavMenu .18s; flex-direction: column; position: fixed; top: 0; right: 0; left: 0; z-index: 99999;}
+        .navbar-links-mobile.open { display: flex !important; }
+        @keyframes fadeInNavMenu { from { opacity: 0; transform: translateY(-18px);} to { opacity: 1; transform: none;} }
+        .nav-menu-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+        .nav-menu-title { font-weight: 700; font-size: 1.13rem; letter-spacing: 0.5px;}
+        .menu-close-btn { background: none; border: none; font-size: 2rem; cursor: pointer; color: #aaa; transition: color .13s;}
+        .menu-close-btn:hover { color: #2563eb; }
+        .nav-section { margin-bottom: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem;}
+        .mobile-profile-header {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 1.3rem;
+        }
+        .mobile-profile-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: #2563eb22;
+          color: #2563eb;
+          font-size: 1.5rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid #2563eb55;
+          margin-bottom: 0.5rem;
+        }
+        .mobile-profile-name {
+          font-size: 1.06rem;
+          font-weight: 700;
+          color: #202942;
+        }
+        .mobile-profile-email {
+          font-size: 0.98rem;
+          color: #666;
+        }
         @media (max-width: 900px) {
-          .nav-inner { padding-left: 0.2rem; padding-right: 0.2rem;}
+          .nav-inner { padding-left: 0.4rem; padding-right: 0.4rem; }
+          .nav-brand span { font-size: 1.1rem; }
+          .nav-section.right { gap: 0.4rem;}
+        }
+        @media (max-width: 600px) {
+          .nav-brand img { height: 30px;}
+          .nav-inner { padding: 0.5rem 0.1rem;}
         }
       `}</style>
       <nav className="nav-root" role="navigation" aria-label="Main navigation">
         <div className="nav-inner">
           {/* Left: Hamburger */}
-          <div className="nav-left">
+          <div className="nav-section left">
             <button
               className="navbar-hamburger"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -234,14 +312,14 @@ export default function Navbar() {
             </button>
           </div>
           {/* Center: Brand */}
-          <div className="nav-brand-center">
+          <div className="nav-brand">
             <NavLink to="/" className="nav-brand-link">
               <img src={fitspotLogo} alt={`${NAV_LABELS.brand} Logo`} />
               <span>{NAV_LABELS.brand}</span>
             </NavLink>
           </div>
           {/* Right: Notification, Theme, Login/Signup or Avatar */}
-          <div className="nav-right">
+          <div className="nav-section right">
             <NotificationBell />
             <ThemeToggle aria-label="Toggle dark mode" />
             {!user ? (
@@ -274,7 +352,7 @@ export default function Navbar() {
             )}
           </div>
         </div>
-        {/* Mobile menu overlay and links (unchanged from your version) */}
+        {/* Mobile menu overlay and links (unchanged) */}
         <div className={`navbar-overlay${menuOpen ? " open" : ""}`} ref={overlayRef}>
           {menuOpen && (
             <div className={`navbar-links-mobile open`} id="mobile-nav" aria-label="Mobile navigation">
