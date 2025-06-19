@@ -121,7 +121,7 @@ export default function Login() {
             {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
-        <div style={{ textAlign: "center", marginTop: "-0.5rem" }}>
+        <div style={{ textAlign: "center", marginTop: "1.1rem" }}>
           <Link to="/reset-password" style={{ color: '#2563eb', textDecoration: 'underline', fontSize: "0.97rem" }}>
             Forgot Password?
           </Link>
