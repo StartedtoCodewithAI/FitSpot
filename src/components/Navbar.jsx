@@ -136,51 +136,52 @@ export default function Navbar() {
           padding: 0 0.5rem;
           position: relative;
         }
-        .navbar-side {
+        .navbar-col {
           display: flex;
           align-items: center;
           min-width: 44px;
         }
-        .navbar-side.left {
-          justify-content: flex-start;
-          flex: 1;
+        .navbar-col.left, .navbar-col.right {
+          flex: 0 0 auto;
+          z-index: 3;
         }
-        .navbar-side.right {
-          justify-content: flex-end;
-          flex: 1;
-          gap: 0.3rem;
-        }
-        .navbar-center {
-          position: absolute;
-          left: 0; right: 0;
-          top: 0; bottom: 0;
-          margin: auto;
-          display: flex;
-          align-items: center;
+        .navbar-col.center {
+          flex: 1 1 0%;
           justify-content: center;
-          pointer-events: none;
-          height: 56px;
-          width: 100vw;
-          z-index: 1;
+          min-width: 0;
+          pointer-events: auto;
+          z-index: 2;
         }
         .nav-brand-link {
           display: flex;
           align-items: center;
           text-decoration: none;
           pointer-events: auto;
+          max-width: 100%;
         }
         .nav-brand-logo {
           height: 32px;
           width: 32px;
           border-radius: 50%;
+          flex-shrink: 0;
         }
         .nav-brand-word {
           color: #2563eb;
           font-weight: 800;
-          font-size: 1.15rem;
+          font-size: 1.14rem;
           letter-spacing: .5px;
           margin-left: 8px;
           white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 110px;
+          display: block;
+        }
+        @media (max-width: 440px) {
+          .nav-brand-word {
+            max-width: 70vw;
+            font-size: 0.98rem;
+          }
         }
         .navbar-hamburger {
           width: 44px;
@@ -299,15 +300,15 @@ export default function Navbar() {
         }
         @media (max-width: 600px) {
           .navbar-row { padding: 0 0.05rem; }
-          .nav-brand-logo { height: 27px; width: 27px;}
-          .nav-brand-word { font-size: 1rem;}
+          .nav-brand-logo { height: 25px; width: 25px;}
+          .nav-brand-word { font-size: 0.91rem;}
           .nav-btn { font-size: 0.93rem; padding: 0.37rem 0.7rem;}
         }
       `}</style>
       <nav className="navbar" role="navigation" aria-label="Main navigation">
         <div className="navbar-row">
           {/* Hamburger (left) */}
-          <div className="navbar-side left">
+          <div className="navbar-col left">
             <button
               className="navbar-hamburger"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -318,15 +319,15 @@ export default function Navbar() {
               <span className="hamburger-icon" />
             </button>
           </div>
-          {/* Centered Brand */}
-          <div className="navbar-center">
+          {/* Center Brand */}
+          <div className="navbar-col center">
             <NavLink to="/" className="nav-brand-link">
-              <img src={fitspotLogo} alt={`${NAV_LABELS.brand} Logo`} className="nav-brand-logo" />
+              <img src={fitspotLogo} alt={NAV_LABELS.brand + " Logo"} className="nav-brand-logo" />
               <span className="nav-brand-word">{NAV_LABELS.brand}</span>
             </NavLink>
           </div>
-          {/* Notification, theme, avatar (right) */}
-          <div className="navbar-side right">
+          {/* Notification, theme, avatar/login (right) */}
+          <div className="navbar-col right">
             <NotificationBell />
             <ThemeToggle aria-label="Toggle dark mode" />
             {!user ? (
@@ -359,7 +360,7 @@ export default function Navbar() {
             )}
           </div>
         </div>
-        {/* Mobile menu overlay and links (unchanged) */}
+        {/* Mobile menu overlay and links */}
         <div className={`navbar-overlay${menuOpen ? " open" : ""}`} ref={overlayRef}>
           {menuOpen && (
             <div className={`navbar-links-mobile open`} id="mobile-nav" aria-label="Mobile navigation">
