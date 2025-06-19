@@ -92,7 +92,6 @@ export default function Navbar() {
     };
   }, [avatarMenuOpen]);
 
-  // Overlay click for closing mobile menu
   const overlayRef = useCallback(node => {
     if (!node) return;
     function handleClick(e) {
@@ -120,7 +119,7 @@ export default function Navbar() {
   return (
     <>
       <style>{`
-        .nav-root {
+        .navbar {
           width: 100%;
           background: #fff;
           border-bottom: 1px solid #e5e8ef;
@@ -128,95 +127,106 @@ export default function Navbar() {
           top: 0;
           z-index: 2000;
         }
-        .nav-inner {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0.7rem 1.2rem;
+        .navbar-row {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          min-height: 60px;
+          height: 56px;
+          max-width: 100vw;
+          padding: 0 0.5rem;
+          position: relative;
         }
-        .nav-section {
+        .navbar-side {
           display: flex;
           align-items: center;
-          min-width: 0;
+          min-width: 44px;
         }
-        .nav-brand {
-          display: flex;
-          align-items: center;
-          gap: 0.6rem;
+        .navbar-side.left {
+          justify-content: flex-start;
           flex: 1;
+        }
+        .navbar-side.right {
+          justify-content: flex-end;
+          flex: 1;
+          gap: 0.3rem;
+        }
+        .navbar-center {
+          position: absolute;
+          left: 0; right: 0;
+          top: 0; bottom: 0;
+          margin: auto;
+          display: flex;
+          align-items: center;
           justify-content: center;
+          pointer-events: none;
+          height: 56px;
+          width: 100vw;
+          z-index: 1;
         }
         .nav-brand-link {
           display: flex;
           align-items: center;
           text-decoration: none;
+          pointer-events: auto;
         }
-        .nav-brand img { height: 38px; border-radius: 10px; }
-        .nav-brand span {
+        .nav-brand-logo {
+          height: 32px;
+          width: 32px;
+          border-radius: 50%;
+        }
+        .nav-brand-word {
           color: #2563eb;
           font-weight: 800;
-          font-size: 1.3rem;
+          font-size: 1.15rem;
           letter-spacing: .5px;
-          margin-left: 7px;
+          margin-left: 8px;
           white-space: nowrap;
         }
-        .nav-section.left {
-          justify-content: flex-start;
-          flex: 1;
-        }
-        .nav-section.right {
-          justify-content: flex-end;
-          flex: 1;
-          gap: 0.7rem;
-        }
         .navbar-hamburger {
+          width: 44px;
+          height: 44px;
           display: flex;
-          flex-direction: column;
-          justify-content: center;
           align-items: center;
-          width: 42px;
-          height: 42px;
+          justify-content: center;
           border: none;
           background: none;
-          border-radius: 10px;
+          border-radius: 50%;
           cursor: pointer;
-          transition: background 0.13s;
         }
-        .navbar-hamburger:hover { background: #f3f6ff; }
-        .hamburger-icon, .hamburger-icon::before, .hamburger-icon::after {
-          display: block;
+        .navbar-hamburger:active,
+        .navbar-hamburger:focus {
+          background: #f3f6ff;
+        }
+        .hamburger-icon,
+        .hamburger-icon::before,
+        .hamburger-icon::after {
           background: #222;
-          height: 3.3px;
+          height: 3px;
+          width: 22px;
           border-radius: 2px;
-          width: 28px;
-          transition: all .21s cubic-bezier(.4,1,.3,1);
           content: '';
+          display: block;
           position: relative;
+          transition: all .24s cubic-bezier(.4,1,.3,1);
         }
-        .hamburger-icon::before, .hamburger-icon::after {
+        .hamburger-icon::before,
+        .hamburger-icon::after {
           content: '';
           position: absolute;
-          left: 0;
-          width: 28px;
-          height: 3.3px;
-          background: #222;
-          border-radius: 2px;
+          width: 22px;
+          height: 3px;
         }
-        .hamburger-icon::before { top: -9px; }
-        .hamburger-icon::after { top: 9px; }
+        .hamburger-icon::before { top: -7px; }
+        .hamburger-icon::after { top: 7px; }
         .navbar-hamburger[aria-expanded="true"] .hamburger-icon { background: transparent;}
-        .navbar-hamburger[aria-expanded="true"] .hamburger-icon::before { transform: translateY(9px) rotate(45deg);}
-        .navbar-hamburger[aria-expanded="true"] .hamburger-icon::after { transform: translateY(-9px) rotate(-45deg);}
+        .navbar-hamburger[aria-expanded="true"] .hamburger-icon::before { transform: translateY(7px) rotate(45deg);}
+        .navbar-hamburger[aria-expanded="true"] .hamburger-icon::after { transform: translateY(-7px) rotate(-45deg);}
         .nav-btn {
-          margin-left: 0.2rem;
           background: #2563eb;
           color: #fff;
           border: none;
           border-radius: 16px;
-          padding: 0.39rem 1.3rem;
+          padding: 0.39rem 1.1rem;
           font-size: 1rem;
           font-weight: 700;
           cursor: pointer;
@@ -229,7 +239,7 @@ export default function Navbar() {
         }
         .nav-btn:hover { background: #174bbd; color: #fff;}
         .nav-avatar-menu { position: relative; display: inline-block; }
-        .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb22; color: #2563eb; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #2563eb55; margin-left: 0.6rem; transition: box-shadow .13s;}
+        .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb22; color: #2563eb; font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #2563eb55; margin-left: 0.4rem; transition: box-shadow .13s;}
         .nav-avatar:focus { outline: none; box-shadow: 0 0 0 2px #2563eb55; }
         .avatar-dropdown {
           position: fixed !important;
@@ -257,7 +267,7 @@ export default function Navbar() {
         .nav-menu-title { font-weight: 700; font-size: 1.13rem; letter-spacing: 0.5px;}
         .menu-close-btn { background: none; border: none; font-size: 2rem; cursor: pointer; color: #aaa; transition: color .13s;}
         .menu-close-btn:hover { color: #2563eb; }
-        .nav-section { margin-bottom: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem;}
+        .nav-section-col { margin-bottom: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem;}
         .mobile-profile-header {
           display: flex;
           flex-direction: column;
@@ -287,20 +297,17 @@ export default function Navbar() {
           font-size: 0.98rem;
           color: #666;
         }
-        @media (max-width: 900px) {
-          .nav-inner { padding-left: 0.4rem; padding-right: 0.4rem; }
-          .nav-brand span { font-size: 1.1rem; }
-          .nav-section.right { gap: 0.4rem;}
-        }
         @media (max-width: 600px) {
-          .nav-brand img { height: 30px;}
-          .nav-inner { padding: 0.5rem 0.1rem;}
+          .navbar-row { padding: 0 0.05rem; }
+          .nav-brand-logo { height: 27px; width: 27px;}
+          .nav-brand-word { font-size: 1rem;}
+          .nav-btn { font-size: 0.93rem; padding: 0.37rem 0.7rem;}
         }
       `}</style>
-      <nav className="nav-root" role="navigation" aria-label="Main navigation">
-        <div className="nav-inner">
-          {/* Left: Hamburger */}
-          <div className="nav-section left">
+      <nav className="navbar" role="navigation" aria-label="Main navigation">
+        <div className="navbar-row">
+          {/* Hamburger (left) */}
+          <div className="navbar-side left">
             <button
               className="navbar-hamburger"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -311,15 +318,15 @@ export default function Navbar() {
               <span className="hamburger-icon" />
             </button>
           </div>
-          {/* Center: Brand */}
-          <div className="nav-brand">
+          {/* Centered Brand */}
+          <div className="navbar-center">
             <NavLink to="/" className="nav-brand-link">
-              <img src={fitspotLogo} alt={`${NAV_LABELS.brand} Logo`} />
-              <span>{NAV_LABELS.brand}</span>
+              <img src={fitspotLogo} alt={`${NAV_LABELS.brand} Logo`} className="nav-brand-logo" />
+              <span className="nav-brand-word">{NAV_LABELS.brand}</span>
             </NavLink>
           </div>
-          {/* Right: Notification, Theme, Login/Signup or Avatar */}
-          <div className="nav-section right">
+          {/* Notification, theme, avatar (right) */}
+          <div className="navbar-side right">
             <NotificationBell />
             <ThemeToggle aria-label="Toggle dark mode" />
             {!user ? (
@@ -369,7 +376,7 @@ export default function Navbar() {
                   <div className="mobile-profile-email">{user.email}</div>
                 </div>
               )}
-              <div className="nav-section">
+              <div className="nav-section-col">
                 {NAV_LINKS.map(link =>
                   link.protected && !user ? (
                     <span className="navbar-link-disabled" key={link.to} title="Please log in first">
@@ -387,7 +394,7 @@ export default function Navbar() {
                   </NavLink>
                 ))}
               </div>
-              <div className="nav-section">
+              <div className="nav-section-col">
                 {!user ? (
                   <>
                     <NavLink to="/login" className="nav-btn">{NAV_LABELS.login}</NavLink>
