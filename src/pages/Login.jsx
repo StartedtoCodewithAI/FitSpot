@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSupabaseClient } from '@supabase/ssr';
+import { supabase } from '../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
@@ -8,7 +8,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const supabase = useSupabaseClient();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
