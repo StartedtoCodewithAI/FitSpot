@@ -159,6 +159,7 @@ export default function Navbar() {
           text-decoration: none;
           display: inline-block;
           transition: background .16s, box-shadow .16s;
+          white-space: nowrap; /* prevent wrapping for "Sign Up" */
         }
         .nav-btn:hover { background: #174bbd; color: #fff;}
         .nav-avatar-menu { position: relative; display: inline-block; }
@@ -225,7 +226,7 @@ export default function Navbar() {
           .navbar-links-desktop { display: none; }
           .navbar-hamburger { display: flex; }
         }
-        /* No mobile override for nav-btn: keep both compact and inline */
+        /* No mobile override for nav-btn: keep both compact and inline, prevent wrapping */
       `}</style>
       <nav className="nav-root" role="navigation" aria-label="Main navigation">
         <div className="nav-inner">
