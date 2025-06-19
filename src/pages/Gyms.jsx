@@ -620,7 +620,7 @@ export default function Gyms() {
                   onClick={() => navigate(`/book/${gym.id}`, { state: { gym } })}
                   aria-label={`Book session at ${gym.name}`}
                 >
-                  💪 BOOK Session
+                  💪 Book Session
                 </FSButton>
               </div>
             );
