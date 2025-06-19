@@ -45,7 +45,7 @@ export default function BookSession() {
   useEffect(() => {
     (async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
-      console.log("Current Supabase User (on load):", user, error);
+      // For debug: console.log("Current Supabase User (on load):", user, error);
     })();
   }, []);
 
@@ -101,8 +101,18 @@ export default function BookSession() {
   // Go to My Codes handler
   const goToMyCodes = () => navigate('/my-codes');
 
+  // Consistent spacing style for label/input wrappers
+  const fieldWrapperStyle = { marginBottom: 22 };
+
   return (
-    <div style={{ maxWidth: 500, margin: "40px auto", background: "#fff", borderRadius: 12, boxShadow: "0 2px 16px #6C47FF11", padding: 28 }}>
+    <div style={{
+      maxWidth: 500,
+      margin: "40px auto",
+      background: "#fff",
+      borderRadius: 12,
+      boxShadow: "0 2px 16px #6C47FF11",
+      padding: 28
+    }}>
       <h2 style={{ color: "#6C47FF" }}>Book a Session</h2>
       {error && (
         <div style={{
@@ -118,18 +128,45 @@ export default function BookSession() {
       )}
       {step === 1 && (
         <>
-          <div><b>Gym:</b> {gymName}</div>
-          <label style={{ display: "block", marginTop: 18 }}>Choose Date:</label>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ fontSize: 16, padding: 6, borderRadius: 5, border: "1px solid #6C47FF" }} />
-          <label style={{ display: "block", marginTop: 12 }}>Choose Time:</label>
-          <input type="time" value={time} onChange={e => setTime(e.target.value)} style={{ fontSize: 16, padding: 6, borderRadius: 5, border: "1px solid #6C47FF" }} />
+          <div style={{ marginBottom: 20 }}><b>Gym:</b> {gymName}</div>
+          <div style={fieldWrapperStyle}>
+            <label style={{ display: "block", fontWeight: 500, marginBottom: 7 }}>Choose Date:</label>
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              style={{
+                fontSize: 16,
+                padding: 6,
+                borderRadius: 5,
+                border: "1px solid #6C47FF",
+                width: "100%"
+              }}
+            />
+          </div>
+          <div style={fieldWrapperStyle}>
+            <label style={{ display: "block", fontWeight: 500, marginBottom: 7 }}>Choose Time:</label>
+            <input
+              type="time"
+              value={time}
+              onChange={e => setTime(e.target.value)}
+              style={{
+                fontSize: 16,
+                padding: 6,
+                borderRadius: 5,
+                border: "1px solid #6C47FF",
+                width: "100%"
+              }}
+            />
+          </div>
           <FSButton
             disabled={!date || !time}
             onClick={handleNext}
             style={{
-              marginTop: 24,
+              marginTop: 10,
               fontWeight: 600,
               fontSize: 17,
+              width: "100%",
               cursor: (!date || !time) ? "not-allowed" : "pointer"
             }}>
             Next
