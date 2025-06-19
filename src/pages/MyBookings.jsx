@@ -3,7 +3,7 @@ import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import FSButton from "../components/FSButton";
 
-// Helper for European date formatting
+// ----------- Helper Functions -----------
 function formatEuropeanDate(dateString) {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -11,8 +11,37 @@ function formatEuropeanDate(dateString) {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
-  return `${day}/${month}/${year}`; // Change to `${day}-${month}-${year}` for dashes
+  return `${day}/${month}/${year}`;
 }
+
+function getGoogleCalendarUrl({ title, description, location, startDate, endDate }) {
+  const formatDate = d => new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  const start = formatDate(startDate);
+  const end = formatDate(endDate);
+  return `https://www.google.com/calendar/render?action=TEMPLATE` +
+    `&text=${encodeURIComponent(title)}` +
+    `&dates=${start}/${end}` +
+    `&details=${encodeURIComponent(description || '')}` +
+    `&location=${encodeURIComponent(location || '')}` +
+    `&sf=true&output=xml`;
+}
+
+function generateICS({ title, description, location, startDate, endDate }) {
+  const formatICSDate = d => new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  const icsContent =
+    `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${title}
+DESCRIPTION:${description}
+LOCATION:${location}
+DTSTART:${formatICSDate(startDate)}
+DTEND:${formatICSDate(endDate)}
+END:VEVENT
+END:VCALENDAR`;
+  return 'data:text/calendar;charset=utf8,' + encodeURIComponent(icsContent);
+}
+// ----------------------------------------
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
@@ -25,14 +54,12 @@ export default function MyBookings() {
     async function fetchBookings() {
       setLoading(true);
       setFetchError("");
-      // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
         setFetchError("Please log in to view your bookings.");
         setLoading(false);
         return;
       }
-      // Fetch codes/bookings for this user
       const { data, error } = await supabase
         .from("codes")
         .select("*")
@@ -66,6 +93,49 @@ export default function MyBookings() {
       past.push(b);
     }
   });
+
+  function renderAddToCalendar(b) {
+    // Build start and end datetimes
+    const startDateTime = `${b.date}T${b.time || '09:00'}`;
+    // If you want to add 1 hour to time, parse and add; otherwise just use next hour
+    let endDateTime;
+    if (b.time) {
+      const [h, m] = b.time.split(":");
+      const end = new Date(`${b.date}T${b.time}`);
+      end.setHours(end.getHours() + 1);
+      endDateTime = end.toISOString().slice(0,16);
+    } else {
+      endDateTime = `${b.date}T10:00`;
+    }
+
+    const eventDetails = {
+      title: `Session @ ${b.gym?.name || b.gym || "Gym"}`,
+      description: `FitSpot booking code: ${b.code}`,
+      location: b.gym?.name || b.gym || "",
+      startDate: startDateTime,
+      endDate: endDateTime
+    };
+
+    return (
+      <div style={{marginTop: 6, fontSize: "0.97em"}}>
+        <a
+          href={getGoogleCalendarUrl(eventDetails)}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{marginRight: 10, color: "#2563eb", fontWeight: 500, textDecoration: "underline"}}
+        >
+          Add to Google Calendar
+        </a>
+        <a
+          href={generateICS(eventDetails)}
+          download={`Booking-${b.code}.ics`}
+          style={{ color: "#2563eb", fontWeight: 500, textDecoration: "underline"}}
+        >
+          Add to Apple/Outlook Calendar
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -144,6 +214,7 @@ export default function MyBookings() {
                         color: "#2563eb"
                       }}>{b.code}</span>
                     </div>
+                    {renderAddToCalendar(b)}
                   </li>
                 ))}
               </ul>
@@ -184,6 +255,7 @@ export default function MyBookings() {
                         color: "#2563eb"
                       }}>{b.code}</span>
                     </div>
+                    {renderAddToCalendar(b)}
                   </li>
                 ))}
               </ul>
