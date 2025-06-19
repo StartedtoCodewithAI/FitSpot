@@ -3,6 +3,17 @@ import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import FSButton from "../components/FSButton";
 
+// Helper for European date formatting
+function formatEuropeanDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date)) return dateString;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`; // Change to `${day}-${month}-${year}` for dashes
+}
+
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +129,7 @@ export default function MyBookings() {
                       {b.gym?.name || b.gym || "Gym"}
                     </div>
                     <div style={{ margin: "0.35rem 0", color: "#333" }}>
-                      <b>Date:</b> {b.date} <b>Time:</b> {b.time || "N/A"}
+                      <b>Date:</b> {formatEuropeanDate(b.date)} <b>Time:</b> {b.time || "N/A"}
                     </div>
                     <div style={{ color: "#888" }}>
                       <b>Status:</b> {b.used ? "Checked In" : "Booked"}
@@ -158,7 +169,7 @@ export default function MyBookings() {
                       {b.gym?.name || b.gym || "Gym"}
                     </div>
                     <div style={{ margin: "0.35rem 0", color: "#333" }}>
-                      <b>Date:</b> {b.date} <b>Time:</b> {b.time || "N/A"}
+                      <b>Date:</b> {formatEuropeanDate(b.date)} <b>Time:</b> {b.time || "N/A"}
                     </div>
                     <div style={{ color: "#888" }}>
                       <b>Status:</b> {b.used ? "Checked In" : "Missed"}
