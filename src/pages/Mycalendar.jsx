@@ -8,6 +8,28 @@ import FSButton from "../components/FSButton";
 
 const localizer = momentLocalizer(moment);
 
+// --- European date/time formats for calendar UI ---
+const formats = {
+  dateFormat: 'DD/MM',
+  dayFormat: 'ddd DD/MM',
+  weekdayFormat: 'dddd',
+  monthHeaderFormat: 'MMMM YYYY',
+  dayHeaderFormat: 'dddd, DD MMMM YYYY',
+  dayRangeHeaderFormat: ({ start, end }, culture, localizer) =>
+    `${moment(start).format('DD/MM/YYYY')} - ${moment(end).format('DD/MM/YYYY')}`,
+  agendaHeaderFormat: ({ start, end }, culture, localizer) =>
+    `${moment(start).format('DD/MM/YYYY')} - ${moment(end).format('DD/MM/YYYY')}`,
+  agendaDateFormat: 'DD/MM/YYYY',
+  agendaTimeFormat: 'HH:mm',
+  eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
+    `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
+  eventTimeRangeStartFormat: ({ start }, culture, localizer) =>
+    `${moment(start).format('HH:mm')}`,
+  eventTimeRangeEndFormat: ({ end }, culture, localizer) =>
+    `${moment(end).format('HH:mm')}`,
+  timeGutterFormat: 'HH:mm',
+};
+
 export default function MyCalendar() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,17 +51,27 @@ export default function MyCalendar() {
       if (error) {
         setEvents([]);
       } else {
-        // Map bookings to calendar events
         setEvents(
           (data || [])
             .filter(b => b.date)
-            .map(b => ({
-              id: b.id || b.code,
-              title: `Session @ ${b.gym?.name || "Gym"}`,
-              start: new Date(`${b.date}T${b.time || "09:00"}`),
-              end: new Date(`${b.date}T${b.time || "10:00"}`), // 1-hour default
-              booking: b,
-            }))
+            .map(b => {
+              const start = new Date(`${b.date}T${b.time || "09:00"}`);
+              let end;
+              if (b.time) {
+                const [h, m] = b.time.split(":");
+                end = new Date(`${b.date}T${b.time}`);
+                end.setHours(end.getHours() + 1);
+              } else {
+                end = new Date(`${b.date}T10:00`);
+              }
+              return {
+                id: b.id || b.code,
+                title: `Session @ ${b.gym?.name || "Gym"}`,
+                start,
+                end,
+                booking: b,
+              };
+            })
         );
       }
       setLoading(false);
@@ -55,9 +87,7 @@ export default function MyCalendar() {
     return { style: { backgroundColor: "#2563eb", color: "#fff" } };
   }
 
-  // Optional: show booking details on event click
   function onSelectEvent(event) {
-    // You can navigate or show a modal with event.booking details
     navigate("/my-codes", { state: { highlight: event.booking.code } });
   }
 
@@ -85,6 +115,7 @@ export default function MyCalendar() {
           style={{ height: 600 }}
           eventPropGetter={eventStyleGetter}
           onSelectEvent={onSelectEvent}
+          formats={formats}
         />
       )}
     </div>
