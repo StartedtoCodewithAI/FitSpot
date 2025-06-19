@@ -1,12 +1,31 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { FiBell } from "react-icons/fi";
-import notifications from "../data/notifications";
+import { supabase } from "../supabaseClient"; // Make sure this path is correct for your project
+import { useSession } from "@supabase/auth-helpers-react"; // Or your auth/session method
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const btnRef = useRef();
   const [dropdownStyle, setDropdownStyle] = useState({});
+  const [notifications, setNotifications] = useState([]);
+  const session = useSession(); // Get authenticated user
+
+  // Fetch notifications from Supabase
+  useEffect(() => {
+    if (!session?.user) return;
+    const fetchNotifications = async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
+      if (!error) setNotifications(data || []);
+    };
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000); // Poll every minute
+    return () => clearInterval(interval);
+  }, [session]);
 
   // Calculate position for dropdown when open
   useEffect(() => {
@@ -14,8 +33,8 @@ export default function NotificationBell() {
       const rect = btnRef.current.getBoundingClientRect();
       setDropdownStyle({
         position: "fixed",
-        top: rect.bottom + 8, // 8px below the bell
-        left: Math.max(rect.right - 250, 8), // prevent off-screen
+        top: rect.bottom + 8,
+        left: Math.max(rect.right - 250, 8),
         minWidth: 250,
         background: "#fff",
         boxShadow: "0 8px 32px #2223",
@@ -63,6 +82,9 @@ export default function NotificationBell() {
                 }}
               >
                 {n.text}
+                <div style={{ fontSize: 11, color: "#888" }}>
+                  {new Date(n.created_at).toLocaleString()}
+                </div>
               </div>
             ))
           )}
