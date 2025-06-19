@@ -126,7 +126,15 @@ export default function Navbar() {
     <>
       <style>{`
         .nav-root { width: 100%; background: #fff; border-bottom: 1px solid #e5e8ef; position: sticky; top: 0; z-index: 2000;}
-        .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0.7rem 2rem 0.7rem 1.5rem; display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .nav-inner { 
+          max-width: 1200px; 
+          margin: 0 auto; 
+          padding: 0.7rem 2rem 0.7rem 1.5rem; 
+          display: flex; 
+          align-items: center; 
+          justify-content: space-between; 
+          width: 100%; 
+        }
         .nav-brand { display: flex; align-items: center; gap: 0.75rem; }
         .nav-brand img { height: 40px; border-radius: 10px; }
         .nav-brand span { color: #2563eb; font-weight: 800; font-size: 1.4rem; letter-spacing: .5px; }
@@ -222,11 +230,20 @@ export default function Navbar() {
           font-size: 0.98rem;
           color: #666;
         }
+
         @media (max-width: 900px) {
           .navbar-links-desktop { display: none; }
           .navbar-hamburger { display: flex; }
         }
-        /* No mobile override for nav-btn: keep both compact and inline, prevent wrapping */
+        /* Make navbar narrower on very small screens */
+        @media (max-width: 600px) {
+          .nav-inner {
+            padding: 0.7rem 0.6rem;
+          }
+          .nav-btn {
+            padding: 0.39rem 0.5rem;
+          }
+        }
       `}</style>
       <nav className="nav-root" role="navigation" aria-label="Main navigation">
         <div className="nav-inner">
