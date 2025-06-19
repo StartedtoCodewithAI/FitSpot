@@ -12,19 +12,15 @@ export default function BookSession() {
   // Accept the full gym object if passed via navigation, fallback to just id/name
   const initialGymObj = location.state?.gym || null;
   const initialGymName = initialGymObj?.name || location.state?.gymName || "";
-  const initialTeamName = location.state?.teamName || "";
 
   const [gym, setGym] = useState(initialGymObj);
   const [gymName, setGymName] = useState(initialGymName);
-  const [teamName, setTeamName] = useState(initialTeamName);
 
   // If gym object not passed, fetch it (update this logic as per your gym storage)
   useEffect(() => {
-    // If already loaded, nothing to do
     if (gym) return;
     if (!gymId) return;
     (async () => {
-      // Example: fetch from your gyms table
       const { data, error } = await supabase
         .from('gyms')
         .select('*')
@@ -35,7 +31,6 @@ export default function BookSession() {
         setGymName(data.name);
       } else {
         setGymName("Demo Gym " + gymId);
-        setTeamName("Default Team");
       }
     })();
   }, [gym, gymId]);
@@ -124,7 +119,6 @@ export default function BookSession() {
       {step === 1 && (
         <>
           <div><b>Gym:</b> {gymName}</div>
-          <div><b>Team:</b> {teamName}</div>
           <label style={{ display: "block", marginTop: 18 }}>Choose Date:</label>
           <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ fontSize: 16, padding: 6, borderRadius: 5, border: "1px solid #6C47FF" }} />
           <label style={{ display: "block", marginTop: 12 }}>Choose Time:</label>
@@ -146,7 +140,6 @@ export default function BookSession() {
         <>
           <h4>Review Details</h4>
           <div>Gym: <b>{gymName}</b></div>
-          <div>Team: <b>{teamName}</b></div>
           <div>Date: <b>{date}</b></div>
           <div>Time: <b>{time}</b></div>
           <FSButton
