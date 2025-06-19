@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
-    "vite": "^4.0.0"
+    "vite": "^4.0.0",
     "@supabase/auth-helpers-react": "^1.4.3"
   }
 }
