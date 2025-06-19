@@ -115,7 +115,6 @@ export default function Navbar() {
     navigate("/login");
   }
 
-  // Helper: get user display name
   function getDisplayName(user) {
     if (!user) return "";
     if (user.user_metadata?.full_name) return user.user_metadata.full_name;
@@ -207,9 +206,26 @@ export default function Navbar() {
           font-size: 0.98rem;
           color: #666;
         }
+
+        /* --- MOBILE BUTTON STYLES --- */
         @media (max-width: 900px) {
           .navbar-links-desktop { display: none; }
           .navbar-hamburger { display: flex; }
+        }
+        @media (max-width: 800px) {
+          .navbar-links-mobile .nav-btn {
+            display: block;
+            width: 100%;
+            margin: 0 0 0.7rem 0;
+            border-radius: 16px;
+            font-size: 1.12rem;
+            padding: 0.55rem 0;
+            text-align: center;
+            font-weight: 700;
+          }
+          .navbar-links-mobile .nav-btn:last-child {
+            margin-bottom: 0;
+          }
         }
       `}</style>
       <nav className="nav-root" role="navigation" aria-label="Main navigation">
@@ -257,7 +273,7 @@ export default function Navbar() {
             )}
           </div>
           <div className="nav-icons">
-            <NotificationBell />
+            {/* Hamburger menu comes first */}
             <button
               className="navbar-hamburger"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -267,6 +283,7 @@ export default function Navbar() {
             >
               <span className="hamburger-icon" />
             </button>
+            <NotificationBell />
             <ThemeToggle aria-label="Toggle dark mode" />
             {!user ? (
               <>
