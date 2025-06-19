@@ -1,16 +1,22 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { FiBell } from "react-icons/fi";
-import { useUser, useSupabaseClient } from "@supabase/ssr";
+import { supabase } from "../supabaseClient"; // Update this path if your supabaseClient.js is elsewhere
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const btnRef = useRef();
   const [dropdownStyle, setDropdownStyle] = useState({});
   const [notifications, setNotifications] = useState([]);
+  const [user, setUser] = useState(null);
 
-  const user = useUser();
-  const supabase = useSupabaseClient();
+  // Get user from localStorage (set at login)
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   // Fetch notifications from Supabase
   useEffect(() => {
@@ -26,7 +32,7 @@ export default function NotificationBell() {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 60000); // Poll every minute
     return () => clearInterval(interval);
-  }, [user, supabase]);
+  }, [user]);
 
   // Calculate position for dropdown when open
   useEffect(() => {
