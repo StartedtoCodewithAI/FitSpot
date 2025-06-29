@@ -137,7 +137,7 @@ export default function Profile() {
     const payload = {
       sender_id: authUser.id,
       receiver_id: null,
-      context: newMsg.trim(),
+      content: newMsg.trim(),
     };
 
     const { error } = await supabase.from("messages").insert([payload]);
@@ -465,7 +465,7 @@ export default function Profile() {
                 {" • "}
                 {new Date(msg.created_at).toLocaleString()}
               </div>
-              <div>{msg.context || msg.content}</div>
+              <div>{msg.content || msg.content}</div>
             </div>
           ))}
           <div ref={messagesEndRef} />
