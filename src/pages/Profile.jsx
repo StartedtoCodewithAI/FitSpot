@@ -82,7 +82,7 @@ export default function Profile() {
       } else {
         setProfile(prev => ({
           ...prev,
-          name: user.user_metadata?.name || "", // Simplified from full_name to name
+          name: user.user_metadata?.full_name || "",
           email: user.email,
         }));
       }
@@ -280,123 +280,132 @@ export default function Profile() {
             width: 130, height: 130, borderRadius: "50%", background: "#f1f5f9",
             color: "#64748b", display: "flex", alignItems: "center",
             justifyContent: "center", fontSize: "2.8rem", fontWeight: 700,
-            marginBottom: 8
+            border: "3px solid #e0e7ef", marginBottom: 8
           }}>
             {getInitials(profile.name, profile.email)}
           </div>
         )}
 
-        <div>
-          <label className="fs-btn" style={{
-            cursor: "pointer", padding: "6px 16px", fontSize: "14px", fontWeight: 600
-          }}>
-            {avatarUploading ? "Uploading..." : "Upload Avatar"}
-            <input type="file" hidden accept="image/*" onChange={handleAvatarUpload} />
-          </label>
-          {profile.avatar_url && (
-            <button onClick={handleAvatarRemove} style={{
-              border: "none", backgroundColor: "transparent", color: "#e11d48", fontWeight: 500, fontSize: "0.875rem", cursor: "pointer"
-            }}>
-              Remove Avatar
-            </button>
-          )}
-        </div>
+        <label htmlFor="avatar-upload">
+          <FSButton size="small" variant="outline" text={avatarUploading ? "Uploading..." : "Upload Avatar"} />
+        </label>
+        <input
+          id="avatar-upload"
+          type="file"
+          style={{ display: "none" }}
+          accept="image/*"
+          disabled={avatarUploading}
+          onChange={handleAvatarUpload}
+        />
+        <button onClick={handleAvatarRemove} disabled={avatarUploading} style={{
+          backgroundColor: "#f87171", padding: "6px 12px", borderRadius: "8px", marginTop: "8px"
+        }}>
+          Remove Avatar
+        </button>
       </div>
 
-      {/* Edit Profile */}
-      {editMode ? (
-        <form onSubmit={handleSave}>
+      {/* Profile Form */}
+      <form onSubmit={handleSave}>
+        <div>
           <input
             type="text"
             name="name"
             value={profile.name}
             onChange={handleChange}
-            placeholder="Your Name"
-            required
-            style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "8px", marginBottom: "12px" }}
+            placeholder="Full Name"
+            style={{ width: "100%", padding: "8px", borderRadius: "6px", marginBottom: 16 }}
+            disabled={!editMode}
           />
-          <input
-            type="email"
-            name="email"
-            value={profile.email}
-            disabled
-            style={{
-              width: "100%", padding: "12px", fontSize: "16px", borderRadius: "8px", marginBottom: "12px", background: "#f1f5f9"
-            }}
-          />
+        </div>
+
+        {/* Other Profile Fields */}
+        <div>
           <textarea
             name="goals"
             value={profile.goals}
             onChange={handleChange}
             placeholder="Your Goals"
-            style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "8px", marginBottom: "12px", minHeight: "80px" }}
+            rows={3}
+            disabled={!editMode}
+            style={{ width: "100%", padding: "8px", borderRadius: "6px", marginBottom: 16 }}
           />
-          <div className="progress">
-            <label>Current Progress</label>
-            <input
-              type="number"
-              name="currentProgress"
-              value={profile.currentProgress || ""}
-              onChange={handleChange}
-              style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "8px", marginBottom: "12px" }}
-            />
-          </div>
-          <div style={{ marginBottom: 22 }}>
-            <label>Target</label>
-            <input
-              type="number"
-              name="targetTotal"
-              value={profile.targetTotal || ""}
-              onChange={handleChange}
-              style={{ width: "100%", padding: "12px", fontSize: "16px", borderRadius: "8px", marginBottom: "12px" }}
-            />
-          </div>
+        </div>
 
-          <FSButton type="submit" variant="primary" size="medium" label="Save" />
-        </form>
-      ) : (
-        <div>
-          <h2 style={{ marginTop: 24 }}>{profile.name}</h2>
-          <div style={{ fontWeight: 600, color: "#4b5563" }}>{profile.email}</div>
+        {/* Target Progress */}
+        <div style={{ marginBottom: 24 }}>
+          <h3>Your Target: {profile.targetLabel || "N/A"}</h3>
+          <h4>Progress: {profile.currentProgress}/{profile.targetTotal || 0} </h4>
+          <div>{getMotivationalMsg(pct)}</div>
+        </div>
 
-          {/* Progress */}
-          <div style={{
-            marginTop: 24, padding: "1.3rem", backgroundColor: "#f3f4f6", borderRadius: 12
-          }}>
-            <div style={{
-              display: "flex", justifyContent: "space-between", marginBottom: 10
-            }}>
-              <span style={{ fontWeight: 600 }}>Progress</span>
-              <span style={{ fontWeight: 600 }}>{`${profile.currentProgress}/${profile.targetTotal}`}</span>
-            </div>
-            <div className="progress-bar" style={{
-              height: 8, borderRadius: 20, backgroundColor: "#e5e7eb", overflow: "hidden"
-            }}>
-              <div
-                className="progress" style={{
-                  width: `${pct}%`, backgroundColor: "#2563eb", height: "100%", borderRadius: "inherit"
-                }}></div>
-            </div>
-
-            <div style={{
-              fontSize: "0.875rem", color: "#4b5563", fontWeight: 500, marginTop: 10
-            }}>
-              {getMotivationalMsg(pct)}
-            </div>
-          </div>
-
-          {/* Edit Button */}
-          <button
-            onClick={() => setEditMode(true)}
+        {/* Progress */}
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            type="number"
+            value={progressInput}
+            onChange={(e) => setProgressInput(e.target.value)}
+            placeholder="Progress Amount"
             style={{
-              backgroundColor: "#2563eb", color: "white", border: "none", padding: "12px 24px",
-              fontSize: "16px", borderRadius: 8, marginTop: 24, cursor: "pointer"
+              padding: "8px", borderRadius: "6px", flex: 1, fontSize: "1rem",
+              border: "1px solid #ccc", outline: "none"
             }}
-          >
-            Edit Profile
+          />
+          <button type="button" onClick={handleProgressAdd} style={{
+            padding: "8px 16px", borderRadius: "6px", background: "#2563eb", color: "#fff"
+          }}>
+            Add Progress
           </button>
         </div>
-      )}
+
+        <div>
+          <button type="button" onClick={handleProgressReset} style={{
+            padding: "6px 12px", borderRadius: "8px", marginTop: "16px", backgroundColor: "#f87171"
+          }}>
+            Reset Progress
+          </button>
+        </div>
+
+        <div>
+          <button type="submit" style={{
+            padding: "10px 20px", backgroundColor: "#2563eb", color: "#fff", borderRadius: "8px",
+            marginTop: "16px"
+          }} disabled={!editMode}>
+            Save Changes
+          </button>
+        </div>
+      </form>
+
+      {/* Messages */}
+      <div style={{ marginTop: "2rem", maxHeight: 400, overflowY: "auto" }}>
+        <div>
+          {messages.map((msg) => (
+            <div key={msg.id} style={{
+              padding: "10px", borderBottom: "1px solid #e0e7ef", marginBottom: "8px",
+              textAlign: "left"
+            }}>
+              <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>{msg.sender_name}</div>
+              <div>{msg.content}</div>
+            </div>
+          ))}
+        </div>
+
+        <div ref={messagesEndRef} />
+        <div style={{ marginTop: 16 }}>
+          <textarea
+            value={newMsg}
+            onChange={(e) => setNewMsg(e.target.value)}
+            placeholder="Type a message..."
+            style={{
+              padding: "8px", borderRadius: "6px", width: "100%", resize: "none",
+              fontSize: "1rem"
+            }}
+          />
+          <button type="button" onClick={handleSendMessage} style={{
+            padding: "8px 16px", backgroundColor: "#2563eb", color: "#fff", borderRadius: "6px",
+            marginTop: "8px"
+          }}>Send</button>
+        </div>
+      </div>
     </div>
   );
 }
