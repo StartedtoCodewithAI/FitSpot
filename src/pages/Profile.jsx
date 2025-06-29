@@ -137,23 +137,34 @@ export default function Profile() {
   }, [authUser]);
 
   const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMsg.trim() || !authUser) return;
+  e.preventDefault();
 
-    const payload = {
-      sender_id: authUser.id,
-      receiver_id: null,
-      content: newMsg.trim(),
-    };
+  // Ensure the message is not empty and the user is logged in
+  if (!newMsg.trim() || !authUser || !authUser.id) {
+    toast.error("You need to be logged in to send a message.");
+    return;
+  }
 
-    const { error } = await supabase.from("messages").insert([payload]);
-    if (error) {
-      console.error("Send message error:", error);
-      toast.error(`Failed to send message: ${error.message}`);
-    } else {
-      setNewMsg("");
-    }
+  // Log the authUser.id for debugging
+  console.log("authUser ID:", authUser.id);  // Log the ID to ensure it's correct
+
+  // Create the message payload
+  const payload = {
+    sender_id: authUser.id,  // Ensure this is the correct logged-in user's ID
+    receiver_id: null,
+    content: newMsg.trim(),
   };
+
+  // Insert the message into the database
+  const { error } = await supabase.from("messages").insert([payload]);
+
+  if (error) {
+    console.error("Send message error:", error);
+    toast.error(`Failed to send message: ${error.message}`);
+  } else {
+    setNewMsg("");  // Clear the input field if the message was sent successfully
+  }
+};
 
   const handleSave = async (e) => {
     e.preventDefault();
