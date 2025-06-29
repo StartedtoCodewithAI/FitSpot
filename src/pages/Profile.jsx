@@ -19,7 +19,7 @@ const MOTIVATION = [
   { pct: 25, msg: "You're making progress! Keep it up!" },
   { pct: 50, msg: "Halfway there! Stay strong!" },
   { pct: 75, msg: "Almost at your target. Finish strong!" },
-  { pct: 100, msg: "Congratulations! Target achieved! 🎉" }
+  { pct: 100, msg: "Congratulations! Target achieved! 🎉" },
 ];
 
 function getMotivationalMsg(pct) {
@@ -33,11 +33,11 @@ function getMotivationalMsg(pct) {
 function getInitials(name, email) {
   if (name) {
     const parts = name.trim().split(" ");
-    if (parts.length === 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return parts.length === 1
+      ? parts[0][0].toUpperCase()
+      : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
-  if (email) return email[0].toUpperCase();
-  return "?";
+  return email ? email[0].toUpperCase() : "?";
 }
 
 export default function Profile() {
@@ -48,12 +48,10 @@ export default function Profile() {
   const [authUser, setAuthUser] = useState(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
-  // Supabase chat state
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Scroll chat to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -68,11 +66,13 @@ export default function Profile() {
         setLoading(false);
         return;
       }
+
       const { data } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
+
       if (data) {
         setProfile(prev => ({
           ...prev,
@@ -88,21 +88,22 @@ export default function Profile() {
       }
       setLoading(false);
     }
+
     getUserProfile();
   }, []);
 
-  // Load messages and subscribe to new ones
   useEffect(() => {
     if (!authUser) return;
 
-    const channel = "general"; // fixed channel name, adjust if needed
+    const channelName = "general";
 
     async function fetchMessages() {
       const { data, error } = await supabase
         .from("messages")
         .select("*")
-        .eq("channel", channel)
+        .eq("channel", channelName)
         .order("created_at", { ascending: true });
+
       if (error) {
         console.error("Error loading messages:", error);
         return;
@@ -112,12 +113,16 @@ export default function Profile() {
 
     fetchMessages();
 
-    // Subscribe to new messages
-    const subscription = supabase
-      .channel("public:messages")
+    const channel = supabase
+      .channel("messages_channel")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages", filter: `channel=eq.${channel}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `channel=eq.${channelName}`,
+        },
         (payload) => {
           setMessages((msgs) => [...msgs, payload.new]);
         }
@@ -125,23 +130,22 @@ export default function Profile() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscription);
+      supabase.removeChannel(channel);
     };
   }, [authUser]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMsg.trim()) return;
-    if (!authUser) return;
+    if (!newMsg.trim() || !authUser) return;
 
-    const messagePayload = {
+    const payload = {
       user_id: authUser.id,
       user_name: profile.name || profile.email || "Unknown",
       channel: "general",
       content: newMsg.trim(),
     };
 
-    const { error } = await supabase.from("messages").insert([messagePayload]);
+    const { error } = await supabase.from("messages").insert([payload]);
     if (error) {
       toast.error("Failed to send message.");
       console.error("Send message error:", error);
@@ -154,11 +158,13 @@ export default function Profile() {
     e.preventDefault();
     setEditMode(false);
     if (!authUser) return;
+
     await supabase.from("profiles").upsert({
       id: authUser.id,
       ...profile,
-      email: authUser.email
+      email: authUser.email,
     });
+
     toast.success("Profile updated!");
   };
 
@@ -170,24 +176,29 @@ export default function Profile() {
   async function handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file || !authUser) return;
+
     setAvatarUploading(true);
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${authUser.id}_${Date.now()}.${fileExt}`;
+    const ext = file.name.split(".").pop();
+    const path = `${authUser.id}_${Date.now()}.${ext}`;
+
     const { error: uploadError } = await supabase
       .storage
-      .from('avatars')
-      .upload(filePath, file, { upsert: true });
+      .from("avatars")
+      .upload(path, file, { upsert: true });
+
     if (uploadError) {
-      toast.error("Upload failed. Try again.");
+      toast.error("Upload failed.");
       setAvatarUploading(false);
       return;
     }
-    const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
     if (data?.publicUrl) {
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ avatar_url: data.publicUrl })
         .eq("id", authUser.id);
+
       if (updateError) {
         toast.error("Failed to update avatar.");
       } else {
@@ -195,6 +206,7 @@ export default function Profile() {
         toast.success("Avatar updated!");
       }
     }
+
     setAvatarUploading(false);
   }
 
@@ -204,6 +216,7 @@ export default function Profile() {
       .from("profiles")
       .update({ avatar_url: null })
       .eq("id", authUser.id);
+
     if (!error) {
       setProfile(prev => ({ ...prev, avatar_url: null }));
       toast.success("Avatar removed!");
@@ -212,7 +225,7 @@ export default function Profile() {
     }
   }
 
-  const targetTotalNum = Number(profile.targetTotal) > 0 ? Number(profile.targetTotal) : 0;
+  const targetTotalNum = Number(profile.targetTotal) || 0;
   const pct = targetTotalNum
     ? Math.min(100, Math.round((profile.currentProgress / targetTotalNum) * 100))
     : 0;
@@ -221,14 +234,16 @@ export default function Profile() {
     e.preventDefault();
     const addNum = Number(progressInput);
     if (!addNum || addNum <= 0) return;
+
     setProfile(prev => ({
       ...prev,
       currentProgress: prev.currentProgress + addNum,
-      progressLog: [
-        ...(prev.progressLog || []),
-        { date: new Date().toISOString(), amount: addNum }
-      ]
+      progressLog: [...(prev.progressLog || []), {
+        date: new Date().toISOString(),
+        amount: addNum
+      }]
     }));
+
     setProgressInput("");
   };
 
@@ -246,56 +261,35 @@ export default function Profile() {
   if (!authUser) return <div>Please log in to view your profile.</div>;
 
   return (
-    <div
-      className="container"
-      style={{
-        maxWidth: 540,
-        margin: "3.5rem auto",
-        background: "#fff",
-        borderRadius: 20,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.09)",
-        padding: "2.4rem 2.1rem 1.7rem 2.1rem",
-        textAlign: "center"
-      }}
-    >
+    <div className="container" style={{
+      maxWidth: 540, margin: "3.5rem auto", background: "#fff", borderRadius: 20,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.09)", padding: "2.4rem 2.1rem 1.7rem",
+      textAlign: "center"
+    }}>
       <h1 style={{ color: "#2563eb", marginBottom: 20 }}>Your Profile</h1>
-      <div style={{ marginBottom: 22, position: "relative" }}>
-        {/* Avatar block */}
+
+      {/* Avatar */}
+      <div style={{ marginBottom: 22 }}>
         {profile.avatar_url ? (
-          <img
-            src={profile.avatar_url}
-            alt="Profile avatar"
-            style={{
-              width: 130, height: 130, objectFit: "cover",
-              borderRadius: "50%", border: "3px solid #2563eb", marginBottom: 8
-            }}
-          />
+          <img src={profile.avatar_url} alt="avatar" style={{
+            width: 130, height: 130, borderRadius: "50%", objectFit: "cover",
+            border: "3px solid #2563eb", marginBottom: 8
+          }} />
         ) : (
-          <div
-            style={{
-              width: 130, height: 130, borderRadius: "50%",
-              background: "#f1f5f9", color: "#64748b",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "2.8rem", fontWeight: 700, border: "3px solid #e0e7ef",
-              margin: "0 auto 8px auto"
-            }}
-          >
+          <div style={{
+            width: 130, height: 130, borderRadius: "50%", background: "#f1f5f9",
+            color: "#64748b", display: "flex", alignItems: "center",
+            justifyContent: "center", fontSize: "2.8rem", fontWeight: 700,
+            border: "3px solid #e0e7ef", marginBottom: 8
+          }}>
             {getInitials(profile.name, profile.email)}
           </div>
         )}
-        <label
-          htmlFor="avatar-upload"
-          style={{
-            display: "inline-block",
-            background: "#2563eb",
-            color: "#fff",
-            borderRadius: 8,
-            padding: "0.45rem 1.1rem",
-            cursor: "pointer",
-            marginRight: 12,
-            fontWeight: 600,
-          }}
-        >
+
+        <label htmlFor="avatar-upload" style={{
+          background: "#2563eb", color: "#fff", borderRadius: 8, padding: "0.45rem 1.1rem",
+          cursor: "pointer", marginRight: 12, fontWeight: 600,
+        }}>
           {avatarUploading ? "Uploading..." : "Change Avatar"}
         </label>
         <input
@@ -307,54 +301,36 @@ export default function Profile() {
           disabled={avatarUploading}
         />
         {profile.avatar_url && (
-          <button
-            type="button"
-            onClick={handleAvatarRemove}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#ef4444",
-              cursor: "pointer",
-              fontWeight: 600
-            }}
-          >
+          <button onClick={handleAvatarRemove} style={{
+            background: "transparent", border: "none", color: "#ef4444",
+            fontWeight: 600, cursor: "pointer"
+          }}>
             Remove
           </button>
         )}
       </div>
 
+      {/* Profile content */}
       {!editMode ? (
         <>
           <h2>{profile.name || profile.email || "User"}</h2>
           <p style={{ color: "#64748b", marginBottom: 16 }}>{profile.email}</p>
-
           <p><b>Goal:</b> {profile.goals || "No goal set"}</p>
           <p><b>Target:</b> {profile.targetLabel || "-"}: {profile.targetTotal || "-"}</p>
+          <p><b>Progress:</b> {profile.currentProgress} / {profile.targetTotal} ({pct}%)</p>
 
-          <p>
-            <b>Progress:</b> {profile.currentProgress} / {profile.targetTotal} ({pct}%)
-          </p>
-          <div
-            aria-label="Progress bar"
-            style={{
-              height: 18,
-              borderRadius: 12,
-              background: "#e0e7ef",
-              marginBottom: 12,
-              overflow: "hidden",
-              position: "relative",
-            }}
-          >
-            <div
-              style={{
-                width: `${pct}%`,
-                height: "100%",
-                background: pct === 100 ? "#22c55e" : "#2563eb",
-                transition: "width 0.5s ease-in-out",
-              }}
-            />
+          {/* Progress bar */}
+          <div style={{
+            height: 18, borderRadius: 12, background: "#e0e7ef",
+            marginBottom: 12, overflow: "hidden"
+          }}>
+            <div style={{
+              width: `${pct}%`, height: "100%",
+              background: pct === 100 ? "#22c55e" : "#2563eb",
+              transition: "width 0.5s ease-in-out"
+            }} />
           </div>
-          <p style={{ fontStyle: "italic", color: "#2563eb", marginBottom: 12 }}>
+          <p style={{ fontStyle: "italic", color: "#2563eb" }}>
             {getMotivationalMsg(pct)}
           </p>
 
@@ -371,33 +347,17 @@ export default function Profile() {
             <FSButton type="submit">Add</FSButton>
           </form>
 
-          <button
-            onClick={handleProgressReset}
-            style={{
-              background: "transparent",
-              border: "1px solid #ef4444",
-              color: "#ef4444",
-              borderRadius: 12,
-              padding: "0.4rem 1.2rem",
-              fontWeight: 600,
-              cursor: "pointer",
-              marginBottom: 20,
-            }}
-          >
+          <button onClick={handleProgressReset} style={{
+            background: "transparent", border: "1px solid #ef4444", color: "#ef4444",
+            borderRadius: 12, padding: "0.4rem 1.2rem", fontWeight: 600, cursor: "pointer"
+          }}>
             Reset Progress
           </button>
 
-          <button
-            onClick={() => setEditMode(true)}
-            style={{
-              background: "#2563eb",
-              color: "#fff",
-              borderRadius: 12,
-              padding: "0.5rem 1.5rem",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={() => setEditMode(true)} style={{
+            background: "#2563eb", color: "#fff", borderRadius: 12,
+            padding: "0.5rem 1.5rem", fontWeight: 600, cursor: "pointer"
+          }}>
             Edit Profile
           </button>
         </>
@@ -410,8 +370,8 @@ export default function Profile() {
               name="name"
               value={profile.name}
               onChange={handleChange}
-              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
               required
+              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
             />
           </label>
           <label>
@@ -445,40 +405,25 @@ export default function Profile() {
               style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
             />
           </label>
-          <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+          <div style={{ display: "flex", gap: 12 }}>
             <FSButton type="submit">Save</FSButton>
-            <button
-              type="button"
-              onClick={() => setEditMode(false)}
-              style={{
-                background: "transparent",
-                border: "1px solid #64748b",
-                color: "#64748b",
-                borderRadius: 12,
-                padding: "0.5rem 1.5rem",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
+            <button type="button" onClick={() => setEditMode(false)} style={{
+              background: "transparent", border: "1px solid #64748b", color: "#64748b",
+              borderRadius: 12, padding: "0.5rem 1.5rem", fontWeight: 600, cursor: "pointer"
+            }}>
               Cancel
             </button>
           </div>
         </form>
       )}
 
-      {/* Simple Chat Section */}
+      {/* Chat section */}
       <section style={{ marginTop: 40, textAlign: "left" }}>
         <h3 style={{ marginBottom: 12 }}>Chat (General Channel)</h3>
-        <div
-          style={{
-            height: 250,
-            border: "1px solid #e0e7ef",
-            borderRadius: 12,
-            padding: 12,
-            overflowY: "auto",
-            background: "#f9fafb",
-          }}
-        >
+        <div style={{
+          height: 250, border: "1px solid #e0e7ef", borderRadius: 12,
+          padding: 12, overflowY: "auto", background: "#f9fafb"
+        }}>
           {messages.length === 0 ? (
             <p style={{ color: "#64748b", fontStyle: "italic" }}>
               No messages yet. Start the conversation!
