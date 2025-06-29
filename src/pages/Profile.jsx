@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import FSButton from "../components/FSButton";
 
 const defaultProfile = {
+  id: null,
   name: "",
   email: "",
   goals: "",
@@ -67,25 +68,49 @@ export default function Profile() {
         return;
       }
 
-      const { data } = await supabase
+      // Try to fetch profile for user.id
+      let { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
 
-      if (data) {
-        setProfile(prev => ({
-          ...prev,
-          ...data,
+      if (error && error.code === "PGRST116") { 
+        // no profile found, create one
+        const insertPayload = {
+          id: user.id,
           email: user.email,
-        }));
-      } else {
-        setProfile(prev => ({
-          ...prev,
-          name: user.user_metadata?.full_name || "",
-          email: user.email,
-        }));
+          username: user.user_metadata?.username || "",
+          full_name: user.user_metadata?.full_name || "",
+          avatar_url: null,
+        };
+        const { error: insertError } = await supabase.from("profiles").insert(insertPayload);
+
+        if (insertError) {
+          toast.error("Failed to create profile.");
+          setLoading(false);
+          return;
+        }
+
+        data = insertPayload; // assign newly created profile data
+      } else if (error) {
+        toast.error("Failed to load profile.");
+        setLoading(false);
+        return;
       }
+
+      setProfile({
+        id: data.id,
+        name: data.full_name || data.name || "",
+        email: data.email || user.email,
+        goals: data.goals || "",
+        targetLabel: data.targetLabel || "",
+        targetTotal: data.targetTotal || "",
+        currentProgress: data.currentProgress || 0,
+        progressLog: data.progressLog || [],
+        avatar_url: data.avatar_url || null,
+      });
+
       setLoading(false);
     }
 
@@ -134,10 +159,11 @@ export default function Profile() {
     e.preventDefault();
     if (!newMsg.trim() || !authUser) return;
 
+    // For now, let's send to receiver_id = null (or you can add UI later to select receiver)
     const payload = {
       sender_id: authUser.id,
-      receiver_id: null, // you can later update to select a receiver
-      content: newMsg.trim(),  // <-- key fixed here (was 'context')
+      receiver_id: null,
+      content: newMsg.trim(),
     };
 
     const { error } = await supabase.from("messages").insert([payload]);
@@ -156,8 +182,14 @@ export default function Profile() {
 
     const { error } = await supabase.from("profiles").upsert({
       id: authUser.id,
-      ...profile,
+      full_name: profile.name,
       email: authUser.email,
+      goals: profile.goals,
+      targetLabel: profile.targetLabel,
+      targetTotal: profile.targetTotal,
+      currentProgress: profile.currentProgress,
+      progressLog: profile.progressLog,
+      avatar_url: profile.avatar_url,
     });
 
     if (error) {
@@ -288,297 +320,204 @@ export default function Profile() {
 
         <label htmlFor="avatar-upload" style={{
           background: "#2563eb", color: "#fff", borderRadius: 8, padding: "0.45rem 1.1rem",
-          cursor: "pointer", marginRight: 12, fontWeight: 600,
+          cursor: "pointer", fontWeight: "bold", userSelect: "none", fontSize: "0.85rem"
         }}>
           {avatarUploading ? "Uploading..." : "Change Avatar"}
+          <input
+            id="avatar-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarUpload}
+            style={{ display: "none" }}
+            disabled={avatarUploading}
+          />
         </label>
-        <input
-          type="file"
-          id="avatar-upload"
-          accept="image/*"
-          style={{ display: "none" }}
-          onChange={handleAvatarUpload}
-          disabled={avatarUploading}
-        />
         {profile.avatar_url && (
-          <button onClick={handleAvatarRemove} style={{
-            background: "transparent", border: "none", color: "#ef4444",
-            fontWeight: 600, cursor: "pointer"
-          }}>
+          <button
+            type="button"
+            onClick={handleAvatarRemove}
+            style={{
+              marginLeft: 12, background: "#e11d48", color: "#fff",
+              border: "none", padding: "0.45rem 1rem", borderRadius: 8,
+              fontWeight: "bold", cursor: "pointer"
+            }}
+          >
             Remove
           </button>
         )}
       </div>
 
-      {/* Profile content */}
+      {/* Editable info */}
       {!editMode ? (
         <>
-          <h2>{profile.name || profile.email || "User"}</h2>
-          <p style={{ color: "#64748b", marginBottom: 16 }}>{profile.email}</p>
-          <p><b>Goal:</b> {profile.goals || "No goal set"}</p>
-          <p><b>Target:</b> {profile.targetLabel || "-"}: {profile.targetTotal || "-"}</p>
-          <p><b>Progress:</b> {profile.currentProgress} / {profile.targetTotal} ({pct}%)</p>
-
-          {/* Progress bar */}
-          <div style={{
-            height: 18, borderRadius: 12, background: "#e0e7ef",
-            marginBottom: 12, overflow: "hidden"
-          }}>
-            <div style={{
-              width: `${pct}%`, height: "100%",
-              background: "#2563eb",
-              transition: "width 0.3s ease"
-            }} />
-          </div>
-
-          <p style={{ fontStyle: "italic", color: "#2563eb", marginBottom: 16 }}>
-            {getMotivationalMsg(pct)}
-          </p>
-
+          <h2>{profile.name || "(No name set)"}</h2>
+          <p>{profile.email}</p>
+          <p><b>Goals:</b> {profile.goals || "(Not set)"}</p>
+          <p><b>Target:</b> {profile.targetLabel || "(Not set)"}</p>
+          <p><b>Target Amount:</b> {profile.targetTotal || "(Not set)"}</p>
+          <p><b>Current Progress:</b> {profile.currentProgress}</p>
+          <p><b>Progress %:</b> {pct}%</p>
+          <p style={{ fontStyle: "italic", color: "#555" }}>{getMotivationalMsg(pct)}</p>
           <button onClick={() => setEditMode(true)} style={{
-            background: "#2563eb", color: "#fff",
-            border: "none", borderRadius: 12, padding: "0.65rem 1.6rem",
-            fontWeight: 600, cursor: "pointer", marginBottom: 24
+            background: "#2563eb", color: "#fff", borderRadius: 8,
+            padding: "0.5rem 1.3rem", border: "none", cursor: "pointer",
+            fontWeight: "bold"
           }}>
             Edit Profile
           </button>
         </>
       ) : (
         <form onSubmit={handleSave} style={{ textAlign: "left" }}>
-          <label htmlFor="name" style={{ fontWeight: 600 }}>Name</label><br />
-          <input
-            id="name"
-            name="name"
-            type="text"
-            value={profile.name}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              marginBottom: 12,
-              padding: "0.6rem 1.1rem",
-              fontSize: "1rem",
-              borderRadius: 12,
-              border: "1.5px solid #2563eb",
-              outline: "none"
-            }}
-          />
-          <label htmlFor="goals" style={{ fontWeight: 600 }}>Goals</label><br />
-          <textarea
-            id="goals"
-            name="goals"
-            rows={4}
-            value={profile.goals}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              marginBottom: 12,
-              padding: "0.6rem 1.1rem",
-              fontSize: "1rem",
-              borderRadius: 12,
-              border: "1.5px solid #2563eb",
-              outline: "none",
-              resize: "vertical"
-            }}
-          />
-          <label htmlFor="targetLabel" style={{ fontWeight: 600 }}>Target Label</label><br />
-          <input
-            id="targetLabel"
-            name="targetLabel"
-            type="text"
-            value={profile.targetLabel}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              marginBottom: 12,
-              padding: "0.6rem 1.1rem",
-              fontSize: "1rem",
-              borderRadius: 12,
-              border: "1.5px solid #2563eb",
-              outline: "none"
-            }}
-          />
-          <label htmlFor="targetTotal" style={{ fontWeight: 600 }}>Target Total</label><br />
-          <input
-            id="targetTotal"
-            name="targetTotal"
-            type="number"
-            value={profile.targetTotal}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              marginBottom: 20,
-              padding: "0.6rem 1.1rem",
-              fontSize: "1rem",
-              borderRadius: 12,
-              border: "1.5px solid #2563eb",
-              outline: "none"
-            }}
-          />
-          <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-            <button
-              type="submit"
-              style={{
-                flex: 1,
-                background: "#2563eb",
-                color: "#fff",
-                border: "none",
-                borderRadius: 12,
-                padding: "0.7rem 0",
-                fontWeight: 600,
-                cursor: "pointer"
-              }}
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditMode(false)}
-              style={{
-                flex: 1,
-                background: "transparent",
-                border: "2px solid #2563eb",
-                color: "#2563eb",
-                borderRadius: 12,
-                padding: "0.7rem 0",
-                fontWeight: 600,
-                cursor: "pointer"
-              }}
-            >
-              Cancel
-            </button>
-          </div>
+          <label>
+            Name:
+            <input
+              name="name"
+              value={profile.name}
+              onChange={handleChange}
+              placeholder="Your full name"
+              required
+              style={{ width: "100%", marginBottom: 10, padding: 8 }}
+            />
+          </label>
+          <label>
+            Goals:
+            <input
+              name="goals"
+              value={profile.goals}
+              onChange={handleChange}
+              placeholder="What are you aiming for?"
+              style={{ width: "100%", marginBottom: 10, padding: 8 }}
+            />
+          </label>
+          <label>
+            Target Label:
+            <input
+              name="targetLabel"
+              value={profile.targetLabel}
+              onChange={handleChange}
+              placeholder="Name your target (e.g. Books read)"
+              style={{ width: "100%", marginBottom: 10, padding: 8 }}
+            />
+          </label>
+          <label>
+            Target Total:
+            <input
+              name="targetTotal"
+              type="number"
+              value={profile.targetTotal}
+              onChange={handleChange}
+              placeholder="Total amount for target"
+              style={{ width: "100%", marginBottom: 10, padding: 8 }}
+            />
+          </label>
+
+          <button type="submit" style={{
+            background: "#2563eb", color: "#fff", borderRadius: 8,
+            padding: "0.5rem 1.3rem", border: "none", cursor: "pointer",
+            fontWeight: "bold"
+          }}>
+            Save
+          </button>{" "}
+          <button type="button" onClick={() => setEditMode(false)} style={{
+            background: "#999", color: "#fff", borderRadius: 8,
+            padding: "0.5rem 1.3rem", border: "none", cursor: "pointer",
+            fontWeight: "bold", marginLeft: 12
+          }}>
+            Cancel
+          </button>
         </form>
       )}
 
-      {/* Add progress */}
-      <form onSubmit={handleProgressAdd} style={{ marginBottom: 16 }}>
+      {/* Progress update */}
+      <form
+        onSubmit={handleProgressAdd}
+        style={{
+          marginTop: 20,
+          display: "flex",
+          justifyContent: "center",
+          gap: 10,
+          alignItems: "center"
+        }}
+      >
         <input
           type="number"
-          min={0}
-          step={1}
-          placeholder="Add progress"
+          min="1"
           value={progressInput}
           onChange={(e) => setProgressInput(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "0.6rem 1.2rem",
-            borderRadius: 12,
-            border: "1.5px solid #2563eb",
-            fontSize: "1rem",
-            marginBottom: 12,
-            outline: "none",
-          }}
+          placeholder="Add progress"
+          style={{ flex: "1 1 auto", padding: 8, borderRadius: 6, border: "1px solid #ccc" }}
         />
+        <FSButton type="submit" disabled={!progressInput}>Add</FSButton>
         <button
-          type="submit"
-          style={{
-            width: "100%",
-            background: "#2563eb",
-            color: "#fff",
-            border: "none",
-            borderRadius: 12,
-            padding: "0.7rem 0",
-            fontWeight: 600,
-            cursor: "pointer"
-          }}
+          type="button"
+          onClick={handleProgressReset}
+          style={{ background: "#dc2626", color: "#fff", padding: "0.45rem 1rem", borderRadius: 6, border: "none" }}
         >
-          Add Progress
+          Reset
         </button>
       </form>
 
-      {profile.progressLog && profile.progressLog.length > 0 && (
-        <>
-          <h3>Progress Log</h3>
-          <ul style={{
-            maxHeight: 160,
-            overflowY: "auto",
-            listStyle: "none",
-            paddingLeft: 0,
-            marginBottom: 16,
-            textAlign: "left",
-            fontSize: "0.9rem",
-            color: "#555",
-          }}>
-            {profile.progressLog.map((item, idx) => (
-              <li key={idx} style={{ marginBottom: 6 }}>
-                {new Date(item.date).toLocaleDateString()} — {item.amount}
-              </li>
-            ))}
-          </ul>
-          <button
-            onClick={handleProgressReset}
-            style={{
-              background: "#ef4444",
-              color: "#fff",
-              border: "none",
-              borderRadius: 12,
-              padding: "0.6rem 1.2rem",
-              cursor: "pointer",
-              fontWeight: 600,
-              marginBottom: 16,
-              width: "100%"
-            }}
-          >
-            Reset Progress
-          </button>
-        </>
-      )}
-
-      {/* Messages section */}
-      <div style={{
-        borderTop: "1px solid #ddd",
-        paddingTop: 20,
-        textAlign: "left"
-      }}>
-        <h2 style={{ color: "#2563eb", marginBottom: 12 }}>Messages</h2>
-        <div style={{
-          maxHeight: 220,
+      {/* Messages Section */}
+      <div
+        style={{
+          marginTop: 40,
+          textAlign: "left",
+          borderTop: "1px solid #ddd",
+          paddingTop: 20,
+          maxHeight: 280,
           overflowY: "auto",
-          background: "#f9fafb",
+          backgroundColor: "#fafafa",
           borderRadius: 12,
-          padding: 12,
-          marginBottom: 12,
-          fontSize: "0.9rem"
-        }}>
-          {messages.length === 0 && <p style={{ color: "#888" }}>No messages yet</p>}
-          {messages.map((msg) => (
-            <div key={msg.id} style={{ marginBottom: 8 }}>
-              <b>{msg.sender_id === authUser.id ? "You" : msg.sender_id}:</b> {msg.content}
+          padding: "1rem",
+        }}
+      >
+        <h3 style={{ marginBottom: 10 }}>Messages</h3>
+        <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 12 }}>
+          {messages.map((m) => (
+            <div
+              key={m.id}
+              style={{
+                padding: "6px 10px",
+                marginBottom: 6,
+                backgroundColor: m.sender_id === authUser.id ? "#dbf4ff" : "#eee",
+                borderRadius: 8,
+                fontSize: 14,
+                wordWrap: "break-word",
+              }}
+            >
+              <b>{m.sender_id === authUser.id ? "You" : m.sender_id}</b>: {m.content}
+              <div style={{ fontSize: 10, color: "#999" }}>
+                {new Date(m.created_at).toLocaleString()}
+              </div>
             </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
-        <form onSubmit={handleSendMessage} style={{ display: "flex", gap: 12 }}>
+
+        <form onSubmit={handleSendMessage} style={{ display: "flex", gap: 8 }}>
           <input
             type="text"
-            placeholder="Type your message..."
+            placeholder="Type message..."
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
             style={{
-              flexGrow: 1,
-              padding: "0.6rem 1.2rem",
-              borderRadius: 12,
-              border: "1.5px solid #2563eb",
-              fontSize: "1rem",
-              outline: "none",
-              fontWeight: 500,
-              color: "#111",
-              boxShadow: "0 0 6px rgba(37, 99, 235, 0.3)",
-              transition: "box-shadow 0.3s ease",
+              flex: 1,
+              padding: "8px 12px",
+              borderRadius: 8,
+              border: "1px solid #ccc",
+              fontSize: 14,
             }}
-            onFocus={e => e.target.style.boxShadow = "0 0 8px rgba(37, 99, 235, 0.7)"}
-            onBlur={e => e.target.style.boxShadow = "0 0 6px rgba(37, 99, 235, 0.3)"}
           />
           <button
             type="submit"
             style={{
-              background: "#2563eb",
+              backgroundColor: "#2563eb",
               color: "#fff",
               border: "none",
-              borderRadius: 12,
-              padding: "0.7rem 1.4rem",
-              fontWeight: 600,
-              cursor: "pointer"
+              borderRadius: 8,
+              padding: "8px 16px",
+              fontWeight: "bold",
+              cursor: "pointer",
             }}
           >
             Send
