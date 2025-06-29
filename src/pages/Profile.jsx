@@ -50,6 +50,8 @@ export default function Profile() {
 
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
+  const [users, setUsers] = useState([]); // all users for recipient selection
+  const [selectedReceiver, setSelectedReceiver] = useState(null); // chosen receiver id
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -95,10 +97,27 @@ export default function Profile() {
   useEffect(() => {
     if (!authUser) return;
 
+    async function fetchUsers() {
+      // Fetch all users except the authUser for messaging
+      const { data: usersData, error: usersError } = await supabase
+        .from("profiles")
+        .select("id, name, email")
+        .neq("id", authUser.id);
+
+      if (usersError) {
+        console.error("Error loading users:", usersError);
+        return;
+      }
+      setUsers(usersData);
+      if (usersData.length > 0) setSelectedReceiver(usersData[0].id);
+    }
+
     async function fetchMessages() {
+      // Fetch messages where the authUser is sender or receiver
       const { data, error } = await supabase
         .from("messages")
         .select("*")
+        .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
         .order("created_at", { ascending: true });
 
       if (error) {
@@ -108,6 +127,7 @@ export default function Profile() {
       setMessages(data);
     }
 
+    fetchUsers();
     fetchMessages();
 
     const channel = supabase
@@ -120,7 +140,11 @@ export default function Profile() {
           table: "messages",
         },
         (payload) => {
-          setMessages((msgs) => [...msgs, payload.new]);
+          const msg = payload.new;
+          // only add messages where authUser is sender or receiver
+          if (msg.sender_id === authUser.id || msg.receiver_id === authUser.id) {
+            setMessages((msgs) => [...msgs, msg]);
+          }
         }
       )
       .subscribe();
@@ -132,12 +156,12 @@ export default function Profile() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMsg.trim() || !authUser) return;
+    if (!newMsg.trim() || !authUser || !selectedReceiver) return;
 
     const payload = {
       sender_id: authUser.id,
-      receiver_id: null,
-      context: newMsg.trim(),
+      receiver_id: selectedReceiver,
+      content: newMsg.trim(),
     };
 
     const { error } = await supabase.from("messages").insert([payload]);
@@ -344,136 +368,146 @@ export default function Profile() {
               onChange={e => setProgressInput(e.target.value)}
               style={{ padding: "0.5rem 1rem", width: 150, marginRight: 12 }}
             />
-            <FSButton type="submit">Add</FSButton>
+            <FSButton type="submit" style={{ width: 110 }}>Add</FSButton>
           </form>
 
-          <button onClick={handleProgressReset} style={{
-            background: "transparent", border: "1px solid #ef4444", color: "#ef4444",
-            borderRadius: 12, padding: "0.4rem 1.2rem", fontWeight: 600, cursor: "pointer"
-          }}>
+          <button onClick={handleProgressReset} style={{ color: "#ef4444", fontWeight: 600, cursor: "pointer", marginBottom: 24 }}>
             Reset Progress
           </button>
 
           <button onClick={() => setEditMode(true)} style={{
             background: "#2563eb", color: "#fff", borderRadius: 12,
-            padding: "0.5rem 1.5rem", fontWeight: 600, cursor: "pointer",
-            marginLeft: 12
+            padding: "0.6rem 1.3rem", fontWeight: 700, cursor: "pointer"
           }}>
             Edit Profile
           </button>
+
+          <hr style={{ margin: "2.2rem 0" }} />
+
+          {/* Messages Section */}
+          <h3>Messages</h3>
+
+          <form onSubmit={handleSendMessage} style={{ marginBottom: 16 }}>
+            <select
+              value={selectedReceiver || ""}
+              onChange={e => setSelectedReceiver(e.target.value)}
+              style={{ padding: "0.4rem 0.8rem", marginRight: 12 }}
+            >
+              {users.map(user => (
+                <option key={user.id} value={user.id}>
+                  {user.name || user.email}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              placeholder="Type a message..."
+              value={newMsg}
+              onChange={e => setNewMsg(e.target.value)}
+              style={{ padding: "0.4rem 0.8rem", width: 260, marginRight: 12 }}
+            />
+            <FSButton type="submit" style={{ width: 100 }}>Send</FSButton>
+          </form>
+
+          <div style={{
+            maxHeight: 220, overflowY: "auto", textAlign: "left",
+            border: "1px solid #e0e7ef", borderRadius: 10, padding: "0.6rem 1rem",
+            background: "#f9fafb"
+          }}>
+            {messages.length === 0 && <p style={{ color: "#64748b" }}>No messages yet.</p>}
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                style={{
+                  marginBottom: 8,
+                  textAlign: msg.sender_id === authUser.id ? "right" : "left"
+                }}
+              >
+                <span style={{
+                  display: "inline-block", padding: "6px 12px", borderRadius: 16,
+                  background: msg.sender_id === authUser.id ? "#2563eb" : "#e0e7ef",
+                  color: msg.sender_id === authUser.id ? "#fff" : "#333",
+                  maxWidth: "80%", wordWrap: "break-word",
+                  fontSize: "0.95rem",
+                }}>
+                  {msg.content}
+                </span>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         </>
       ) : (
-        <form onSubmit={handleSave} style={{ textAlign: "left" }}>
-          <label>
-            Name<br />
+        <form onSubmit={handleSave}>
+          <div style={{ marginBottom: 12 }}>
+            <label>Name:</label>
             <input
               type="text"
               name="name"
               value={profile.name}
               onChange={handleChange}
-              required
-              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
+              style={{ width: "100%", padding: "0.5rem" }}
             />
-          </label>
-
-          <label>
-            Goals<br />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label>Email:</label>
+            <input
+              type="email"
+              name="email"
+              value={profile.email}
+              disabled
+              style={{ width: "100%", padding: "0.5rem", background: "#f0f0f0" }}
+            />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label>Goals:</label>
             <textarea
               name="goals"
               value={profile.goals}
               onChange={handleChange}
+              style={{ width: "100%", padding: "0.5rem" }}
               rows={3}
-              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
             />
-          </label>
-
-          <label>
-            Target Label<br />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label>Target Label:</label>
             <input
               type="text"
               name="targetLabel"
               value={profile.targetLabel}
               onChange={handleChange}
-              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
+              style={{ width: "100%", padding: "0.5rem" }}
             />
-          </label>
-
-          <label>
-            Target Total<br />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label>Target Total:</label>
             <input
               type="number"
-              min="0"
               name="targetTotal"
               value={profile.targetTotal}
               onChange={handleChange}
-              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
+              style={{ width: "100%", padding: "0.5rem" }}
+              min="0"
             />
-          </label>
-
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <button type="submit" style={{
-              background: "#2563eb", color: "#fff", borderRadius: 12,
-              padding: "0.5rem 1.5rem", fontWeight: 600, cursor: "pointer"
-            }}>
-              Save
-            </button>
-
-            <button type="button" onClick={() => setEditMode(false)} style={{
-              background: "transparent", border: "1px solid #2563eb",
-              color: "#2563eb", borderRadius: 12, padding: "0.5rem 1.5rem",
-              fontWeight: 600, cursor: "pointer"
-            }}>
-              Cancel
-            </button>
           </div>
+
+          <FSButton type="submit" style={{ marginRight: 12 }}>Save</FSButton>
+          <button
+            type="button"
+            onClick={() => setEditMode(false)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#2563eb",
+              cursor: "pointer",
+              fontWeight: "600"
+            }}
+          >
+            Cancel
+          </button>
         </form>
       )}
-
-      {/* Messages section */}
-      <div style={{ marginTop: 40, textAlign: "left" }}>
-        <h3 style={{ marginBottom: 12, color: "#2563eb" }}>Messages</h3>
-
-        <div style={{
-          maxHeight: 250, overflowY: "auto", border: "1px solid #ddd",
-          borderRadius: 12, padding: 12, background: "#f9fafb",
-          marginBottom: 12
-        }}>
-          {messages.length === 0 && <p style={{ color: "#64748b" }}>No messages yet.</p>}
-          {messages.map((msg) => (
-            <div key={msg.id} style={{
-              marginBottom: 10,
-              background: msg.sender_id === authUser.id ? "#2563eb" : "#e5e7eb",
-              color: msg.sender_id === authUser.id ? "#fff" : "#111",
-              padding: "6px 10px",
-              borderRadius: 12,
-              maxWidth: "80%",
-              alignSelf: msg.sender_id === authUser.id ? "flex-end" : "flex-start"
-            }}>
-              <small style={{ fontSize: 10, opacity: 0.7 }}>
-                {new Date(msg.created_at).toLocaleString()}
-              </small>
-              <p style={{ margin: "4px 0 0 0" }}>{msg.context}</p>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-
-        <form onSubmit={handleSendMessage} style={{ display: "flex", gap: 8 }}>
-          <input
-            type="text"
-            value={newMsg}
-            onChange={e => setNewMsg(e.target.value)}
-            placeholder="Type your message..."
-            style={{
-              flexGrow: 1,
-              padding: "0.5rem 1rem",
-              borderRadius: 12,
-              border: "1px solid #ccc"
-            }}
-          />
-          <FSButton type="submit">Send</FSButton>
-        </form>
-      </div>
     </div>
   );
 }
