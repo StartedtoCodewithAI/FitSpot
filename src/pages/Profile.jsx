@@ -50,6 +50,7 @@ export default function Profile() {
 
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -132,8 +133,9 @@ export default function Profile() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMsg.trim() || !authUser) return;
+    if (!newMsg.trim() || !authUser || isSending) return;
 
+    setIsSending(true);
     const payload = {
       sender_id: authUser.id,
       receiver_id: null,
@@ -147,6 +149,7 @@ export default function Profile() {
     } else {
       setNewMsg("");
     }
+    setIsSending(false);
   };
 
   const handleSave = async (e) => {
@@ -384,17 +387,17 @@ export default function Profile() {
             name="email"
             value={profile.email}
             readOnly
-            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem", backgroundColor: "#f0f0f0" }}
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem", background: "#f9fafb" }}
           />
 
           <label htmlFor="goals">Goals</label>
-          <input
+          <textarea
             id="goals"
             name="goals"
             value={profile.goals}
             onChange={handleChange}
-            placeholder="Goals"
-            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+            placeholder="Describe your goals"
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem", minHeight: 60 }}
           />
 
           <label htmlFor="targetLabel">Target Label</label>
@@ -403,7 +406,7 @@ export default function Profile() {
             name="targetLabel"
             value={profile.targetLabel}
             onChange={handleChange}
-            placeholder="Target Label"
+            placeholder="e.g., Steps, Pages"
             style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
           />
 
@@ -413,29 +416,24 @@ export default function Profile() {
             name="targetTotal"
             type="number"
             min="0"
+            step="1"
             value={profile.targetTotal}
             onChange={handleChange}
-            placeholder="Target Total"
-            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+            placeholder="Total target number"
+            style={{ display: "block", width: "100%", marginBottom: 20, padding: "0.5rem" }}
           />
 
-          <button
-            type="submit"
-            style={{
-              marginTop: 20, background: "#2563eb", color: "#fff",
-              borderRadius: 12, padding: "0.75rem 1.5rem", border: "none",
-              cursor: "pointer", width: "100%"
-            }}
-          >
-            Save Profile
-          </button>
-
+          <FSButton type="submit">Save</FSButton>
           <button
             type="button"
             onClick={() => setEditMode(false)}
             style={{
-              marginTop: 12, background: "transparent", border: "none",
-              color: "#64748b", cursor: "pointer", width: "100%"
+              marginLeft: 12,
+              background: "transparent",
+              border: "none",
+              color: "#64748b",
+              fontWeight: 600,
+              cursor: "pointer"
             }}
           >
             Cancel
@@ -443,58 +441,57 @@ export default function Profile() {
         </form>
       )}
 
-      {/* Messages */}
-      <div style={{ marginTop: 40, textAlign: "left" }}>
-        <h3>Messages</h3>
-        <div style={{
-          maxHeight: 180, overflowY: "auto", border: "1px solid #ddd",
-          padding: 12, borderRadius: 8, marginBottom: 12,
-          backgroundColor: "#f9fafb"
-        }}>
-          {messages.length === 0 && <p>No messages yet.</p>}
-          {messages.map((msg) => (
-            <div key={msg.id} style={{
-              marginBottom: 10,
-              padding: 8,
-              backgroundColor: msg.sender_id === authUser.id ? "#dbeafe" : "#f3f4f6",
-              borderRadius: 6,
-              textAlign: msg.sender_id === authUser.id ? "right" : "left"
-            }}>
-              <div style={{ fontSize: 12, color: "#64748b" }}>
-                {msg.sender_id === authUser.id ? "You" : "Other"}
-                {" • "}
-                {new Date(msg.created_at).toLocaleString()}
-              </div>
-              <div>{msg.content || msg.content}</div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+      <hr style={{ margin: "2rem 0" }} />
 
-        <form onSubmit={handleSendMessage}>
-          <textarea
-            placeholder="Type your message..."
-            value={newMsg}
-            onChange={(e) => setNewMsg(e.target.value)}
-            rows={2}
-            style={{ width: "100%", padding: "0.5rem", borderRadius: 8, resize: "none" }}
-          />
-          <button
-            type="submit"
-            style={{
-              marginTop: 8,
-              backgroundColor: "#2563eb",
-              color: "white",
-              border: "none",
+      {/* Messages section */}
+      <div style={{ maxHeight: 240, overflowY: "auto", border: "1px solid #ddd", padding: 12, borderRadius: 12 }}>
+        {messages.length === 0 && <p style={{ color: "#64748b" }}>No messages yet.</p>}
+        {messages.map((msg) => (
+          <div key={msg.id} style={{ marginBottom: 10, textAlign: msg.sender_id === authUser.id ? "right" : "left" }}>
+            <div style={{
+              display: "inline-block",
+              background: msg.sender_id === authUser.id ? "#2563eb" : "#e0e7ef",
+              color: msg.sender_id === authUser.id ? "#fff" : "#000",
               padding: "0.5rem 1rem",
-              borderRadius: 8,
-              cursor: "pointer"
-            }}
-          >
-            Send
-          </button>
-        </form>
+              borderRadius: 16,
+              maxWidth: "70%",
+              wordBreak: "break-word"
+            }}>
+              {msg.content}
+              <div style={{ fontSize: 10, marginTop: 4, opacity: 0.6 }}>
+                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
       </div>
+
+      <form onSubmit={handleSendMessage} style={{ marginTop: 16, display: "flex", gap: 8 }}>
+        <input
+          type="text"
+          placeholder="Type a message"
+          value={newMsg}
+          onChange={e => setNewMsg(e.target.value)}
+          style={{ flexGrow: 1, padding: "0.5rem 1rem", borderRadius: 12, border: "1px solid #ccc" }}
+          disabled={isSending}
+        />
+        <button
+          type="submit"
+          disabled={isSending || newMsg.trim() === ""}
+          style={{
+            background: isSending ? "#94a3b8" : "#2563eb",
+            color: "#fff",
+            border: "none",
+            borderRadius: 12,
+            padding: "0.5rem 1.4rem",
+            cursor: isSending ? "not-allowed" : "pointer",
+            fontWeight: 600,
+          }}
+        >
+          {isSending ? "Sending..." : "Send"}
+        </button>
+      </form>
     </div>
   );
 }
