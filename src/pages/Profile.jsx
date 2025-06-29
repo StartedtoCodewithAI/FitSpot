@@ -58,60 +58,35 @@ export default function Profile() {
 
   useEffect(() => {
     async function getUserProfile() {
-      try {
-        setLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        setAuthUser(user);
-
-        // Debug log to check user ID
-        console.log("Authenticated user ID:", user ? user.id : "No user");
-
-        if (!user) {
-          setProfile(defaultProfile);
-          setLoading(false);
-          return;
-        }
-
-        const { data } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (data) {
-          setProfile(prev => ({
-            ...prev,
-            ...data,
-            email: user.email,
-          }));
-        } else {
-          setProfile(prev => ({
-            ...prev,
-            name: user.user_metadata?.full_name || "",
-            email: user.email,
-          }));
-        }
-
-        // Verify if user exists in the 'users' table (foreign key check)
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (userError || !userData) {
-          console.error("User record not found in users table:", userError);
-          toast.error("User record not found in users table.");
-          setLoading(false);
-          return;
-        }
-
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      setAuthUser(user);
+      if (!user) {
+        setProfile(defaultProfile);
         setLoading(false);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-        toast.error("Something went wrong while fetching the profile.");
-        setLoading(false);
+        return;
       }
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (data) {
+        setProfile(prev => ({
+          ...prev,
+          ...data,
+          email: user.email,
+        }));
+      } else {
+        setProfile(prev => ({
+          ...prev,
+          name: user.user_metadata?.full_name || "",
+          email: user.email,
+        }));
+      }
+      setLoading(false);
     }
 
     getUserProfile();
@@ -121,20 +96,16 @@ export default function Profile() {
     if (!authUser) return;
 
     async function fetchMessages() {
-      try {
-        const { data, error } = await supabase
-          .from("messages")
-          .select("*")
-          .order("created_at", { ascending: true });
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: true });
 
-        if (error) {
-          console.error("Error loading messages:", error);
-          return;
-        }
-        setMessages(data);
-      } catch (error) {
+      if (error) {
         console.error("Error loading messages:", error);
+        return;
       }
+      setMessages(data);
     }
 
     fetchMessages();
@@ -161,29 +132,20 @@ export default function Profile() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-
-    if (!newMsg.trim() || !authUser || !authUser.id) {
-      toast.error("User not authenticated or invalid message.");
-      return;
-    }
+    if (!newMsg.trim() || !authUser) return;
 
     const payload = {
       sender_id: authUser.id,
-      receiver_id: null, // You can modify this if you have a receiver ID
+      receiver_id: null,
       content: newMsg.trim(),
     };
 
-    try {
-      const { error } = await supabase.from("messages").insert([payload]);
-      if (error) {
-        console.error("Send message error:", error);
-        toast.error(`Failed to send message: ${error.message}`);
-      } else {
-        setNewMsg("");
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      toast.error("Error sending message.");
+    const { error } = await supabase.from("messages").insert([payload]);
+    if (error) {
+      console.error("Send message error:", error);
+      toast.error(`Failed to send message: ${error.message}`);
+    } else {
+      setNewMsg("");
     }
   };
 
@@ -192,22 +154,17 @@ export default function Profile() {
     setEditMode(false);
     if (!authUser) return;
 
-    try {
-      const { error } = await supabase.from("profiles").upsert({
-        id: authUser.id,
-        ...profile,
-        email: authUser.email,
-      });
+    const { error } = await supabase.from("profiles").upsert({
+      id: authUser.id,
+      ...profile,
+      email: authUser.email,
+    });
 
-      if (error) {
-        toast.error("Failed to update profile.");
-        console.error("Profile update error:", error);
-      } else {
-        toast.success("Profile updated!");
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Error updating profile.");
+    if (error) {
+      toast.error("Failed to update profile.");
+      console.error("Profile update error:", error);
+    } else {
+      toast.success("Profile updated!");
     }
   };
 
@@ -224,35 +181,30 @@ export default function Profile() {
     const ext = file.name.split(".").pop();
     const path = `${authUser.id}_${Date.now()}.${ext}`;
 
-    try {
-      const { error: uploadError } = await supabase
-        .storage
-        .from("avatars")
-        .upload(path, file, { upsert: true });
+    const { error: uploadError } = await supabase
+      .storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
 
-      if (uploadError) {
-        toast.error("Upload failed.");
-        setAvatarUploading(false);
-        return;
+    if (uploadError) {
+      toast.error("Upload failed.");
+      setAvatarUploading(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    if (data?.publicUrl) {
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: data.publicUrl })
+        .eq("id", authUser.id);
+
+      if (updateError) {
+        toast.error("Failed to update avatar.");
+      } else {
+        setProfile(prev => ({ ...prev, avatar_url: data.publicUrl }));
+        toast.success("Avatar updated!");
       }
-
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      if (data?.publicUrl) {
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({ avatar_url: data.publicUrl })
-          .eq("id", authUser.id);
-
-        if (updateError) {
-          toast.error("Failed to update avatar.");
-        } else {
-          setProfile(prev => ({ ...prev, avatar_url: data.publicUrl }));
-          toast.success("Avatar updated!");
-        }
-      }
-    } catch (error) {
-      console.error("Error uploading avatar:", error);
-      toast.error("Error uploading avatar.");
     }
 
     setAvatarUploading(false);
@@ -260,143 +212,288 @@ export default function Profile() {
 
   async function handleAvatarRemove() {
     if (!authUser) return;
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ avatar_url: null })
-        .eq("id", authUser.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ avatar_url: null })
+      .eq("id", authUser.id);
 
-      if (!error) {
-        setProfile(prev => ({ ...prev, avatar_url: null }));
-        toast.success("Avatar removed!");
-      } else {
-        toast.error("Failed to remove avatar.");
-      }
-    } catch (error) {
-      console.error("Error removing avatar:", error);
-      toast.error("Error removing avatar.");
+    if (!error) {
+      setProfile(prev => ({ ...prev, avatar_url: null }));
+      toast.success("Avatar removed!");
+    } else {
+      toast.error("Failed to remove avatar.");
     }
   }
 
+  const targetTotalNum = Number(profile.targetTotal) || 0;
+  const pct = targetTotalNum
+    ? Math.min(100, Math.round((profile.currentProgress / targetTotalNum) * 100))
+    : 0;
+
+  const handleProgressAdd = e => {
+    e.preventDefault();
+    const addNum = Number(progressInput);
+    if (!addNum || addNum <= 0) return;
+
+    setProfile(prev => ({
+      ...prev,
+      currentProgress: prev.currentProgress + addNum,
+      progressLog: [...(prev.progressLog || []), {
+        date: new Date().toISOString(),
+        amount: addNum
+      }]
+    }));
+
+    setProgressInput("");
+  };
+
+  const handleProgressReset = () => {
+    if (window.confirm("Reset progress for this target?")) {
+      setProfile(prev => ({
+        ...prev,
+        currentProgress: 0,
+        progressLog: [],
+      }));
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
+  if (!authUser) return <div>Please log in to view your profile.</div>;
 
   return (
-    <div className="card">
-      <div className="card-body">
-        <h5 className="card-title">{profile.name || "Profile"}</h5>
-        <p className="card-text">{profile.email}</p>
+    <div className="container" style={{
+      maxWidth: 540, margin: "3.5rem auto", background: "#fff", borderRadius: 20,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.09)", padding: "2.4rem 2.1rem 1.7rem",
+      textAlign: "center"
+    }}>
+      <h1 style={{ color: "#2563eb", marginBottom: 20 }}>Your Profile</h1>
 
-        <div className="d-flex align-items-center mb-3">
-          <div className="avatar">
-            <img
-              src={profile.avatar_url || `https://www.gravatar.com/avatar/${md5(profile.email?.toLowerCase().trim())}`}
-              alt="Avatar"
-              className="rounded-circle"
-              style={{ width: 100, height: 100 }}
-            />
-          </div>
-          <div className="ml-3">
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={handleAvatarRemove}
-              disabled={avatarUploading}
-            >
-              {avatarUploading ? "Removing..." : "Remove Avatar"}
-            </button>
-            <input
-              type="file"
-              className="form-control-file mt-2"
-              onChange={handleAvatarUpload}
-              disabled={avatarUploading}
-            />
-          </div>
-        </div>
-
-        {editMode ? (
-          <div>
-            <div className="mb-3">
-              <label htmlFor="name">Name</label>
-              <input
-                type="text"
-                className="form-control"
-                name="name"
-                value={profile.name}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="goals">Goals</label>
-              <input
-                type="text"
-                className="form-control"
-                name="goals"
-                value={profile.goals}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="targetTotal">Target Total</label>
-              <input
-                type="number"
-                className="form-control"
-                name="targetTotal"
-                value={profile.targetTotal}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="currentProgress">Current Progress</label>
-              <input
-                type="number"
-                className="form-control"
-                name="currentProgress"
-                value={profile.currentProgress}
-                onChange={handleChange}
-              />
-            </div>
-            <button onClick={handleSave} className="btn btn-primary">Save</button>
-          </div>
+      {/* Avatar */}
+      <div style={{ marginBottom: 22 }}>
+        {profile.avatar_url ? (
+          <img src={profile.avatar_url} alt="avatar" style={{
+            width: 130, height: 130, borderRadius: "50%", objectFit: "cover",
+            border: "3px solid #2563eb", marginBottom: 8
+          }} />
         ) : (
-          <div>
-            <p>{getMotivationalMsg(progressInput)}</p>
-            <div className="progress" style={{ height: "20px" }}>
-              <div
-                className="progress-bar"
-                style={{ width: `${progressInput}%` }}
-                role="progressbar"
-              >
-                {progressInput}%
-              </div>
-            </div>
-            <button onClick={() => setEditMode(true)} className="btn btn-secondary mt-2">
-              Edit Profile
-            </button>
+          <div style={{
+            width: 130, height: 130, borderRadius: "50%", background: "#f1f5f9",
+            color: "#64748b", display: "flex", alignItems: "center",
+            justifyContent: "center", fontSize: "2.8rem", fontWeight: 700,
+            border: "3px solid #e0e7ef", marginBottom: 8
+          }}>
+            {getInitials(profile.name, profile.email)}
           </div>
         )}
 
-        <div className="mt-4">
-          <h5>Messages</h5>
-          <div className="mb-3">
-            <textarea
-              className="form-control"
-              value={newMsg}
-              onChange={e => setNewMsg(e.target.value)}
-              placeholder="Type your message..."
-              rows={3}
+        <label htmlFor="avatar-upload" style={{
+          background: "#2563eb", color: "#fff", borderRadius: 8, padding: "0.45rem 1.1rem",
+          cursor: "pointer", marginRight: 12, fontWeight: 600,
+        }}>
+          {avatarUploading ? "Uploading..." : "Change Avatar"}
+        </label>
+        <input
+          type="file"
+          id="avatar-upload"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handleAvatarUpload}
+          disabled={avatarUploading}
+        />
+        {profile.avatar_url && (
+          <button onClick={handleAvatarRemove} style={{
+            background: "transparent", border: "none", color: "#ef4444",
+            fontWeight: 600, cursor: "pointer"
+          }}>
+            Remove
+          </button>
+        )}
+      </div>
+
+      {/* Profile content */}
+      {!editMode ? (
+        <>
+          <h2>{profile.name || profile.email || "User"}</h2>
+          <p style={{ color: "#64748b", marginBottom: 16 }}>{profile.email}</p>
+          <p><b>Goal:</b> {profile.goals || "No goal set"}</p>
+          <p><b>Target:</b> {profile.targetLabel || "-"}: {profile.targetTotal || "-"}</p>
+          <p><b>Progress:</b> {profile.currentProgress} / {profile.targetTotal} ({pct}%)</p>
+
+          {/* Progress bar */}
+          <div style={{
+            height: 18, borderRadius: 12, background: "#e0e7ef",
+            marginBottom: 12, overflow: "hidden"
+          }}>
+            <div style={{
+              width: `${pct}%`, height: "100%",
+              background: pct === 100 ? "#22c55e" : "#2563eb",
+              transition: "width 0.5s ease-in-out"
+            }} />
+          </div>
+          <p style={{ fontStyle: "italic", color: "#2563eb" }}>
+            {getMotivationalMsg(pct)}
+          </p>
+
+          <form onSubmit={handleProgressAdd} style={{ marginBottom: 12 }}>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              placeholder="Add progress"
+              value={progressInput}
+              onChange={e => setProgressInput(e.target.value)}
+              style={{ padding: "0.5rem 1rem", width: 150, marginRight: 12 }}
             />
-          </div>
-          <FSButton onClick={handleSendMessage} disabled={avatarUploading}>
-            Send Message
-          </FSButton>
-          <div className="messages">
-            {messages.map(msg => (
-              <div key={msg.id} className="message">
-                <p>{msg.content}</p>
+            <FSButton type="submit">Add</FSButton>
+          </form>
+
+          <button onClick={handleProgressReset} style={{
+            background: "transparent", border: "none", color: "#ef4444",
+            fontWeight: 600, cursor: "pointer"
+          }}>
+            Reset progress
+          </button>
+
+          <br />
+          <button
+            onClick={() => setEditMode(true)}
+            style={{
+              marginTop: 26, background: "#2563eb", color: "#fff",
+              borderRadius: 12, padding: "0.75rem 1.5rem", border: "none",
+              cursor: "pointer"
+            }}
+          >
+            Edit Profile
+          </button>
+        </>
+      ) : (
+        <form onSubmit={handleSave} style={{ marginTop: 18, textAlign: "left" }}>
+          <label htmlFor="name">Full Name</label>
+          <input
+            id="name"
+            name="name"
+            value={profile.name}
+            onChange={handleChange}
+            placeholder="Full Name"
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+          />
+
+          <label htmlFor="email">Email (readonly)</label>
+          <input
+            id="email"
+            name="email"
+            value={profile.email}
+            readOnly
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem", backgroundColor: "#f0f0f0" }}
+          />
+
+          <label htmlFor="goals">Goals</label>
+          <input
+            id="goals"
+            name="goals"
+            value={profile.goals}
+            onChange={handleChange}
+            placeholder="Goals"
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+          />
+
+          <label htmlFor="targetLabel">Target Label</label>
+          <input
+            id="targetLabel"
+            name="targetLabel"
+            value={profile.targetLabel}
+            onChange={handleChange}
+            placeholder="Target Label"
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+          />
+
+          <label htmlFor="targetTotal">Target Total</label>
+          <input
+            id="targetTotal"
+            name="targetTotal"
+            type="number"
+            min="0"
+            value={profile.targetTotal}
+            onChange={handleChange}
+            placeholder="Target Total"
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+          />
+
+          <button
+            type="submit"
+            style={{
+              marginTop: 20, background: "#2563eb", color: "#fff",
+              borderRadius: 12, padding: "0.75rem 1.5rem", border: "none",
+              cursor: "pointer", width: "100%"
+            }}
+          >
+            Save Profile
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setEditMode(false)}
+            style={{
+              marginTop: 12, background: "transparent", border: "none",
+              color: "#64748b", cursor: "pointer", width: "100%"
+            }}
+          >
+            Cancel
+          </button>
+        </form>
+      )}
+
+      {/* Messages */}
+      <div style={{ marginTop: 40, textAlign: "left" }}>
+        <h3>Messages</h3>
+        <div style={{
+          maxHeight: 180, overflowY: "auto", border: "1px solid #ddd",
+          padding: 12, borderRadius: 8, marginBottom: 12,
+          backgroundColor: "#f9fafb"
+        }}>
+          {messages.length === 0 && <p>No messages yet.</p>}
+          {messages.map((msg) => (
+            <div key={msg.id} style={{
+              marginBottom: 10,
+              padding: 8,
+              backgroundColor: msg.sender_id === authUser.id ? "#dbeafe" : "#f3f4f6",
+              borderRadius: 6,
+              textAlign: msg.sender_id === authUser.id ? "right" : "left"
+            }}>
+              <div style={{ fontSize: 12, color: "#64748b" }}>
+                {msg.sender_id === authUser.id ? "You" : "Other"}
+                {" • "}
+                {new Date(msg.created_at).toLocaleString()}
               </div>
-            ))}
-            <div ref={messagesEndRef}></div>
-          </div>
+              <div>{msg.content || msg.content}</div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
         </div>
+
+        <form onSubmit={handleSendMessage}>
+          <textarea
+            placeholder="Type your message..."
+            value={newMsg}
+            onChange={(e) => setNewMsg(e.target.value)}
+            rows={2}
+            style={{ width: "100%", padding: "0.5rem", borderRadius: 8, resize: "none" }}
+          />
+          <button
+            type="submit"
+            style={{
+              marginTop: 8,
+              backgroundColor: "#2563eb",
+              color: "white",
+              border: "none",
+              padding: "0.5rem 1rem",
+              borderRadius: 8,
+              cursor: "pointer"
+            }}
+          >
+            Send
+          </button>
+        </form>
       </div>
     </div>
   );
