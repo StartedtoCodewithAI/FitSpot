@@ -4,16 +4,46 @@ import toast from "react-hot-toast";
 import FSButton from "../components/FSButton";
 
 const defaultProfile = {
-  id: null,
+  name: "",
   email: "",
-  username: "",
-  full_name: "",
+  goals: "",
+  targetLabel: "",
+  targetTotal: "",
+  currentProgress: 0,
+  progressLog: [],
   avatar_url: "",
 };
+
+const MOTIVATION = [
+  { pct: 0, msg: "Let's get started! Every step counts." },
+  { pct: 25, msg: "You're making progress! Keep it up!" },
+  { pct: 50, msg: "Halfway there! Stay strong!" },
+  { pct: 75, msg: "Almost at your target. Finish strong!" },
+  { pct: 100, msg: "Congratulations! Target achieved! 🎉" },
+];
+
+function getMotivationalMsg(pct) {
+  if (pct >= 100) return MOTIVATION[4].msg;
+  if (pct >= 75) return MOTIVATION[3].msg;
+  if (pct >= 50) return MOTIVATION[2].msg;
+  if (pct >= 25) return MOTIVATION[1].msg;
+  return MOTIVATION[0].msg;
+}
+
+function getInitials(name, email) {
+  if (name) {
+    const parts = name.trim().split(" ");
+    return parts.length === 1
+      ? parts[0][0].toUpperCase()
+      : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return email ? email[0].toUpperCase() : "?";
+}
 
 export default function Profile() {
   const [profile, setProfile] = useState(defaultProfile);
   const [editMode, setEditMode] = useState(false);
+  const [progressInput, setProgressInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -29,53 +59,33 @@ export default function Profile() {
   useEffect(() => {
     async function getUserProfile() {
       setLoading(true);
-
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
+      const { data: { user } } = await supabase.auth.getUser();
+      setAuthUser(user);
+      if (!user) {
         setProfile(defaultProfile);
-        setAuthUser(null);
         setLoading(false);
         return;
       }
-      setAuthUser(user);
 
-      let { data, error } = await supabase
+      const { data } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
 
-      if (error && error.code === "PGRST116") {
-        // Profile does not exist, create it
-        const insertPayload = {
-          id: user.id,
-          email: user.email || "",
-          username: user.user_metadata?.username || "default_username",
-          full_name: user.user_metadata?.full_name || "No Name",
-          avatar_url: user.user_metadata?.avatar_url || "",
-        };
-        const { error: insertError } = await supabase.from("profiles").insert(insertPayload);
-        if (insertError) {
-          console.error("Failed to create profile:", insertError);
-          toast.error("Failed to create profile.");
-          setLoading(false);
-          return;
-        }
-        data = insertPayload;
-      } else if (error) {
-        console.error("Failed to fetch profile:", error);
-        toast.error("Failed to fetch profile.");
-        setLoading(false);
-        return;
+      if (data) {
+        setProfile(prev => ({
+          ...prev,
+          ...data,
+          email: user.email,
+        }));
+      } else {
+        setProfile(prev => ({
+          ...prev,
+          name: user.user_metadata?.full_name || "",
+          email: user.email,
+        }));
       }
-
-      setProfile({
-        id: data.id,
-        email: data.email,
-        username: data.username,
-        full_name: data.full_name,
-        avatar_url: data.avatar_url,
-      });
       setLoading(false);
     }
 
@@ -89,7 +99,6 @@ export default function Profile() {
       const { data, error } = await supabase
         .from("messages")
         .select("*")
-        .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
         .order("created_at", { ascending: true });
 
       if (error) {
@@ -109,7 +118,6 @@ export default function Profile() {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `sender_id=eq.${authUser.id},receiver_id=eq.${authUser.id}`,
         },
         (payload) => {
           setMessages((msgs) => [...msgs, payload.new]);
@@ -126,17 +134,13 @@ export default function Profile() {
     e.preventDefault();
     if (!newMsg.trim() || !authUser) return;
 
-    // For now, send message to yourself. Change receiver_id to other users later.
-    const receiverId = authUser.id;
-
-    const messagePayload = {
+    const payload = {
       sender_id: authUser.id,
-      receiver_id: receiverId,
-      content: newMsg.trim(),
+      receiver_id: null,
+      context: newMsg.trim(),
     };
 
-    const { error } = await supabase.from("messages").insert([messagePayload]);
-
+    const { error } = await supabase.from("messages").insert([payload]);
     if (error) {
       console.error("Send message error:", error);
       toast.error(`Failed to send message: ${error.message}`);
@@ -145,9 +149,28 @@ export default function Profile() {
     }
   };
 
-  const handleChange = (e) => {
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setEditMode(false);
+    if (!authUser) return;
+
+    const { error } = await supabase.from("profiles").upsert({
+      id: authUser.id,
+      ...profile,
+      email: authUser.email,
+    });
+
+    if (error) {
+      toast.error("Failed to update profile.");
+      console.error("Profile update error:", error);
+    } else {
+      toast.success("Profile updated!");
+    }
+  };
+
+  const handleChange = e => {
     const { name, value } = e.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
+    setProfile(prev => ({ ...prev, [name]: value }));
   };
 
   async function handleAvatarUpload(e) {
@@ -158,7 +181,10 @@ export default function Profile() {
     const ext = file.name.split(".").pop();
     const path = `${authUser.id}_${Date.now()}.${ext}`;
 
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    const { error: uploadError } = await supabase
+      .storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
 
     if (uploadError) {
       toast.error("Upload failed.");
@@ -176,7 +202,7 @@ export default function Profile() {
       if (updateError) {
         toast.error("Failed to update avatar.");
       } else {
-        setProfile((prev) => ({ ...prev, avatar_url: data.publicUrl }));
+        setProfile(prev => ({ ...prev, avatar_url: data.publicUrl }));
         toast.success("Avatar updated!");
       }
     }
@@ -192,87 +218,78 @@ export default function Profile() {
       .eq("id", authUser.id);
 
     if (!error) {
-      setProfile((prev) => ({ ...prev, avatar_url: null }));
+      setProfile(prev => ({ ...prev, avatar_url: null }));
       toast.success("Avatar removed!");
     } else {
       toast.error("Failed to remove avatar.");
     }
   }
 
+  const targetTotalNum = Number(profile.targetTotal) || 0;
+  const pct = targetTotalNum
+    ? Math.min(100, Math.round((profile.currentProgress / targetTotalNum) * 100))
+    : 0;
+
+  const handleProgressAdd = e => {
+    e.preventDefault();
+    const addNum = Number(progressInput);
+    if (!addNum || addNum <= 0) return;
+
+    setProfile(prev => ({
+      ...prev,
+      currentProgress: prev.currentProgress + addNum,
+      progressLog: [...(prev.progressLog || []), {
+        date: new Date().toISOString(),
+        amount: addNum
+      }]
+    }));
+
+    setProgressInput("");
+  };
+
+  const handleProgressReset = () => {
+    if (window.confirm("Reset progress for this target?")) {
+      setProfile(prev => ({
+        ...prev,
+        currentProgress: 0,
+        progressLog: [],
+      }));
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!authUser) return <div>Please log in to view your profile.</div>;
 
   return (
-    <div
-      className="container"
-      style={{
-        maxWidth: 540,
-        margin: "3.5rem auto",
-        background: "#fff",
-        borderRadius: 20,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.09)",
-        padding: "2.4rem 2.1rem 1.7rem",
-        textAlign: "center",
-      }}
-    >
+    <div className="container" style={{
+      maxWidth: 540, margin: "3.5rem auto", background: "#fff", borderRadius: 20,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.09)", padding: "2.4rem 2.1rem 1.7rem",
+      textAlign: "center"
+    }}>
       <h1 style={{ color: "#2563eb", marginBottom: 20 }}>Your Profile</h1>
 
       {/* Avatar */}
       <div style={{ marginBottom: 22 }}>
         {profile.avatar_url ? (
-          <img
-            src={profile.avatar_url}
-            alt="avatar"
-            style={{
-              width: 130,
-              height: 130,
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: "3px solid #2563eb",
-              marginBottom: 8,
-            }}
-          />
+          <img src={profile.avatar_url} alt="avatar" style={{
+            width: 130, height: 130, borderRadius: "50%", objectFit: "cover",
+            border: "3px solid #2563eb", marginBottom: 8
+          }} />
         ) : (
-          <div
-            style={{
-              width: 130,
-              height: 130,
-              borderRadius: "50%",
-              background: "#f1f5f9",
-              color: "#64748b",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "2.8rem",
-              fontWeight: 700,
-              border: "3px solid #e0e7ef",
-              marginBottom: 8,
-            }}
-          >
-            {profile.full_name
-              ? profile.full_name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-              : profile.email
-              ? profile.email[0].toUpperCase()
-              : "?"}
+          <div style={{
+            width: 130, height: 130, borderRadius: "50%", background: "#f1f5f9",
+            color: "#64748b", display: "flex", alignItems: "center",
+            justifyContent: "center", fontSize: "2.8rem", fontWeight: 700,
+            border: "3px solid #e0e7ef", marginBottom: 8
+          }}>
+            {getInitials(profile.name, profile.email)}
           </div>
         )}
 
-        <label
-          htmlFor="avatar-upload"
-          style={{
-            background: "#2563eb",
-            color: "#fff",
-            borderRadius: 8,
-            padding: "0.45rem 1.1rem",
-            cursor: "pointer",
-            marginRight: 12,
-            fontWeight: 600,
-          }}
-        >
+        <label htmlFor="avatar-upload" style={{
+          background: "#2563eb", color: "#fff", borderRadius: 8, padding: "0.45rem 1.1rem",
+          cursor: "pointer", marginRight: 12, fontWeight: 600,
+        }}>
           {avatarUploading ? "Uploading..." : "Change Avatar"}
         </label>
         <input
@@ -284,199 +301,194 @@ export default function Profile() {
           disabled={avatarUploading}
         />
         {profile.avatar_url && (
-          <button
-            onClick={handleAvatarRemove}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#ef4444",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={handleAvatarRemove} style={{
+            background: "transparent", border: "none", color: "#ef4444",
+            fontWeight: 600, cursor: "pointer"
+          }}>
             Remove
           </button>
         )}
       </div>
 
-      {/* Profile details */}
+      {/* Profile content */}
       {!editMode ? (
         <>
-          <h2>{profile.full_name || profile.email || "User"}</h2>
+          <h2>{profile.name || profile.email || "User"}</h2>
           <p style={{ color: "#64748b", marginBottom: 16 }}>{profile.email}</p>
-          <p>
-            <b>Username:</b> {profile.username || "-"}
+          <p><b>Goal:</b> {profile.goals || "No goal set"}</p>
+          <p><b>Target:</b> {profile.targetLabel || "-"}: {profile.targetTotal || "-"}</p>
+          <p><b>Progress:</b> {profile.currentProgress} / {profile.targetTotal} ({pct}%)</p>
+
+          {/* Progress bar */}
+          <div style={{
+            height: 18, borderRadius: 12, background: "#e0e7ef",
+            marginBottom: 12, overflow: "hidden"
+          }}>
+            <div style={{
+              width: `${pct}%`, height: "100%",
+              background: pct === 100 ? "#22c55e" : "#2563eb",
+              transition: "width 0.5s ease-in-out"
+            }} />
+          </div>
+          <p style={{ fontStyle: "italic", color: "#2563eb" }}>
+            {getMotivationalMsg(pct)}
           </p>
 
+          <form onSubmit={handleProgressAdd} style={{ marginBottom: 12 }}>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              placeholder="Add progress"
+              value={progressInput}
+              onChange={e => setProgressInput(e.target.value)}
+              style={{ padding: "0.5rem 1rem", width: 150, marginRight: 12 }}
+            />
+            <FSButton type="submit">Add</FSButton>
+          </form>
+
+          <button onClick={handleProgressReset} style={{
+            background: "transparent", border: "none", color: "#ef4444",
+            fontWeight: 600, cursor: "pointer"
+          }}>
+            Reset progress
+          </button>
+
+          <br />
           <button
             onClick={() => setEditMode(true)}
             style={{
-              marginTop: 20,
-              padding: "0.5rem 1.5rem",
-              background: "#2563eb",
-              borderRadius: 8,
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer",
-              border: "none",
+              marginTop: 26, background: "#2563eb", color: "#fff",
+              borderRadius: 12, padding: "0.75rem 1.5rem", border: "none",
+              cursor: "pointer"
             }}
           >
             Edit Profile
           </button>
         </>
       ) : (
-        <>
+        <form onSubmit={handleSave} style={{ marginTop: 18, textAlign: "left" }}>
+          <label htmlFor="name">Full Name</label>
           <input
-            type="text"
-            name="full_name"
-            value={profile.full_name}
+            id="name"
+            name="name"
+            value={profile.name}
             onChange={handleChange}
             placeholder="Full Name"
-            style={{
-              width: "100%",
-              padding: "0.45rem 0.7rem",
-              marginBottom: 14,
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-            }}
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
           />
+
+          <label htmlFor="email">Email (readonly)</label>
           <input
-            type="text"
-            name="username"
-            value={profile.username}
-            onChange={handleChange}
-            placeholder="Username"
-            style={{
-              width: "100%",
-              padding: "0.45rem 0.7rem",
-              marginBottom: 14,
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-            }}
-          />
-          <input
-            type="email"
+            id="email"
             name="email"
             value={profile.email}
-            onChange={handleChange}
-            placeholder="Email"
-            style={{
-              width: "100%",
-              padding: "0.45rem 0.7rem",
-              marginBottom: 14,
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-            }}
-            disabled
+            readOnly
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem", backgroundColor: "#f0f0f0" }}
           />
 
-          <div style={{ marginTop: 8 }}>
-            <FSButton
-              onClick={async () => {
-                // Validate required fields
-                if (!profile.full_name.trim() || !profile.username.trim()) {
-                  toast.error("Full name and username are required.");
-                  return;
-                }
+          <label htmlFor="goals">Goals</label>
+          <input
+            id="goals"
+            name="goals"
+            value={profile.goals}
+            onChange={handleChange}
+            placeholder="Goals"
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+          />
 
-                const { error } = await supabase
-                  .from("profiles")
-                  .update({
-                    full_name: profile.full_name.trim(),
-                    username: profile.username.trim(),
-                    // email can't be changed here, disabled input
-                  })
-                  .eq("id", authUser.id);
+          <label htmlFor="targetLabel">Target Label</label>
+          <input
+            id="targetLabel"
+            name="targetLabel"
+            value={profile.targetLabel}
+            onChange={handleChange}
+            placeholder="Target Label"
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+          />
 
-                if (error) {
-                  console.error("Failed to update profile:", error);
-                  toast.error("Failed to update profile.");
-                } else {
-                  toast.success("Profile updated!");
-                  setEditMode(false);
-                }
-              }}
-            >
-              Save
-            </FSButton>
-            <FSButton
-              style={{ marginLeft: 12, background: "#e11d48" }}
-              onClick={() => {
-                setEditMode(false);
-                // Reset fields to last saved profile
-                setProfile((p) => ({ ...p }));
-              }}
-            >
-              Cancel
-            </FSButton>
-          </div>
-        </>
+          <label htmlFor="targetTotal">Target Total</label>
+          <input
+            id="targetTotal"
+            name="targetTotal"
+            type="number"
+            min="0"
+            value={profile.targetTotal}
+            onChange={handleChange}
+            placeholder="Target Total"
+            style={{ display: "block", width: "100%", marginBottom: 12, padding: "0.5rem" }}
+          />
+
+          <button
+            type="submit"
+            style={{
+              marginTop: 20, background: "#2563eb", color: "#fff",
+              borderRadius: 12, padding: "0.75rem 1.5rem", border: "none",
+              cursor: "pointer", width: "100%"
+            }}
+          >
+            Save Profile
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setEditMode(false)}
+            style={{
+              marginTop: 12, background: "transparent", border: "none",
+              color: "#64748b", cursor: "pointer", width: "100%"
+            }}
+          >
+            Cancel
+          </button>
+        </form>
       )}
 
-      {/* Messages Section */}
+      {/* Messages */}
       <div style={{ marginTop: 40, textAlign: "left" }}>
         <h3>Messages</h3>
-        <div
-          style={{
-            maxHeight: 240,
-            overflowY: "auto",
-            background: "#f9fafb",
-            borderRadius: 10,
-            padding: "1rem",
-            marginBottom: 12,
-          }}
-        >
+        <div style={{
+          maxHeight: 180, overflowY: "auto", border: "1px solid #ddd",
+          padding: 12, borderRadius: 8, marginBottom: 12,
+          backgroundColor: "#f9fafb"
+        }}>
           {messages.length === 0 && <p>No messages yet.</p>}
           {messages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{
-                padding: "0.4rem 0.6rem",
-                marginBottom: 6,
-                background:
-                  msg.sender_id === authUser.id ? "#dbeafe" : "#e0e0e0",
-                borderRadius: 6,
-                alignSelf:
-                  msg.sender_id === authUser.id ? "flex-end" : "flex-start",
-                maxWidth: "70%",
-              }}
-            >
-              <small style={{ fontSize: "0.7rem", color: "#555" }}>
-                {msg.created_at ? new Date(msg.created_at).toLocaleString() : ""}
-              </small>
-              <p style={{ margin: 0 }}>{msg.content}</p>
+            <div key={msg.id} style={{
+              marginBottom: 10,
+              padding: 8,
+              backgroundColor: msg.sender_id === authUser.id ? "#dbeafe" : "#f3f4f6",
+              borderRadius: 6,
+              textAlign: msg.sender_id === authUser.id ? "right" : "left"
+            }}>
+              <div style={{ fontSize: 12, color: "#64748b" }}>
+                {msg.sender_id === authUser.id ? "You" : "Other"}
+                {" • "}
+                {new Date(msg.created_at).toLocaleString()}
+              </div>
+              <div>{msg.context || msg.content}</div>
             </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSendMessage} style={{ display: "flex", gap: 10 }}>
-          <input
-            type="text"
+        <form onSubmit={handleSendMessage}>
+          <textarea
+            placeholder="Type your message..."
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
-            placeholder="Type your message"
-            style={{
-              flexGrow: 1,
-              padding: "0.5rem 0.75rem",
-              borderRadius: 8,
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-            }}
+            rows={2}
+            style={{ width: "100%", padding: "0.5rem", borderRadius: 8, resize: "none" }}
           />
           <button
             type="submit"
             style={{
-              background: "#2563eb",
-              color: "#fff",
-              borderRadius: 8,
-              padding: "0 1rem",
-              cursor: "pointer",
-              fontWeight: 600,
+              marginTop: 8,
+              backgroundColor: "#2563eb",
+              color: "white",
               border: "none",
+              padding: "0.5rem 1rem",
+              borderRadius: 8,
+              cursor: "pointer"
             }}
           >
             Send
