@@ -48,7 +48,6 @@ export default function Profile() {
   const [authUser, setAuthUser] = useState(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
-  // Messages state
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
   const messagesEndRef = useRef(null);
@@ -57,7 +56,6 @@ export default function Profile() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load user profile on mount
   useEffect(() => {
     async function getUserProfile() {
       setLoading(true);
@@ -94,29 +92,13 @@ export default function Profile() {
     getUserProfile();
   }, []);
 
-  // Load and subscribe to messages
   useEffect(() => {
     if (!authUser) return;
 
-    // Fetch messages with sender info
     async function fetchMessages() {
       const { data, error } = await supabase
         .from("messages")
-        // join sender profile: "profiles" table is related via sender_id = profiles.id
-        .select(`
-          id,
-          sender_id,
-          receiver_id,
-          context,
-          created_at,
-          profiles:sender_id (
-            id,
-            username,
-            full_name,
-            avatar_url,
-            email
-          )
-        `)
+        .select("*")
         .order("created_at", { ascending: true });
 
       if (error) {
@@ -128,8 +110,7 @@ export default function Profile() {
 
     fetchMessages();
 
-    // Listen for new messages and update list
-    const subscription = supabase
+    const channel = supabase
       .channel("messages_channel")
       .on(
         "postgres_changes",
@@ -145,7 +126,7 @@ export default function Profile() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(subscription);
+      supabase.removeChannel(channel);
     };
   }, [authUser]);
 
@@ -155,14 +136,14 @@ export default function Profile() {
 
     const payload = {
       sender_id: authUser.id,
-      receiver_id: null, // general chat, no receiver
+      receiver_id: null,
       context: newMsg.trim(),
     };
 
     const { error } = await supabase.from("messages").insert([payload]);
     if (error) {
-      toast.error("Failed to send message.");
       console.error("Send message error:", error);
+      toast.error(`Failed to send message: ${error.message}`);
     } else {
       setNewMsg("");
     }
@@ -173,13 +154,18 @@ export default function Profile() {
     setEditMode(false);
     if (!authUser) return;
 
-    await supabase.from("profiles").upsert({
+    const { error } = await supabase.from("profiles").upsert({
       id: authUser.id,
       ...profile,
       email: authUser.email,
     });
 
-    toast.success("Profile updated!");
+    if (error) {
+      toast.error("Failed to update profile.");
+      console.error("Profile update error:", error);
+    } else {
+      toast.success("Profile updated!");
+    }
   };
 
   const handleChange = e => {
@@ -275,68 +261,35 @@ export default function Profile() {
   if (!authUser) return <div>Please log in to view your profile.</div>;
 
   return (
-    <div
-      className="container"
-      style={{
-        maxWidth: 540,
-        margin: "3.5rem auto",
-        background: "#fff",
-        borderRadius: 20,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.09)",
-        padding: "2.4rem 2.1rem 1.7rem",
-        textAlign: "center",
-      }}
-    >
+    <div className="container" style={{
+      maxWidth: 540, margin: "3.5rem auto", background: "#fff", borderRadius: 20,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.09)", padding: "2.4rem 2.1rem 1.7rem",
+      textAlign: "center"
+    }}>
       <h1 style={{ color: "#2563eb", marginBottom: 20 }}>Your Profile</h1>
 
       {/* Avatar */}
       <div style={{ marginBottom: 22 }}>
         {profile.avatar_url ? (
-          <img
-            src={profile.avatar_url}
-            alt="avatar"
-            style={{
-              width: 130,
-              height: 130,
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: "3px solid #2563eb",
-              marginBottom: 8,
-            }}
-          />
+          <img src={profile.avatar_url} alt="avatar" style={{
+            width: 130, height: 130, borderRadius: "50%", objectFit: "cover",
+            border: "3px solid #2563eb", marginBottom: 8
+          }} />
         ) : (
-          <div
-            style={{
-              width: 130,
-              height: 130,
-              borderRadius: "50%",
-              background: "#f1f5f9",
-              color: "#64748b",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "2.8rem",
-              fontWeight: 700,
-              border: "3px solid #e0e7ef",
-              marginBottom: 8,
-            }}
-          >
+          <div style={{
+            width: 130, height: 130, borderRadius: "50%", background: "#f1f5f9",
+            color: "#64748b", display: "flex", alignItems: "center",
+            justifyContent: "center", fontSize: "2.8rem", fontWeight: 700,
+            border: "3px solid #e0e7ef", marginBottom: 8
+          }}>
             {getInitials(profile.name, profile.email)}
           </div>
         )}
 
-        <label
-          htmlFor="avatar-upload"
-          style={{
-            background: "#2563eb",
-            color: "#fff",
-            borderRadius: 8,
-            padding: "0.45rem 1.1rem",
-            cursor: "pointer",
-            marginRight: 12,
-            fontWeight: 600,
-          }}
-        >
+        <label htmlFor="avatar-upload" style={{
+          background: "#2563eb", color: "#fff", borderRadius: 8, padding: "0.45rem 1.1rem",
+          cursor: "pointer", marginRight: 12, fontWeight: 600,
+        }}>
           {avatarUploading ? "Uploading..." : "Change Avatar"}
         </label>
         <input
@@ -348,16 +301,10 @@ export default function Profile() {
           disabled={avatarUploading}
         />
         {profile.avatar_url && (
-          <button
-            onClick={handleAvatarRemove}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#ef4444",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={handleAvatarRemove} style={{
+            background: "transparent", border: "none", color: "#ef4444",
+            fontWeight: 600, cursor: "pointer"
+          }}>
             Remove
           </button>
         )}
@@ -368,279 +315,163 @@ export default function Profile() {
         <>
           <h2>{profile.name || profile.email || "User"}</h2>
           <p style={{ color: "#64748b", marginBottom: 16 }}>{profile.email}</p>
-          <p>
-            <b>Goal:</b> {profile.goals || "No goal set"}
-          </p>
-          <p>
-            <b>Target:</b> {profile.targetLabel || "-"}: {profile.targetTotal || "-"}
-          </p>
-          <p>
-            <b>Progress:</b> {profile.currentProgress} / {profile.targetTotal} ({pct}
-            %)
-          </p>
+          <p><b>Goal:</b> {profile.goals || "No goal set"}</p>
+          <p><b>Target:</b> {profile.targetLabel || "-"}: {profile.targetTotal || "-"}</p>
+          <p><b>Progress:</b> {profile.currentProgress} / {profile.targetTotal} ({pct}%)</p>
 
           {/* Progress bar */}
-          <div
-            style={{
-              height: 18,
-              borderRadius: 12,
-              background: "#e0e7ef",
-              marginBottom: 12,
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: `${pct}%`,
-                height: "100%",
-                background: pct === 100 ? "#22c55e" : "#2563eb",
-                transition: "width 0.5s ease-in-out",
-              }}
-            />
+          <div style={{
+            height: 18, borderRadius: 12, background: "#e0e7ef",
+            marginBottom: 12, overflow: "hidden"
+          }}>
+            <div style={{
+              width: `${pct}%`, height: "100%",
+              background: pct === 100 ? "#22c55e" : "#2563eb",
+              transition: "width 0.5s ease-in-out"
+            }} />
           </div>
           <p style={{ fontStyle: "italic", color: "#2563eb" }}>
             {getMotivationalMsg(pct)}
           </p>
 
-          <form onSubmit={handleProgressAdd} style={{ marginTop: 16 }}>
+          <form onSubmit={handleProgressAdd} style={{ marginBottom: 12 }}>
             <input
               type="number"
-              min="1"
+              min="0"
               step="1"
+              placeholder="Add progress"
               value={progressInput}
               onChange={e => setProgressInput(e.target.value)}
-              placeholder="Add progress"
-              style={{
-                padding: "0.5rem 0.7rem",
-                fontSize: 16,
-                borderRadius: 8,
-                border: "1px solid #d1d5db",
-                width: 140,
-                marginRight: 8,
-              }}
+              style={{ padding: "0.5rem 1rem", width: 150, marginRight: 12 }}
             />
-            <button
-              type="submit"
-              disabled={!progressInput || Number(progressInput) <= 0}
-              style={{
-                background: "#2563eb",
-                color: "#fff",
-                borderRadius: 8,
-                padding: "0.5rem 1rem",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              Add
-            </button>
+            <FSButton type="submit">Add</FSButton>
           </form>
-          <button
-            onClick={handleProgressReset}
-            style={{
-              marginTop: 8,
-              color: "#ef4444",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
+
+          <button onClick={handleProgressReset} style={{
+            background: "transparent", border: "1px solid #ef4444", color: "#ef4444",
+            borderRadius: 12, padding: "0.4rem 1.2rem", fontWeight: 600, cursor: "pointer"
+          }}>
             Reset Progress
           </button>
 
-          <button
-            onClick={() => setEditMode(true)}
-            style={{
-              marginTop: 20,
-              background: "#2563eb",
-              color: "#fff",
-              borderRadius: 8,
-              padding: "0.5rem 1.2rem",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={() => setEditMode(true)} style={{
+            background: "#2563eb", color: "#fff", borderRadius: 12,
+            padding: "0.5rem 1.5rem", fontWeight: 600, cursor: "pointer",
+            marginLeft: 12
+          }}>
             Edit Profile
           </button>
         </>
       ) : (
-        <form onSubmit={handleSave}>
-          <input
-            name="name"
-            placeholder="Full Name"
-            value={profile.name}
-            onChange={handleChange}
-            style={{ width: "100%", marginBottom: 10, padding: 8, fontSize: 16 }}
-          />
-          <textarea
-            name="goals"
-            placeholder="Goals"
-            value={profile.goals}
-            onChange={handleChange}
-            rows={2}
-            style={{ width: "100%", marginBottom: 10, padding: 8, fontSize: 16 }}
-          />
-          <input
-            name="targetLabel"
-            placeholder="Target Label (e.g. Miles)"
-            value={profile.targetLabel}
-            onChange={handleChange}
-            style={{ width: "100%", marginBottom: 10, padding: 8, fontSize: 16 }}
-          />
-          <input
-            name="targetTotal"
-            type="number"
-            min="0"
-            placeholder="Target Total"
-            value={profile.targetTotal}
-            onChange={handleChange}
-            style={{ width: "100%", marginBottom: 10, padding: 8, fontSize: 16 }}
-          />
-          <FSButton type="submit" text="Save" />
-          <button
-            type="button"
-            onClick={() => setEditMode(false)}
-            style={{
-              marginLeft: 12,
-              background: "#ef4444",
-              color: "#fff",
-              borderRadius: 8,
-              padding: "0.5rem 1.2rem",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Cancel
-          </button>
+        <form onSubmit={handleSave} style={{ textAlign: "left" }}>
+          <label>
+            Name<br />
+            <input
+              type="text"
+              name="name"
+              value={profile.name}
+              onChange={handleChange}
+              required
+              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
+            />
+          </label>
+
+          <label>
+            Goals<br />
+            <textarea
+              name="goals"
+              value={profile.goals}
+              onChange={handleChange}
+              rows={3}
+              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
+            />
+          </label>
+
+          <label>
+            Target Label<br />
+            <input
+              type="text"
+              name="targetLabel"
+              value={profile.targetLabel}
+              onChange={handleChange}
+              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
+            />
+          </label>
+
+          <label>
+            Target Total<br />
+            <input
+              type="number"
+              min="0"
+              name="targetTotal"
+              value={profile.targetTotal}
+              onChange={handleChange}
+              style={{ width: "100%", marginBottom: 12, padding: "0.5rem" }}
+            />
+          </label>
+
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <button type="submit" style={{
+              background: "#2563eb", color: "#fff", borderRadius: 12,
+              padding: "0.5rem 1.5rem", fontWeight: 600, cursor: "pointer"
+            }}>
+              Save
+            </button>
+
+            <button type="button" onClick={() => setEditMode(false)} style={{
+              background: "transparent", border: "1px solid #2563eb",
+              color: "#2563eb", borderRadius: 12, padding: "0.5rem 1.5rem",
+              fontWeight: 600, cursor: "pointer"
+            }}>
+              Cancel
+            </button>
+          </div>
         </form>
       )}
 
-      {/* Chat Section */}
-      <div
-        style={{
-          marginTop: 40,
-          borderTop: "1px solid #e0e7ef",
-          paddingTop: 20,
-          maxHeight: 400,
-          overflowY: "auto",
-        }}
-      >
-        <h3>General Chat</h3>
-        <div
-          style={{
-            marginBottom: 12,
-            maxHeight: 300,
-            overflowY: "auto",
-            padding: "0 8px",
-          }}
-        >
-          {messages.length === 0 && (
-            <p style={{ color: "#64748b" }}>No messages yet.</p>
-          )}
-          {messages.map((msg) => {
-            const sender = msg.profiles || {};
-            const isMe = sender.id === authUser.id;
-            return (
-              <div
-                key={msg.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: 12,
-                  justifyContent: isMe ? "flex-end" : "flex-start",
-                }}
-              >
-                {!isMe && (
-                  <img
-                    src={sender.avatar_url || ""}
-                    alt={sender.username || sender.full_name || "User"}
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                      marginRight: 8,
-                      background: "#f0f0f0",
-                    }}
-                  />
-                )}
-                <div
-                  style={{
-                    background: isMe ? "#2563eb" : "#e0e7ef",
-                    color: isMe ? "#fff" : "#000",
-                    borderRadius: 12,
-                    padding: "0.5rem 1rem",
-                    maxWidth: "70%",
-                    fontSize: 14,
-                  }}
-                  title={new Date(msg.created_at).toLocaleString()}
-                >
-                  <div
-                    style={{
-                      fontWeight: "600",
-                      fontSize: 13,
-                      marginBottom: 4,
-                      color: isMe ? "#a5c7ff" : "#444",
-                    }}
-                  >
-                    {isMe
-                      ? "You"
-                      : sender.full_name ||
-                        sender.username ||
-                        sender.email?.split("@")[0] ||
-                        "Unknown"}
-                  </div>
-                  {msg.context}
-                </div>
-                {isMe && (
-                  <img
-                    src={sender.avatar_url || ""}
-                    alt="You"
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                      marginLeft: 8,
-                      background: "#f0f0f0",
-                    }}
-                  />
-                )}
-              </div>
-            );
-          })}
+      {/* Messages section */}
+      <div style={{ marginTop: 40, textAlign: "left" }}>
+        <h3 style={{ marginBottom: 12, color: "#2563eb" }}>Messages</h3>
+
+        <div style={{
+          maxHeight: 250, overflowY: "auto", border: "1px solid #ddd",
+          borderRadius: 12, padding: 12, background: "#f9fafb",
+          marginBottom: 12
+        }}>
+          {messages.length === 0 && <p style={{ color: "#64748b" }}>No messages yet.</p>}
+          {messages.map((msg) => (
+            <div key={msg.id} style={{
+              marginBottom: 10,
+              background: msg.sender_id === authUser.id ? "#2563eb" : "#e5e7eb",
+              color: msg.sender_id === authUser.id ? "#fff" : "#111",
+              padding: "6px 10px",
+              borderRadius: 12,
+              maxWidth: "80%",
+              alignSelf: msg.sender_id === authUser.id ? "flex-end" : "flex-start"
+            }}>
+              <small style={{ fontSize: 10, opacity: 0.7 }}>
+                {new Date(msg.created_at).toLocaleString()}
+              </small>
+              <p style={{ margin: "4px 0 0 0" }}>{msg.context}</p>
+            </div>
+          ))}
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSendMessage} style={{ display: "flex" }}>
+        <form onSubmit={handleSendMessage} style={{ display: "flex", gap: 8 }}>
           <input
             type="text"
-            placeholder="Type your message..."
             value={newMsg}
-            onChange={(e) => setNewMsg(e.target.value)}
+            onChange={e => setNewMsg(e.target.value)}
+            placeholder="Type your message..."
             style={{
               flexGrow: 1,
-              padding: "0.6rem 1rem",
-              fontSize: 16,
-              borderRadius: 8,
-              border: "1px solid #d1d5db",
-              marginRight: 8,
+              padding: "0.5rem 1rem",
+              borderRadius: 12,
+              border: "1px solid #ccc"
             }}
           />
-          <button
-            type="submit"
-            disabled={!newMsg.trim()}
-            style={{
-              background: "#2563eb",
-              color: "#fff",
-              borderRadius: 8,
-              padding: "0.6rem 1.3rem",
-              fontWeight: 600,
-              cursor: newMsg.trim() ? "pointer" : "not-allowed",
-              border: "none",
-            }}
-          >
-            Send
-          </button>
+          <FSButton type="submit">Send</FSButton>
         </form>
       </div>
     </div>
