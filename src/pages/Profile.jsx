@@ -57,40 +57,46 @@ export default function Profile() {
   }, [messages]);
 
   useEffect(() => {
-    async function getUserProfile() {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      setAuthUser(user);
-      if (!user) {
-        setProfile(defaultProfile);
-        setLoading(false);
-        return;
-      }
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (data) {
-        setProfile(prev => ({
-          ...prev,
-          ...data,
-          email: user.email,
-        }));
-      } else {
-        setProfile(prev => ({
-          ...prev,
-          name: user.user_metadata?.full_name || "",
-          email: user.email,
-        }));
-      }
+  async function getUserProfile() {
+    setLoading(true);
+    
+    // Fetch the authenticated user
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error || !user) {
+      setAuthUser(null);  // If no user is found, set authUser to null
+      setProfile(defaultProfile);  // Reset the profile
       setLoading(false);
+      return;
     }
 
-    getUserProfile();
-  }, []);
+    setAuthUser(user);  // Set the authenticated user
+
+    // Now, fetch the user's profile from the 'profiles' table
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (data) {
+      setProfile(prev => ({
+        ...prev,
+        ...data,
+        email: user.email,
+      }));
+    } else {
+      setProfile(prev => ({
+        ...prev,
+        name: user.user_metadata?.full_name || "",
+        email: user.email,
+      }));
+    }
+    setLoading(false);
+  }
+
+  getUserProfile();
+}, []);
 
   useEffect(() => {
     if (!authUser) return;
