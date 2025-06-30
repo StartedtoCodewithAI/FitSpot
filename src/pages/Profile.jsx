@@ -151,7 +151,7 @@ export default function Profile() {
 
     if (error) {
       console.error("Send message error:", error);
-      toast.error(Failed to send message: ${error.message});
+      toast.error(`Failed to send message: ${error.message}`);
     } else {
       setNewMsg("");
     }
@@ -187,7 +187,7 @@ export default function Profile() {
 
     setAvatarUploading(true);
     const ext = file.name.split(".").pop();
-    const path = ${authUser.id}_${Date.now()}.${ext};
+    const path = `${authUser.id}_${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase
       .storage
