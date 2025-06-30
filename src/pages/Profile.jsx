@@ -57,46 +57,46 @@ export default function Profile() {
   }, [messages]);
 
   useEffect(() => {
-  async function getUserProfile() {
-    setLoading(true);
-    
-    // Fetch the authenticated user
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
-    if (error || !user) {
-      setAuthUser(null);  // If no user is found, set authUser to null
-      setProfile(defaultProfile);  // Reset the profile
+    async function getUserProfile() {
+      setLoading(true);
+      
+      // Fetch the authenticated user
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        setAuthUser(null);  // If no user is found, set authUser to null
+        setProfile(defaultProfile);  // Reset the profile
+        setLoading(false);
+        return;
+      }
+
+      setAuthUser(user);  // Set the authenticated user
+
+      // Now, fetch the user's profile from the 'profiles' table
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (data) {
+        setProfile(prev => ({
+          ...prev,
+          ...data,
+          email: user.email,
+        }));
+      } else {
+        setProfile(prev => ({
+          ...prev,
+          name: user.user_metadata?.full_name || "",
+          email: user.email,
+        }));
+      }
       setLoading(false);
-      return;
     }
 
-    setAuthUser(user);  // Set the authenticated user
-
-    // Now, fetch the user's profile from the 'profiles' table
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    if (data) {
-      setProfile(prev => ({
-        ...prev,
-        ...data,
-        email: user.email,
-      }));
-    } else {
-      setProfile(prev => ({
-        ...prev,
-        name: user.user_metadata?.full_name || "",
-        email: user.email,
-      }));
-    }
-    setLoading(false);
-  }
-
-  getUserProfile();
-}, []);
+    getUserProfile();
+  }, []);
 
   useEffect(() => {
     if (!authUser) return;
@@ -137,34 +137,34 @@ export default function Profile() {
   }, [authUser]);
 
   const handleSendMessage = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Ensure the message is not empty and the user is logged in
-  if (!newMsg.trim() || !authUser || !authUser.id) {
-    toast.error("You need to be logged in to send a message.");
-    return;
-  }
+    // Ensure the message is not empty and the user is logged in
+    if (!newMsg.trim() || !authUser || !authUser.id) {
+      toast.error("You need to be logged in to send a message.");
+      return;
+    }
 
-  // Log the authUser.id for debugging
-  console.log("authUser ID:", authUser.id);  // Log the ID to ensure it's correct
+    // Log the authUser.id for debugging
+    console.log("authUser ID:", authUser.id);  // Log the ID to ensure it's correct
 
-  // Create the message payload
-  const payload = {
-    sender_id: authUser.id,  // Ensure this is the correct logged-in user's ID
-    receiver_id: null,
-    content: newMsg.trim(),
+    // Create the message payload
+    const payload = {
+      sender_id: authUser.id,  // Ensure this is the correct logged-in user's ID
+      receiver_id: null,
+      content: newMsg.trim(),
+    };
+
+    // Insert the message into the database
+    const { error } = await supabase.from("messages").insert([payload]);
+
+    if (error) {
+      console.error("Send message error:", error);
+      toast.error(`Failed to send message: ${error.message}`);
+    } else {
+      setNewMsg("");  // Clear the input field if the message was sent successfully
+    }
   };
-
-  // Insert the message into the database
-  const { error } = await supabase.from("messages").insert([payload]);
-
-  if (error) {
-    console.error("Send message error:", error);
-    toast.error(`Failed to send message: ${error.message}`);
-  } else {
-    setNewMsg("");  // Clear the input field if the message was sent successfully
-  }
-};
 
   const handleSave = async (e) => {
     e.preventDefault();
