@@ -276,29 +276,17 @@ export default function Profile() {
 
     if (error) {
       toast.error("Failed to delete message.");
-    } else {
-      setMessages((prevMessages) => prevMessages.filter(msg => msg.id !== messageId));
-      toast.success("Message deleted!");
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (!authUser) return <div>Please log in to view your profile.</div>;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="container" style={{
-      maxWidth: 540, margin: "3.5rem auto", background: "#fff", borderRadius: 20,
-      boxShadow: "0 8px 32px rgba(0,0,0,0.1)"
-    }}>
-      <div style={{
-        display: "flex", justifyContent: "center", alignItems: "center", margin: "2rem 0",
-      }}>
-        <div
-          style={{
-            width: 100, height: 100, backgroundColor: "#e0e7ef", borderRadius: "50%",
-            display: "flex", justifyContent: "center", alignItems: "center", position: "relative"
-          }}
-        >
+    <div style={{ maxWidth: 900, margin: "auto" }}>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ width: "100px", height: "100px", borderRadius: "50%", overflow: "hidden", marginRight: "1rem" }}>
           {profile.avatar_url ? (
             <img
               src={profile.avatar_url}
@@ -311,7 +299,6 @@ export default function Profile() {
             </span>
           )}
         </div>
-
         <div>
           <label>
             <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={avatarUploading} />
