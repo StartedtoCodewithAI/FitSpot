@@ -59,10 +59,10 @@ export default function Profile() {
   useEffect(() => {
     async function getUserProfile() {
       setLoading(true);
-      
+
       // Fetch the authenticated user
       const { data: { user }, error } = await supabase.auth.getUser();
-      
+
       if (error || !user) {
         setAuthUser(null);  // If no user is found, set authUser to null
         setProfile(defaultProfile);  // Reset the profile
@@ -148,9 +148,9 @@ export default function Profile() {
     // Log the authUser.id for debugging
     console.log("authUser ID:", authUser.id);  // Log the ID to ensure it's correct
 
-    // Create the message payload
+    // Create the message payload with the sender_id as UUID
     const payload = {
-      sender_id: authUser.id,  // Ensure this is the correct logged-in user's ID
+      sender_id: authUser.id,  // Ensure this is the correct logged-in user's ID (UUID)
       receiver_id: null,
       content: newMsg.trim(),
     };
