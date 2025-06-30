@@ -47,32 +47,25 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [authUser, setAuthUser] = useState(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
-
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  useEffect(() => {
     async function getUserProfile() {
       setLoading(true);
 
-      // Fetch the authenticated user
       const { data: { user }, error } = await supabase.auth.getUser();
 
       if (error || !user) {
-        setAuthUser(null);  // If no user is found, set authUser to null
-        setProfile(defaultProfile);  // Reset the profile
+        setAuthUser(null);
+        setProfile(defaultProfile);
         setLoading(false);
         return;
       }
 
-      setAuthUser(user);  // Set the authenticated user
+      setAuthUser(user);
 
-      // Now, fetch the user's profile from the 'profiles' table
       const { data } = await supabase
         .from("profiles")
         .select("*")
@@ -101,7 +94,6 @@ export default function Profile() {
   useEffect(() => {
     if (!authUser) return;
 
-    // Fetch existing messages from the database
     async function fetchMessages() {
       const { data, error } = await supabase
         .from("messages")
@@ -112,61 +104,56 @@ export default function Profile() {
         console.error("Error loading messages:", error);
         return;
       }
-      setMessages(data);  // Set the initial list of messages
+      setMessages(data);
     }
 
     fetchMessages();
 
-    // Create a real-time subscription to listen for new messages
     const channel = supabase
       .channel("messages_channel")
       .on(
         "postgres_changes",
         {
-          event: "INSERT",  // Listening for new message inserts
+          event: "INSERT",
           schema: "public",
           table: "messages",
         },
         (payload) => {
-          // Add the new message to the state
           setMessages((prevMessages) => [...prevMessages, payload.new]);
         }
       )
       .subscribe();
 
-    // Cleanup the channel when the component unmounts
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [authUser]);  // Only subscribe when the user is authenticated
+  }, [authUser]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
-    // Ensure the message is not empty and the user is logged in
     if (!newMsg.trim() || !authUser || !authUser.id) {
       toast.error("You need to be logged in to send a message.");
       return;
     }
 
-    // Log the authUser.id for debugging
-    console.log("authUser ID:", authUser.id);  // Log the ID to ensure it's correct
-
-    // Create the message payload with the sender_id as UUID
     const payload = {
-      sender_id: authUser.id,  // Ensure this is the correct logged-in user's ID (UUID)
+      sender_id: authUser.id,
       receiver_id: null,
       content: newMsg.trim(),
     };
 
-    // Insert the message into the database
     const { error } = await supabase.from("messages").insert([payload]);
 
     if (error) {
       console.error("Send message error:", error);
       toast.error(`Failed to send message: ${error.message}`);
     } else {
-      setNewMsg("");  // Clear the input field if the message was sent successfully
+      setNewMsg("");
     }
   };
 
