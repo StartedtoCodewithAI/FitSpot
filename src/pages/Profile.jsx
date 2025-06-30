@@ -265,6 +265,23 @@ export default function Profile() {
     }
   };
 
+  const handleDeleteMessage = async (messageId) => {
+    if (!authUser) return;
+
+    const { error } = await supabase
+      .from("messages")
+      .delete()
+      .eq("id", messageId)
+      .eq("sender_id", authUser.id); // Ensure only the sender can delete the message
+
+    if (error) {
+      toast.error("Failed to delete message.");
+    } else {
+      setMessages((prevMessages) => prevMessages.filter(msg => msg.id !== messageId));
+      toast.success("Message deleted!");
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!authUser) return <div>Please log in to view your profile.</div>;
 
@@ -389,6 +406,13 @@ export default function Profile() {
             }}>
               <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>{msg.sender_name}</div>
               <div>{msg.content}</div>
+              {msg.sender_id === authUser.id && (
+                <button onClick={() => handleDeleteMessage(msg.id)} style={{
+                  marginTop: "8px", color: "#e74c3c", border: "none", background: "none", cursor: "pointer"
+                }}>
+                  Delete
+                </button>
+              )}
             </div>
           ))}
           <div ref={messagesEndRef} />
