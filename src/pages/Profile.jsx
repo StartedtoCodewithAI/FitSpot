@@ -241,15 +241,18 @@ export default function Profile() {
   const handleProgressAdd = e => {
     e.preventDefault();
     const addNum = Number(progressInput);
-    if (!addNum || addNum <= 0) return;
+    if (!addNum || addNum <= 0 || isNaN(addNum)) return;
 
     setProfile(prev => ({
       ...prev,
       currentProgress: prev.currentProgress + addNum,
-      progressLog: [...(prev.progressLog || []), {
-        date: new Date().toISOString(),
-        amount: addNum
-      }]
+      progressLog: [
+        ...(prev.progressLog || []),
+        {
+          date: new Date().toISOString(),
+          amount: addNum
+        }
+      ]
     }));
 
     setProgressInput("");
@@ -303,112 +306,64 @@ export default function Profile() {
             <img
               src={profile.avatar_url}
               alt="Avatar"
-              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+              style={{
+                width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%",
+              }}
             />
           ) : (
-            <span style={{ fontSize: "3rem", fontWeight: "bold", color: "#fff" }}>
-              {getInitials(profile.name, profile.email)}
-            </span>
+            <span style={{ fontSize: 40, color: "#fff" }}>{getInitials(profile.name, profile.email)}</span>
           )}
-        </div>
-
-        <div>
-          <label>
-            <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={avatarUploading} />
-            {avatarUploading ? "Uploading..." : "Upload Avatar"}
-          </label>
-          {profile.avatar_url && <button onClick={handleAvatarRemove}>Remove Avatar</button>}
-        </div>
-      </div>
-
-      <div style={{ padding: "0 1rem" }}>
-        <h3>Profile</h3>
-        <form onSubmit={handleSave}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Name:</label>
-            {editMode ? (
-              <input
-                name="name"
-                value={profile.name}
-                onChange={handleChange}
-                placeholder="Enter your name"
-                style={{ width: "100%", padding: "0.5rem", borderRadius: "5px" }}
-              />
-            ) : (
-              <div>{profile.name}</div>
-            )}
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Email:</label>
-            <div>{profile.email}</div>
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Goals:</label>
-            {editMode ? (
-              <textarea
-                name="goals"
-                value={profile.goals}
-                onChange={handleChange}
-                placeholder="Enter your goals"
-                style={{ width: "100%", padding: "0.5rem", borderRadius: "5px" }}
-              />
-            ) : (
-              <div>{profile.goals}</div>
-            )}
-          </div>
-
-          {editMode && (
-            <div style={{ textAlign: "center", marginTop: "2rem" }}>
-              <FSButton text="Save Changes" />
-            </div>
-          )}
-        </form>
-      </div>
-
-      <div style={{ marginTop: "2rem" }}>
-        <h3>Current Progress</h3>
-        <div style={{
-          padding: "10px", backgroundColor: "#f1f5f9", borderRadius: "5px",
-          textAlign: "center", marginBottom: "1rem"
-        }}>
-          <div style={{ fontWeight: 600 }}>Progress: {profile.currentProgress}/{profile.targetTotal}</div>
-          <div>{getMotivationalMsg(pct)}</div>
-        </div>
-
-        <div style={{
-          display: "flex", justifyContent: "space-between", marginBottom: "1rem"
-        }}>
           <input
-            type="number"
-            value={progressInput}
-            onChange={(e) => setProgressInput(e.target.value)}
-            placeholder="Amount to add"
-            style={{ padding: "0.5rem", borderRadius: "5px", width: "45%" }}
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarUpload}
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0 }}
           />
-          <FSButton text="Add Progress" onClick={handleProgressAdd} />
-        </div>
-
-        <div>
-          <FSButton text="Reset Progress" onClick={handleProgressReset} />
         </div>
       </div>
 
-      {/* Messages Section */}
-      <div style={{ marginTop: "2rem" }}>
+      <form onSubmit={handleSave} style={{ padding: "0 2rem" }}>
+        {editMode ? (
+          <>
+            <label htmlFor="name">Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={profile.name}
+              onChange={handleChange}
+              className="input"
+            />
+            <label htmlFor="targetTotal">Target Total</label>
+            <input
+              type="number"
+              id="targetTotal"
+              name="targetTotal"
+              value={profile.targetTotal}
+              onChange={handleChange}
+              className="input"
+            />
+            <button type="submit" className="btn btn-primary">Save</button>
+          </>
+        ) : (
+          <>
+            <p>Name: {profile.name}</p>
+            <p>Target: {profile.targetLabel} ({profile.targetTotal})</p>
+            <p>Current Progress: {profile.currentProgress} ({getMotivationalMsg(pct)})</p>
+            <p>Progress: {profile.progressLog.length} entries</p>
+          </>
+        )}
+      </form>
+
+      <div>
         <h3>Messages</h3>
-        <div style={{ maxHeight: 400, overflowY: "auto" }}>
+        <div style={{ maxHeight: "300px", overflowY: "auto" }}>
           {messages.map((msg) => (
-            <div key={msg.id} style={{
-              padding: "10px", borderBottom: "1px solid #e0e7ef", marginBottom: "8px",
-              textAlign: "left"
-            }}>
-              <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>{msg.sender_name}</div>
-              <div>{msg.content}</div>
-              {msg.sender_id === authUser.id && (
+            <div key={msg.id} style={{ padding: "1rem", borderBottom: "1px solid #eee" }}>
+              <p>{msg.content}</p>
+              {authUser?.id === msg.sender_id && (
                 <button onClick={() => handleDeleteMessage(msg.id)} style={{
-                  marginTop: "8px", color: "#e74c3c", border: "none", background: "none", cursor: "pointer"
+                  background: "red", color: "#fff", border: "none", padding: "0.3rem 0.5rem", borderRadius: 4
                 }}>
                   Delete
                 </button>
@@ -417,28 +372,32 @@ export default function Profile() {
           ))}
           <div ref={messagesEndRef} />
         </div>
-
-        <div style={{ marginTop: 16 }}>
-          <textarea
+        <form onSubmit={handleSendMessage}>
+          <input
+            type="text"
+            placeholder="Type a message"
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
-            placeholder="Type a message..."
-            style={{
-              padding: "8px", borderRadius: "6px", width: "100%", resize: "none", fontSize: "1rem"
-            }}
+            className="input"
           />
-          <button
-            type="button"
-            onClick={handleSendMessage}
-            style={{
-              padding: "8px 16px", backgroundColor: "#2563eb", color: "#fff", borderRadius: "6px",
-              marginTop: "8px"
-            }}
-          >
-            Send
-          </button>
-        </div>
+          <button type="submit" className="btn btn-primary">Send</button>
+        </form>
       </div>
+
+      <div>
+        <label htmlFor="progressInput">Add Progress</label>
+        <input
+          type="number"
+          id="progressInput"
+          value={progressInput}
+          onChange={(e) => setProgressInput(e.target.value)}
+          className="input"
+        />
+        <button onClick={handleProgressAdd} className="btn btn-success">Add Progress</button>
+        <button onClick={handleProgressReset} className="btn btn-warning">Reset Progress</button>
+      </div>
+
+      {avatarUploading && <div>Uploading...</div>}
     </div>
   );
 }
