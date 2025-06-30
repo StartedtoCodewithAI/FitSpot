@@ -136,8 +136,7 @@ export default function Profile() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
-    // Check if the user is logged in and message is not empty
-    if (!authUser?.id || !newMsg.trim()) {
+    if (!newMsg.trim() || !authUser || !authUser.id) {
       toast.error("You need to be logged in to send a message.");
       return;
     }
@@ -152,7 +151,7 @@ export default function Profile() {
 
     if (error) {
       console.error("Send message error:", error);
-      toast.error(`Failed to send message: ${error.message}`);
+      toast.error(Failed to send message: ${error.message});
     } else {
       setNewMsg("");
     }
@@ -188,7 +187,7 @@ export default function Profile() {
 
     setAvatarUploading(true);
     const ext = file.name.split(".").pop();
-    const path = `${authUser.id}_${Date.now()}.${ext}`;
+    const path = ${authUser.id}_${Date.now()}.${ext};
 
     const { error: uploadError } = await supabase
       .storage
@@ -297,7 +296,7 @@ export default function Profile() {
         <div
           style={{
             width: 100, height: 100, backgroundColor: "#e0e7ef", borderRadius: "50%",
-            display: "flex", justifyContent: "center", alignItems: "center", position: "relative",
+            display: "flex", justifyContent: "center", alignItems: "center", position: "relative"
           }}
         >
           {profile.avatar_url ? (
@@ -307,105 +306,137 @@ export default function Profile() {
               style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
             />
           ) : (
-            <span style={{ fontSize: "2rem", fontWeight: "bold" }}>{getInitials(profile.name, profile.email)}</span>
+            <span style={{ fontSize: "3rem", fontWeight: "bold", color: "#fff" }}>
+              {getInitials(profile.name, profile.email)}
+            </span>
           )}
-          <input
-            type="file"
-            id="avatar-upload"
-            accept="image/*"
-            onChange={handleAvatarUpload}
-            disabled={avatarUploading}
-            style={{
-              position: "absolute", bottom: 0, right: 0, fontSize: "1.2rem", cursor: "pointer", opacity: 0,
-            }}
-          />
+        </div>
+
+        <div>
+          <label>
+            <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={avatarUploading} />
+            {avatarUploading ? "Uploading..." : "Upload Avatar"}
+          </label>
+          {profile.avatar_url && <button onClick={handleAvatarRemove}>Remove Avatar</button>}
         </div>
       </div>
-      <div style={{ textAlign: "center" }}>
-        <h2>{profile.name || "No Name"}</h2>
-        <p>{profile.email}</p>
-        {editMode ? (
-          <div style={{ marginTop: "1rem" }}>
-            <textarea
-              name="goals"
-              value={profile.goals}
-              onChange={handleChange}
-              placeholder="Your goals..."
-              rows="3"
-              style={{ width: "100%", padding: "0.5rem", borderRadius: 8 }}
-            />
-            <textarea
-              name="targetLabel"
-              value={profile.targetLabel}
-              onChange={handleChange}
-              placeholder="Target label"
-              rows="1"
-              style={{ width: "100%", padding: "0.5rem", borderRadius: 8, marginTop: "1rem" }}
-            />
-            <input
-              type="number"
-              name="targetTotal"
-              value={profile.targetTotal}
-              onChange={handleChange}
-              placeholder="Target Total"
-              style={{ width: "100%", padding: "0.5rem", borderRadius: 8, marginTop: "1rem" }}
-            />
-            <div style={{ marginTop: "1rem" }}>
-              <FSButton text="Save Profile" onClick={handleSave} />
-            </div>
+
+      <div style={{ padding: "0 1rem" }}>
+        <h3>Profile</h3>
+        <form onSubmit={handleSave}>
+          <div style={{ marginBottom: "1rem" }}>
+            <label>Name:</label>
+            {editMode ? (
+              <input
+                name="name"
+                value={profile.name}
+                onChange={handleChange}
+                placeholder="Enter your name"
+                style={{ width: "100%", padding: "0.5rem", borderRadius: "5px" }}
+              />
+            ) : (
+              <div>{profile.name}</div>
+            )}
           </div>
-        ) : (
-          <div>
-            <p>{getMotivationalMsg(pct)}</p>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <h4>{profile.targetLabel}</h4>
-                <p>{profile.currentProgress} / {profile.targetTotal}</p>
-                <progress value={profile.currentProgress} max={profile.targetTotal} />
-              </div>
-              <div>
-                <h4>Progress Log</h4>
-                <button onClick={handleProgressReset}>Reset Progress</button>
-                <form onSubmit={handleProgressAdd}>
-                  <input
-                    type="number"
-                    value={progressInput}
-                    onChange={(e) => setProgressInput(e.target.value)}
-                    placeholder="Add progress"
-                    style={{ padding: "0.5rem", borderRadius: 8 }}
-                  />
-                  <FSButton text="Add Progress" />
-                </form>
-              </div>
-            </div>
-            <div style={{ marginTop: "1rem" }}>
-              <button onClick={() => setEditMode(true)}>Edit Profile</button>
-            </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label>Email:</label>
+            <div>{profile.email}</div>
           </div>
-        )}
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label>Goals:</label>
+            {editMode ? (
+              <textarea
+                name="goals"
+                value={profile.goals}
+                onChange={handleChange}
+                placeholder="Enter your goals"
+                style={{ width: "100%", padding: "0.5rem", borderRadius: "5px" }}
+              />
+            ) : (
+              <div>{profile.goals}</div>
+            )}
+          </div>
+
+          {editMode && (
+            <div style={{ textAlign: "center", marginTop: "2rem" }}>
+              <FSButton text="Save Changes" />
+            </div>
+          )}
+        </form>
       </div>
+
       <div style={{ marginTop: "2rem" }}>
-        <h3>Your Messages</h3>
-        <div style={{ marginBottom: "1rem" }}>
-          <form onSubmit={handleSendMessage}>
-            <textarea
-              value={newMsg}
-              onChange={(e) => setNewMsg(e.target.value)}
-              placeholder="Type a message..."
-              rows="3"
-              style={{ width: "100%", padding: "0.5rem", borderRadius: 8 }}
-            />
-            <FSButton text="Send Message" />
-          </form>
+        <h3>Current Progress</h3>
+        <div style={{
+          padding: "10px", backgroundColor: "#f1f5f9", borderRadius: "5px",
+          textAlign: "center", marginBottom: "1rem"
+        }}>
+          <div style={{ fontWeight: 600 }}>Progress: {profile.currentProgress}/{profile.targetTotal}</div>
+          <div>{getMotivationalMsg(pct)}</div>
         </div>
-        <div style={{ maxHeight: "200px", overflowY: "auto", marginBottom: "1rem" }}>
+
+        <div style={{
+          display: "flex", justifyContent: "space-between", marginBottom: "1rem"
+        }}>
+          <input
+            type="number"
+            value={progressInput}
+            onChange={(e) => setProgressInput(e.target.value)}
+            placeholder="Amount to add"
+            style={{ padding: "0.5rem", borderRadius: "5px", width: "45%" }}
+          />
+          <FSButton text="Add Progress" onClick={handleProgressAdd} />
+        </div>
+
+        <div>
+          <FSButton text="Reset Progress" onClick={handleProgressReset} />
+        </div>
+      </div>
+
+      {/* Messages Section */}
+      <div style={{ marginTop: "2rem" }}>
+        <h3>Messages</h3>
+        <div style={{ maxHeight: 400, overflowY: "auto" }}>
           {messages.map((msg) => (
-            <div key={msg.id} style={{ marginBottom: "0.5rem", padding: "0.5rem", backgroundColor: "#f9f9f9", borderRadius: 8 }}>
-              <p>{msg.content}</p>
-              <button onClick={() => handleDeleteMessage(msg.id)}>Delete</button>
+            <div key={msg.id} style={{
+              padding: "10px", borderBottom: "1px solid #e0e7ef", marginBottom: "8px",
+              textAlign: "left"
+            }}>
+              <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>{msg.sender_name}</div>
+              <div>{msg.content}</div>
+              {msg.sender_id === authUser.id && (
+                <button onClick={() => handleDeleteMessage(msg.id)} style={{
+                  marginTop: "8px", color: "#e74c3c", border: "none", background: "none", cursor: "pointer"
+                }}>
+                  Delete
+                </button>
+              )}
             </div>
           ))}
-          <div ref={messagesEndRef}></div>
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <textarea
+            value={newMsg}
+            onChange={(e) => setNewMsg(e.target.value)}
+            placeholder="Type a message..."
+            style={{
+              padding: "8px", borderRadius: "6px", width: "100%", resize: "none", fontSize: "1rem"
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleSendMessage}
+            style={{
+              padding: "8px 16px", backgroundColor: "#2563eb", color: "#fff", borderRadius: "6px",
+              marginTop: "8px"
+            }}
+          >
+            Send
+          </button>
         </div>
       </div>
     </div>
