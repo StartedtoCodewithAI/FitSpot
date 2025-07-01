@@ -40,6 +40,22 @@ function getInitials(name, email) {
   return email ? email[0].toUpperCase() : "?";
 }
 
+// New helper to ensure profile exists on login
+async function ensureUserProfile(user) {
+  if (!user) return;
+
+  const { error } = await supabase.from('profiles').upsert({
+    id: user.id,
+    email: user.email,
+    name: user.user_metadata?.full_name || user.email.split('@')[0],
+    avatar_url: user.user_metadata?.avatar_url || null,
+  }, { onConflict: 'id' });
+
+  if (error) {
+    console.error("Error upserting profile:", error);
+  }
+}
+
 export default function Profile() {
   const [profile, setProfile] = useState(defaultProfile);
   const [editMode, setEditMode] = useState(false);
@@ -65,6 +81,9 @@ export default function Profile() {
       }
 
       setAuthUser(user);
+
+      // Upsert profile to guarantee it exists before fetching
+      await ensureUserProfile(user);
 
       const { data } = await supabase
         .from("profiles")
@@ -426,18 +445,16 @@ export default function Profile() {
             style={{
               padding: "8px", borderRadius: "6px", width: "100%", resize: "none", fontSize: "1rem"
             }}
+            rows={3}
           />
-          <button
-            type="button"
-            onClick={handleSendMessage}
-            style={{
-              padding: "8px 16px", backgroundColor: "#2563eb", color: "#fff", borderRadius: "6px",
-              marginTop: "8px"
-            }}
-          >
-            Send
-          </button>
+          <FSButton text="Send" onClick={handleSendMessage} />
         </div>
+      </div>
+
+      <div style={{ marginTop: 20, textAlign: "center" }}>
+        <button onClick={() => setEditMode(!editMode)} style={{ marginRight: 12 }}>
+          {editMode ? "Cancel" : "Edit Profile"}
+        </button>
       </div>
     </div>
   );
