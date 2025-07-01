@@ -40,7 +40,6 @@ function getInitials(name, email) {
   return email ? email[0].toUpperCase() : "?";
 }
 
-// New helper to ensure profile exists on login
 async function ensureUserProfile(user) {
   if (!user) return;
 
@@ -82,7 +81,6 @@ export default function Profile() {
 
       setAuthUser(user);
 
-      // Upsert profile to guarantee it exists before fetching
       await ensureUserProfile(user);
 
       const { data } = await supabase
@@ -291,7 +289,7 @@ export default function Profile() {
       .from("messages")
       .delete()
       .eq("id", messageId)
-      .eq("sender_id", authUser.id); // Ensure only the sender can delete the message
+      .eq("sender_id", authUser.id);
 
     if (error) {
       toast.error("Failed to delete message.");
