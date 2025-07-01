@@ -421,11 +421,18 @@ export default function Profile() {
               padding: "10px", borderBottom: "1px solid #e0e7ef", marginBottom: "8px",
               textAlign: "left"
             }}>
-              <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>{msg.sender_name}</div>
+              <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>
+                {msg.sender_name || "Anonymous"}
+              </div>
               <div>{msg.content}</div>
               {msg.sender_id === authUser.id && (
                 <button onClick={() => handleDeleteMessage(msg.id)} style={{
-                  marginTop: "8px", color: "#e74c3c", border: "none", background: "none", cursor: "pointer"
+                  fontSize: "0.8rem",
+                  color: "red",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  marginTop: "5px"
                 }}>
                   Delete
                 </button>
@@ -434,25 +441,24 @@ export default function Profile() {
           ))}
           <div ref={messagesEndRef} />
         </div>
-
-        <div style={{ marginTop: 16 }}>
-          <textarea
+        <form onSubmit={handleSendMessage} style={{ marginTop: "1rem", display: "flex" }}>
+          <input
+            type="text"
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
-            placeholder="Type a message..."
-            style={{
-              padding: "8px", borderRadius: "6px", width: "100%", resize: "none", fontSize: "1rem"
-            }}
-            rows={3}
+            placeholder="Write a message..."
+            style={{ flexGrow: 1, padding: "0.5rem", borderRadius: "5px 0 0 5px", border: "1px solid #ccc" }}
           />
-          <FSButton text="Send" onClick={handleSendMessage} />
-        </div>
+          <FSButton text="Send" />
+        </form>
       </div>
 
-      <div style={{ marginTop: 20, textAlign: "center" }}>
-        <button onClick={() => setEditMode(!editMode)} style={{ marginRight: 12 }}>
-          {editMode ? "Cancel" : "Edit Profile"}
-        </button>
+      <div style={{ marginTop: "1rem", textAlign: "center" }}>
+        {!editMode ? (
+          <FSButton text="Edit Profile" onClick={() => setEditMode(true)} />
+        ) : (
+          <FSButton text="Cancel" onClick={() => setEditMode(false)} />
+        )}
       </div>
     </div>
   );
