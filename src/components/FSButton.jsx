@@ -2,6 +2,7 @@ import React from "react";
 import "./FSButton.css";
 
 export default function FSButton({
+  text,
   children,
   variant = "primary", // "primary", "secondary", "danger"
   className = "",
@@ -14,7 +15,7 @@ export default function FSButton({
       style={style}
       {...props}
     >
-      {children}
+      {children || text}
     </button>
   );
 }
