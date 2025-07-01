@@ -434,27 +434,37 @@ export default function Profile() {
       <div style={{ marginTop: "3rem" }}>
         <h3>Messages</h3>
         <div style={{
-          maxHeight: "300px",
+          maxHeight: 180,     // smaller height for chat box
           overflowY: "auto",
           border: "1px solid #ccc",
           borderRadius: "5px",
           padding: "1rem",
-          background: "#fafafa"
+          background: "#fafafa",
+          fontSize: "0.9rem",
+          lineHeight: "1.3",
         }}>
           {messages.length === 0 ? (
             <p>No messages yet.</p>
           ) : (
             messages.map((msg) => (
-              <div key={msg.id} style={{ marginBottom: 12, borderBottom: "1px solid #ddd", paddingBottom: 6 }}>
-                <div>
-                  <strong>{msg.sender_id === authUser.id ? "You" : msg.sender_id}</strong> at{" "}
+              <div key={msg.id} style={{ marginBottom: 8, borderBottom: "1px solid #ddd", paddingBottom: 4 }}>
+                <div style={{ fontWeight: "600" }}>
+                  {msg.sender_id === authUser.id ? "You" : msg.sender_id} at{" "}
                   {new Date(msg.created_at).toLocaleString()}
                 </div>
                 <div>{msg.content}</div>
                 {msg.sender_id === authUser.id && (
                   <button
                     onClick={() => handleDeleteMessage(msg.id)}
-                    style={{ color: "red", fontSize: "0.8rem", marginTop: 4, background: "none", border: "none", cursor: "pointer" }}
+                    style={{
+                      color: "red",
+                      fontSize: "0.75rem",
+                      marginTop: 2,
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
                     aria-label="Delete message"
                   >
                     Delete
@@ -466,23 +476,74 @@ export default function Profile() {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSendMessage} style={{ marginTop: 12, display: "flex" }}>
+        <form
+          onSubmit={handleSendMessage}
+          style={{
+            display: "flex",
+            marginTop: 8,
+            gap: "8px",
+            alignItems: "center",
+          }}
+        >
           <input
             type="text"
+            placeholder="Type a message..."
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
-            placeholder="Type a message"
-            style={{ flex: 1, padding: "0.5rem" }}
+            style={{
+              flex: 1,
+              padding: "10px",
+              fontSize: "1rem",
+              borderRadius: "25px",
+              border: "1px solid #ddd",
+              outline: "none",
+              transition: "border-color 0.3s ease",
+              boxShadow: "inset 0 1px 3px rgb(0 0 0 / 0.1)",
+            }}
+            onFocus={(e) => e.target.style.borderColor = "#0047ab"}
+            onBlur={(e) => e.target.style.borderColor = "#ddd"}
           />
-          <button type="submit" style={{ marginLeft: 8 }}>
+          <button
+            type="submit"
+            style={{
+              backgroundColor: "#0047ab",
+              color: "#fff",
+              borderRadius: "25px",
+              border: "none",
+              padding: "10px 18px",
+              fontWeight: "600",
+              cursor: "pointer",
+              boxShadow: "0 4px 8px rgba(0,71,171,0.3)",
+              transition: "background-color 0.3s ease",
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#003380"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#0047ab"}
+            aria-label="Send message"
+          >
             Send
           </button>
         </form>
       </div>
 
-      <div style={{ textAlign: "center", marginTop: "2rem" }}>
-        <button onClick={() => setEditMode(!editMode)}>
-          {editMode ? "Cancel" : "Edit Profile"}
+      <div style={{ textAlign: "center", margin: "2rem 0" }}>
+        <button
+          onClick={() => setEditMode(!editMode)}
+          style={{
+            backgroundColor: editMode ? "#dc2626" : "#2563eb",
+            color: "#fff",
+            border: "none",
+            padding: "10px 18px",
+            borderRadius: "25px",
+            fontWeight: "600",
+            cursor: "pointer",
+            boxShadow: editMode
+              ? "0 4px 8px rgba(220,38,38,0.4)"
+              : "0 4px 8px rgba(37,99,235,0.4)",
+            transition: "background-color 0.3s ease",
+          }}
+          aria-pressed={editMode}
+        >
+          {editMode ? "Cancel Edit" : "Edit Profile"}
         </button>
       </div>
     </div>
