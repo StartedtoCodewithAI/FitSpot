@@ -206,33 +206,48 @@ export default function Profile() {
     const ext = file.name.split(".").pop();
     const path = `${authUser.id}_${Date.now()}.${ext}`;
 
-    const { error: uploadError } = await supabase
-      .storage
-      .from("avatars")
-      .upload(path, file, { upsert: true });
+    try {
+      const { data, error: uploadError } = await supabase
+        .storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
 
-    if (uploadError) {
-      toast.error("Upload failed.");
-      setAvatarUploading(false);
-      return;
-    }
+      if (uploadError) {
+        console.error("Upload error details:", uploadError);
+        toast.error(`Upload failed: ${uploadError.message}`);
+        setAvatarUploading(false);
+        return;
+      }
 
-    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-    if (data?.publicUrl) {
+      const { data: urlData, error: urlError } = supabase.storage.from("avatars").getPublicUrl(path);
+
+      if (urlError) {
+        console.error("Error getting public URL:", urlError);
+        toast.error("Failed to get avatar URL.");
+        setAvatarUploading(false);
+        return;
+      }
+
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ avatar_url: data.publicUrl })
+        .update({ avatar_url: urlData.publicUrl })
         .eq("id", authUser.id);
 
       if (updateError) {
+        console.error("Failed to update avatar URL in profile:", updateError);
         toast.error("Failed to update avatar.");
-      } else {
-        setProfile(prev => ({ ...prev, avatar_url: data.publicUrl }));
-        toast.success("Avatar updated!");
+        setAvatarUploading(false);
+        return;
       }
-    }
 
-    setAvatarUploading(false);
+      setProfile(prev => ({ ...prev, avatar_url: urlData.publicUrl }));
+      toast.success("Avatar updated!");
+    } catch (err) {
+      console.error("Unexpected error during avatar upload:", err);
+      toast.error("Unexpected error during upload.");
+    } finally {
+      setAvatarUploading(false);
+    }
   }
 
   async function handleAvatarRemove() {
@@ -406,65 +421,69 @@ export default function Profile() {
             type="number"
             value={progressInput}
             onChange={(e) => setProgressInput(e.target.value)}
-            placeholder="Amount to add"
-            style={{ padding: "0.5rem", borderRadius: "5px", width: "45%" }}
-            min={1}
+            placeholder="Add progress"
+            style={{ flex: 1, marginRight: 8, padding: "0.5rem" }}
           />
-          <FSButton text="Add Progress" />
+          <FSButton text="Add" />
         </form>
-
-        <div>
-          <FSButton text="Reset Progress" onClick={handleProgressReset} />
-        </div>
+        <button onClick={handleProgressReset} style={{ backgroundColor: "#f87171", color: "#fff", padding: "0.5rem 1rem", borderRadius: 5 }}>
+          Reset Progress
+        </button>
       </div>
 
-      {/* Messages Section */}
-      <div style={{ marginTop: "2rem" }}>
+      <div style={{ marginTop: "3rem" }}>
         <h3>Messages</h3>
-        <div style={{ maxHeight: 400, overflowY: "auto", border: "1px solid #ddd", borderRadius: 5, padding: 10 }}>
-          {messages.map((msg) => (
-            <div key={msg.id} style={{
-              padding: "10px", borderBottom: "1px solid #e0e7ef", marginBottom: "8px",
-              textAlign: "left"
-            }}>
-              <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>
-                {msg.sender_name || "Anonymous"}
+        <div style={{
+          maxHeight: "300px",
+          overflowY: "auto",
+          border: "1px solid #ccc",
+          borderRadius: "5px",
+          padding: "1rem",
+          background: "#fafafa"
+        }}>
+          {messages.length === 0 ? (
+            <p>No messages yet.</p>
+          ) : (
+            messages.map((msg) => (
+              <div key={msg.id} style={{ marginBottom: 12, borderBottom: "1px solid #ddd", paddingBottom: 6 }}>
+                <div>
+                  <strong>{msg.sender_id === authUser.id ? "You" : msg.sender_id}</strong> at{" "}
+                  {new Date(msg.created_at).toLocaleString()}
+                </div>
+                <div>{msg.content}</div>
+                {msg.sender_id === authUser.id && (
+                  <button
+                    onClick={() => handleDeleteMessage(msg.id)}
+                    style={{ color: "red", fontSize: "0.8rem", marginTop: 4, background: "none", border: "none", cursor: "pointer" }}
+                    aria-label="Delete message"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
-              <div>{msg.content}</div>
-              {msg.sender_id === authUser.id && (
-                <button onClick={() => handleDeleteMessage(msg.id)} style={{
-                  fontSize: "0.8rem",
-                  color: "red",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  marginTop: "5px"
-                }}>
-                  Delete
-                </button>
-              )}
-            </div>
-          ))}
+            ))
+          )}
           <div ref={messagesEndRef} />
         </div>
-        <form onSubmit={handleSendMessage} style={{ marginTop: "1rem", display: "flex" }}>
+
+        <form onSubmit={handleSendMessage} style={{ marginTop: 12, display: "flex" }}>
           <input
             type="text"
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
-            placeholder="Write a message..."
-            style={{ flexGrow: 1, padding: "0.5rem", borderRadius: "5px 0 0 5px", border: "1px solid #ccc" }}
+            placeholder="Type a message"
+            style={{ flex: 1, padding: "0.5rem" }}
           />
-          <FSButton text="Send" />
+          <button type="submit" style={{ marginLeft: 8 }}>
+            Send
+          </button>
         </form>
       </div>
 
-      <div style={{ marginTop: "1rem", textAlign: "center" }}>
-        {!editMode ? (
-          <FSButton text="Edit Profile" onClick={() => setEditMode(true)} />
-        ) : (
-          <FSButton text="Cancel" onClick={() => setEditMode(false)} />
-        )}
+      <div style={{ textAlign: "center", marginTop: "2rem" }}>
+        <button onClick={() => setEditMode(!editMode)}>
+          {editMode ? "Cancel" : "Edit Profile"}
+        </button>
       </div>
     </div>
   );
