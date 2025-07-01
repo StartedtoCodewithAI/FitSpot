@@ -329,12 +329,16 @@ export default function Profile() {
           )}
         </div>
 
-        <div>
-          <label>
-            <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={avatarUploading} />
+        <div style={{ marginLeft: 16 }}>
+          <label style={{ cursor: "pointer", color: "#007bff", display: "inline-block", marginBottom: 8 }}>
+            <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={avatarUploading} style={{ display: "none" }} />
             {avatarUploading ? "Uploading..." : "Upload Avatar"}
           </label>
-          {profile.avatar_url && <button onClick={handleAvatarRemove}>Remove Avatar</button>}
+          {profile.avatar_url && (
+            <button onClick={handleAvatarRemove} style={{ display: "block", marginTop: 8 }}>
+              Remove Avatar
+            </button>
+          )}
         </div>
       </div>
 
@@ -394,18 +398,20 @@ export default function Profile() {
           <div>{getMotivationalMsg(pct)}</div>
         </div>
 
-        <div style={{
-          display: "flex", justifyContent: "space-between", marginBottom: "1rem"
-        }}>
+        <form
+          onSubmit={handleProgressAdd}
+          style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}
+        >
           <input
             type="number"
             value={progressInput}
             onChange={(e) => setProgressInput(e.target.value)}
             placeholder="Amount to add"
             style={{ padding: "0.5rem", borderRadius: "5px", width: "45%" }}
+            min={1}
           />
-          <FSButton text="Add Progress" onClick={handleProgressAdd} />
-        </div>
+          <FSButton text="Add Progress" />
+        </form>
 
         <div>
           <FSButton text="Reset Progress" onClick={handleProgressReset} />
@@ -415,7 +421,7 @@ export default function Profile() {
       {/* Messages Section */}
       <div style={{ marginTop: "2rem" }}>
         <h3>Messages</h3>
-        <div style={{ maxHeight: 400, overflowY: "auto" }}>
+        <div style={{ maxHeight: 400, overflowY: "auto", border: "1px solid #ddd", borderRadius: 5, padding: 10 }}>
           {messages.map((msg) => (
             <div key={msg.id} style={{
               padding: "10px", borderBottom: "1px solid #e0e7ef", marginBottom: "8px",
