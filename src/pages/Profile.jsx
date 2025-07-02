@@ -343,12 +343,16 @@ export default function Profile() {
           style={{
             width: 100,
             height: 100,
-            backgroundColor: "#e0e7ef",
+            backgroundColor: profile.avatar_url ? "transparent" : "#007bff",
             borderRadius: "50%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             position: "relative",
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: "3rem",
+            userSelect: "none",
           }}
         >
           {profile.avatar_url ? (
@@ -358,7 +362,7 @@ export default function Profile() {
               style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
             />
           ) : (
-            <span style={{ fontSize: "3rem", fontWeight: "bold", color: "#fff" }}>
+            <span>
               {getInitials(profile.name, profile.email)}
             </span>
           )}
@@ -401,13 +405,13 @@ export default function Profile() {
       <form onSubmit={handleSave} style={{ padding: "0 2rem 2rem 2rem" }}>
         {!editMode ? (
           <>
-            <h2>{profile.name}</h2>
+            <h2>{profile.name || "Unnamed User"}</h2>
             <p>{profile.email}</p>
             <p>
               Goals: {profile.goals || "Not set"} <br />
               Target: {profile.targetTotal ? `${profile.targetTotal} ${profile.targetLabel}` : "Not set"}
             </p>
-            <p>Progress: {profile.currentProgress} / {profile.targetTotal} {profile.targetLabel}</p>
+            <p>Progress: {profile.currentProgress} / {profile.targetTotal || 0} {profile.targetLabel}</p>
             <p style={{ fontWeight: "bold" }}>{getMotivationalMsg(pct)}</p>
             <button type="button" onClick={() => setEditMode(true)}>
               Edit Profile
@@ -517,6 +521,7 @@ export default function Profile() {
                     background: "transparent",
                     cursor: "pointer",
                   }}
+                  title="Delete message"
                 >
                   &times;
                 </button>
@@ -526,17 +531,15 @@ export default function Profile() {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSendMessage} style={{ marginTop: 10 }}>
+        <form onSubmit={handleSendMessage} style={{ marginTop: 10, display: "flex", gap: 10 }}>
           <input
             type="text"
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
             placeholder="Type your message..."
-            style={{ width: "70%" }}
+            style={{ flexGrow: 1 }}
           />
-          <button type="submit" style={{ marginLeft: 10 }}>
-            Send
-          </button>
+          <button type="submit">Send</button>
         </form>
       </section>
     </div>
