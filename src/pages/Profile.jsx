@@ -69,11 +69,15 @@ export default function Profile() {
   const [newMsg, setNewMsg] = useState("");
   const messagesEndRef = useRef(null);
 
+  // Fetch user profile on mount
   useEffect(() => {
     async function getUserProfile() {
       setLoading(true);
 
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
       if (error || !user) {
         setAuthUser(null);
@@ -111,6 +115,7 @@ export default function Profile() {
     getUserProfile();
   }, []);
 
+  // Fetch and subscribe to messages when user is authenticated
   useEffect(() => {
     if (!authUser) return;
 
@@ -149,14 +154,16 @@ export default function Profile() {
     };
   }, [authUser]);
 
+  // Auto-scroll messages to bottom on update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Send a new message
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
-    if (!newMsg.trim() || !authUser || !authUser.id) {
+    if (!newMsg.trim() || !authUser?.id) {
       toast.error("You need to be logged in to send a message.");
       return;
     }
@@ -177,6 +184,7 @@ export default function Profile() {
     }
   };
 
+  // Save profile updates
   const handleSave = async (e) => {
     e.preventDefault();
     setEditMode(false);
@@ -196,11 +204,13 @@ export default function Profile() {
     }
   };
 
+  // Handle input changes for profile fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle avatar upload
   async function handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file || !authUser) return;
@@ -210,8 +220,7 @@ export default function Profile() {
     const path = `${authUser.id}_${Date.now()}.${ext}`;
 
     try {
-      const { data, error: uploadError } = await supabase
-        .storage
+      const { data, error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(path, file, { upsert: true });
 
@@ -253,6 +262,7 @@ export default function Profile() {
     }
   }
 
+  // Remove avatar
   async function handleAvatarRemove() {
     if (!authUser) return;
     const { error } = await supabase
@@ -273,6 +283,7 @@ export default function Profile() {
     ? Math.min(100, Math.round((profile.currentProgress / targetTotalNum) * 100))
     : 0;
 
+  // Add progress
   const handleProgressAdd = (e) => {
     e.preventDefault();
     const addNum = Number(progressInput);
@@ -290,6 +301,7 @@ export default function Profile() {
     setProgressInput("");
   };
 
+  // Reset progress
   const handleProgressReset = () => {
     if (window.confirm("Reset progress for this target?")) {
       setProfile((prev) => ({
@@ -300,6 +312,7 @@ export default function Profile() {
     }
   };
 
+  // Delete a message sent by user
   const handleDeleteMessage = async (messageId) => {
     if (!authUser) return;
 
@@ -468,13 +481,14 @@ export default function Profile() {
 
       <section style={{ padding: "0 2rem 2rem 2rem" }}>
         <h3>Add Progress</h3>
-        <form onSubmit={handleProgressAdd}>
+        <form onSubmit={handleProgressAdd} style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <input
             type="number"
             min="0"
             value={progressInput}
             onChange={(e) => setProgressInput(e.target.value)}
             placeholder={`Add ${profile.targetLabel || "progress"}`}
+            style={{ flexGrow: 1 }}
           />
           <button type="submit">Add</button>
           <button type="button" onClick={handleProgressReset} style={{ marginLeft: 10 }}>
@@ -509,6 +523,7 @@ export default function Profile() {
                 borderBottom: "1px solid #eee",
                 display: "flex",
                 justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
               <span>{msg.content}</span>
@@ -520,8 +535,11 @@ export default function Profile() {
                     border: "none",
                     background: "transparent",
                     cursor: "pointer",
+                    fontSize: "1.25rem",
+                    lineHeight: 1,
                   }}
                   title="Delete message"
+                  aria-label="Delete message"
                 >
                   &times;
                 </button>
@@ -534,9 +552,9 @@ export default function Profile() {
         <form onSubmit={handleSendMessage} style={{ marginTop: 10, display: "flex", gap: 10 }}>
           <input
             type="text"
+            placeholder="Enter message"
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
-            placeholder="Type your message..."
             style={{ flexGrow: 1 }}
           />
           <button type="submit">Send</button>
