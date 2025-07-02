@@ -43,12 +43,15 @@ function getInitials(name, email) {
 async function ensureUserProfile(user) {
   if (!user) return;
 
-  const { error } = await supabase.from('profiles').upsert({
-    id: user.id,
-    email: user.email,
-    name: user.user_metadata?.full_name || user.email.split('@')[0],
-    avatar_url: user.user_metadata?.avatar_url || null,
-  }, { onConflict: 'id' });
+  const { error } = await supabase.from("profiles").upsert(
+    {
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata?.full_name || user.email.split("@")[0],
+      avatar_url: user.user_metadata?.avatar_url || null,
+    },
+    { onConflict: "id" }
+  );
 
   if (error) {
     console.error("Error upserting profile:", error);
@@ -90,13 +93,13 @@ export default function Profile() {
         .single();
 
       if (data) {
-        setProfile(prev => ({
+        setProfile((prev) => ({
           ...prev,
           ...data,
           email: user.email,
         }));
       } else {
-        setProfile(prev => ({
+        setProfile((prev) => ({
           ...prev,
           name: user.user_metadata?.full_name || "",
           email: user.email,
@@ -168,7 +171,7 @@ export default function Profile() {
 
     if (error) {
       console.error("Send message error:", error);
-      toast.error(Failed to send message: ${error.message});
+      toast.error(`Failed to send message: ${error.message}`);
     } else {
       setNewMsg("");
     }
@@ -193,9 +196,9 @@ export default function Profile() {
     }
   };
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfile(prev => ({ ...prev, [name]: value }));
+    setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
   async function handleAvatarUpload(e) {
@@ -204,7 +207,7 @@ export default function Profile() {
 
     setAvatarUploading(true);
     const ext = file.name.split(".").pop();
-    const path = ${authUser.id}_${Date.now()}.${ext};
+    const path = `${authUser.id}_${Date.now()}.${ext}`;
 
     try {
       const { data, error: uploadError } = await supabase
@@ -214,15 +217,15 @@ export default function Profile() {
 
       if (uploadError) {
         console.error("Upload error details:", uploadError);
-        toast.error(Upload failed: ${uploadError.message});
+        toast.error(`Upload failed: ${uploadError.message}`);
         setAvatarUploading(false);
         return;
       }
 
-      const { data: urlData, error: urlError } = supabase.storage.from("avatars").getPublicUrl(path);
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
 
-      if (urlError) {
-        console.error("Error getting public URL:", urlError);
+      if (!urlData?.publicUrl) {
+        console.error("Failed to get public URL");
         toast.error("Failed to get avatar URL.");
         setAvatarUploading(false);
         return;
@@ -240,7 +243,7 @@ export default function Profile() {
         return;
       }
 
-      setProfile(prev => ({ ...prev, avatar_url: urlData.publicUrl }));
+      setProfile((prev) => ({ ...prev, avatar_url: urlData.publicUrl }));
       toast.success("Avatar updated!");
     } catch (err) {
       console.error("Unexpected error during avatar upload:", err);
@@ -258,7 +261,7 @@ export default function Profile() {
       .eq("id", authUser.id);
 
     if (!error) {
-      setProfile(prev => ({ ...prev, avatar_url: null }));
+      setProfile((prev) => ({ ...prev, avatar_url: null }));
       toast.success("Avatar removed!");
     } else {
       toast.error("Failed to remove avatar.");
@@ -270,18 +273,18 @@ export default function Profile() {
     ? Math.min(100, Math.round((profile.currentProgress / targetTotalNum) * 100))
     : 0;
 
-  const handleProgressAdd = e => {
+  const handleProgressAdd = (e) => {
     e.preventDefault();
     const addNum = Number(progressInput);
     if (!addNum || addNum <= 0) return;
 
-    setProfile(prev => ({
+    setProfile((prev) => ({
       ...prev,
       currentProgress: prev.currentProgress + addNum,
       progressLog: [...(prev.progressLog || []), {
         date: new Date().toISOString(),
-        amount: addNum
-      }]
+        amount: addNum,
+      }],
     }));
 
     setProgressInput("");
@@ -289,7 +292,7 @@ export default function Profile() {
 
   const handleProgressReset = () => {
     if (window.confirm("Reset progress for this target?")) {
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
         currentProgress: 0,
         progressLog: [],
@@ -309,7 +312,7 @@ export default function Profile() {
     if (error) {
       toast.error("Failed to delete message.");
     } else {
-      setMessages((prevMessages) => prevMessages.filter(msg => msg.id !== messageId));
+      setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== messageId));
       toast.success("Message deleted!");
     }
   };
@@ -318,17 +321,34 @@ export default function Profile() {
   if (!authUser) return <div>Please log in to view your profile.</div>;
 
   return (
-    <div className="container" style={{
-      maxWidth: 540, margin: "3.5rem auto", background: "#fff", borderRadius: 20,
-      boxShadow: "0 8px 32px rgba(0,0,0,0.1)"
-    }}>
-      <div style={{
-        display: "flex", justifyContent: "center", alignItems: "center", margin: "2rem 0",
-      }}>
+    <div
+      className="container"
+      style={{
+        maxWidth: 540,
+        margin: "3.5rem auto",
+        background: "#fff",
+        borderRadius: 20,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          margin: "2rem 0",
+        }}
+      >
         <div
           style={{
-            width: 100, height: 100, backgroundColor: "#e0e7ef", borderRadius: "50%",
-            display: "flex", justifyContent: "center", alignItems: "center", position: "relative"
+            width: 100,
+            height: 100,
+            backgroundColor: "#e0e7ef",
+            borderRadius: "50%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "relative",
           }}
         >
           {profile.avatar_url ? (
@@ -345,207 +365,180 @@ export default function Profile() {
         </div>
 
         <div style={{ marginLeft: 16 }}>
-          <label style={{ cursor: "pointer", color: "#007bff", display: "inline-block", marginBottom: 8 }}>
-            <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={avatarUploading} style={{ display: "none" }} />
-            {avatarUploading ? "Uploading..." : "Upload Avatar"}
+          <label
+            style={{ cursor: "pointer", color: "#007bff", display: "inline-block", marginBottom: 8 }}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              disabled={avatarUploading}
+              style={{ display: "none" }}
+            />
+            {avatarUploading ? "Uploading..." : "Change Avatar"}
           </label>
           {profile.avatar_url && (
-            <button onClick={handleAvatarRemove} style={{ display: "block", marginTop: 8 }}>
+            <button
+              onClick={handleAvatarRemove}
+              disabled={avatarUploading}
+              style={{
+                display: "block",
+                marginTop: 8,
+                backgroundColor: "#dc3545",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                padding: "6px 12px",
+                cursor: "pointer",
+              }}
+            >
               Remove Avatar
             </button>
           )}
         </div>
       </div>
 
-      <div style={{ padding: "0 1rem" }}>
-        <h3>Profile</h3>
-        <form onSubmit={handleSave}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Name:</label>
-            {editMode ? (
+      <form onSubmit={handleSave} style={{ padding: "0 2rem 2rem 2rem" }}>
+        {!editMode ? (
+          <>
+            <h2>{profile.name}</h2>
+            <p>{profile.email}</p>
+            <p>
+              Goals: {profile.goals || "Not set"} <br />
+              Target: {profile.targetTotal ? `${profile.targetTotal} ${profile.targetLabel}` : "Not set"}
+            </p>
+            <p>Progress: {profile.currentProgress} / {profile.targetTotal} {profile.targetLabel}</p>
+            <p style={{ fontWeight: "bold" }}>{getMotivationalMsg(pct)}</p>
+            <button type="button" onClick={() => setEditMode(true)}>
+              Edit Profile
+            </button>
+          </>
+        ) : (
+          <>
+            <label>
+              Name:
               <input
                 name="name"
                 value={profile.name}
                 onChange={handleChange}
-                placeholder="Enter your name"
-                style={{ width: "100%", padding: "0.5rem", borderRadius: "5px" }}
+                type="text"
+                required
               />
-            ) : (
-              <div>{profile.name}</div>
-            )}
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Email:</label>
-            <div>{profile.email}</div>
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label>Goals:</label>
-            {editMode ? (
+            </label>
+            <br />
+            <label>
+              Goals:
               <textarea
                 name="goals"
                 value={profile.goals}
                 onChange={handleChange}
-                placeholder="Enter your goals"
-                style={{ width: "100%", padding: "0.5rem", borderRadius: "5px" }}
+                rows={3}
               />
-            ) : (
-              <div>{profile.goals}</div>
-            )}
-          </div>
+            </label>
+            <br />
+            <label>
+              Target Label:
+              <input
+                name="targetLabel"
+                value={profile.targetLabel}
+                onChange={handleChange}
+                type="text"
+              />
+            </label>
+            <br />
+            <label>
+              Target Total:
+              <input
+                name="targetTotal"
+                value={profile.targetTotal}
+                onChange={handleChange}
+                type="number"
+                min={0}
+              />
+            </label>
+            <br />
+            <FSButton type="submit">Save Profile</FSButton>
+          </>
+        )}
+      </form>
 
-          {editMode && (
-            <div style={{ textAlign: "center", marginTop: "2rem" }}>
-              <FSButton text="Save Changes" />
-            </div>
-          )}
-        </form>
-      </div>
-
-      <div style={{ marginTop: "2rem" }}>
-        <h3>Current Progress</h3>
-        <div style={{
-          padding: "10px", backgroundColor: "#f1f5f9", borderRadius: "5px",
-          textAlign: "center", marginBottom: "1rem"
-        }}>
-          <div style={{ fontWeight: 600 }}>Progress: {profile.currentProgress}/{profile.targetTotal}</div>
-          <div>{getMotivationalMsg(pct)}</div>
-        </div>
-
-        <form
-          onSubmit={handleProgressAdd}
-          style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}
-        >
+      <section style={{ padding: "0 2rem 2rem 2rem" }}>
+        <h3>Add Progress</h3>
+        <form onSubmit={handleProgressAdd}>
           <input
             type="number"
+            min="0"
             value={progressInput}
             onChange={(e) => setProgressInput(e.target.value)}
-            placeholder="Add progress"
-            style={{ flex: 1, marginRight: 8, padding: "0.5rem" }}
+            placeholder={`Add ${profile.targetLabel || "progress"}`}
           />
-          <FSButton text="Add" />
+          <button type="submit">Add</button>
+          <button type="button" onClick={handleProgressReset} style={{ marginLeft: 10 }}>
+            Reset Progress
+          </button>
         </form>
-        <button onClick={handleProgressReset} style={{ backgroundColor: "#f87171", color: "#fff", padding: "0.5rem 1rem", borderRadius: 5 }}>
-          Reset Progress
-        </button>
-      </div>
 
-      <div style={{ marginTop: "3rem" }}>
+        <h4>Progress Log</h4>
+        <ul>
+          {(profile.progressLog || []).map(({ date, amount }, idx) => (
+            <li key={idx}>
+              {new Date(date).toLocaleDateString()}: +{amount} {profile.targetLabel}
+            </li>
+          ))}
+        </ul>
+
         <h3>Messages</h3>
-        <div style={{
-          maxHeight: 180,     // smaller height for chat box
-          overflowY: "auto",
-          border: "1px solid #ccc",
-          borderRadius: "5px",
-          padding: "1rem",
-          background: "#fafafa",
-          fontSize: "0.9rem",
-          lineHeight: "1.3",
-        }}>
-          {messages.length === 0 ? (
-            <p>No messages yet.</p>
-          ) : (
-            messages.map((msg) => (
-              <div key={msg.id} style={{ marginBottom: 8, borderBottom: "1px solid #ddd", paddingBottom: 4 }}>
-                <div style={{ fontWeight: "600" }}>
-                  {msg.sender_id === authUser.id ? "You" : msg.sender_id} at{" "}
-                  {new Date(msg.created_at).toLocaleString()}
-                </div>
-                <div>{msg.content}</div>
-                {msg.sender_id === authUser.id && (
-                  <button
-                    onClick={() => handleDeleteMessage(msg.id)}
-                    style={{
-                      color: "red",
-                      fontSize: "0.75rem",
-                      marginTop: 2,
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
-                    aria-label="Delete message"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            ))
-          )}
+        <div
+          style={{
+            maxHeight: 200,
+            overflowY: "auto",
+            border: "1px solid #ccc",
+            padding: "0.5rem",
+            borderRadius: 8,
+          }}
+        >
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              style={{
+                padding: "0.25rem",
+                borderBottom: "1px solid #eee",
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>{msg.content}</span>
+              {msg.sender_id === authUser.id && (
+                <button
+                  onClick={() => handleDeleteMessage(msg.id)}
+                  style={{
+                    color: "red",
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                  }}
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+          ))}
           <div ref={messagesEndRef} />
         </div>
 
-        <form
-          onSubmit={handleSendMessage}
-          style={{
-            display: "flex",
-            marginTop: 8,
-            gap: "8px",
-            alignItems: "center",
-          }}
-        >
+        <form onSubmit={handleSendMessage} style={{ marginTop: 10 }}>
           <input
             type="text"
-            placeholder="Type a message..."
             value={newMsg}
             onChange={(e) => setNewMsg(e.target.value)}
-            style={{
-              flex: 1,
-              padding: "10px",
-              fontSize: "1rem",
-              borderRadius: "25px",
-              border: "1px solid #ddd",
-              outline: "none",
-              transition: "border-color 0.3s ease",
-              boxShadow: "inset 0 1px 3px rgb(0 0 0 / 0.1)",
-            }}
-            onFocus={(e) => e.target.style.borderColor = "#0047ab"}
-            onBlur={(e) => e.target.style.borderColor = "#ddd"}
+            placeholder="Type your message..."
+            style={{ width: "70%" }}
           />
-          <button
-            type="submit"
-            style={{
-              backgroundColor: "#0047ab",
-              color: "#fff",
-              borderRadius: "25px",
-              border: "none",
-              padding: "10px 18px",
-              fontWeight: "600",
-              cursor: "pointer",
-              boxShadow: "0 4px 8px rgba(0,71,171,0.3)",
-              transition: "background-color 0.3s ease",
-            }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#003380"}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#0047ab"}
-            aria-label="Send message"
-          >
+          <button type="submit" style={{ marginLeft: 10 }}>
             Send
           </button>
         </form>
-      </div>
-
-      <div style={{ textAlign: "center", margin: "2rem 0" }}>
-        <button
-          onClick={() => setEditMode(!editMode)}
-          style={{
-            backgroundColor: editMode ? "#dc2626" : "#2563eb",
-            color: "#fff",
-            border: "none",
-            padding: "10px 18px",
-            borderRadius: "25px",
-            fontWeight: "600",
-            cursor: "pointer",
-            boxShadow: editMode
-              ? "0 4px 8px rgba(220,38,38,0.4)"
-              : "0 4px 8px rgba(37,99,235,0.4)",
-            transition: "background-color 0.3s ease",
-          }}
-          aria-pressed={editMode}
-        >
-          {editMode ? "Cancel Edit" : "Edit Profile"}
-        </button>
-      </div>
+      </section>
     </div>
   );
 }
